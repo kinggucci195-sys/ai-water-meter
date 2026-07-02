@@ -20,7 +20,6 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
   const [isDemo, setIsDemo] = useState(false);
   const [isMockMode, setIsMockMode] = useState(false);
   const [usageData, setUsageData] = useState<DailyUsageData[]>([]);
-  const [optedIn, setOptedIn] = useState(false);
   const [optedInName, setOptedInName] = useState("");
 
   useEffect(() => {
@@ -59,10 +58,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           .maybeSingle();
 
         if (profileData) {
-          setOptedIn(profileData.visible);
           setOptedInName(profileData.display_name || "");
         } else {
-          setOptedIn(false);
           setOptedInName(email ? email.split("@")[0] : "AI Explorer");
         }
 
@@ -135,34 +132,6 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
     };
   }, [email]);
 
-  const handleToggleOptIn = async (newVal: boolean) => {
-    if (!supabase || isMockMode) return;
-    try {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      if (!userId) return;
-
-      const fallbackName = email ? email.split("@")[0] : "AI Explorer";
-      const nameToSave = optedInName.trim() || fallbackName;
-      const { error } = await supabase.from("leaderboard_profiles").upsert({
-        user_id: userId,
-        display_name: nameToSave,
-        visible: newVal
-      });
-
-      if (!error) {
-        setOptedIn(newVal);
-        if (!optedInName.trim()) {
-          setOptedInName(nameToSave);
-        }
-      }
-    } catch {
-      // Ignore
-    }
-  };
-
   const handleSaveLeaderboardName = async () => {
     if (!supabase || isMockMode) return;
     const nameToSave = optedInName.trim();
@@ -180,7 +149,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
       const { error } = await supabase.from("leaderboard_profiles").upsert({
         user_id: userId,
         display_name: nameToSave,
-        visible: optedIn
+        visible: true
       });
 
       if (!error) {
@@ -707,11 +676,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
 
       <LeaderboardSettings
         email={email}
-        optedIn={optedIn}
         optedInName={optedInName}
         setOptedInName={setOptedInName}
         isMockMode={isMockMode}
-        handleToggleOptIn={handleToggleOptIn}
         handleSaveLeaderboardName={handleSaveLeaderboardName}
       />
 

@@ -1,19 +1,15 @@
 interface LeaderboardSettingsProps {
   email?: string;
-  optedIn: boolean;
   optedInName: string;
   setOptedInName: (name: string) => void;
   isMockMode: boolean;
-  handleToggleOptIn: (newVal: boolean) => Promise<void>;
   handleSaveLeaderboardName: () => Promise<void>;
 }
 
 export function LeaderboardSettings({
-  optedIn,
   optedInName,
   setOptedInName,
   isMockMode,
-  handleToggleOptIn,
   handleSaveLeaderboardName
 }: LeaderboardSettingsProps) {
   return (
@@ -27,10 +23,10 @@ export function LeaderboardSettings({
       }}
     >
       <h3 style={{ margin: "0 0 10px", fontSize: "1rem", color: "#fff" }}>
-        🏆 Global Leaderboard Settings
+        🏆 Global Leaderboard Nickname
       </h3>
       <p style={{ margin: "0 0 16px", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
-        Opt-in to show your water footprints and rankings publicly.
+        Set a custom nickname to display on the public leaderboard. Defaults to your email username.
       </p>
 
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "20px" }}>
@@ -69,28 +65,6 @@ export function LeaderboardSettings({
           >
             Save Name
           </button>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
-          <input
-            id="leaderboard-opt-in-chk"
-            type="checkbox"
-            checked={optedIn}
-            onChange={(e) => handleToggleOptIn(e.target.checked)}
-            disabled={isMockMode}
-            style={{ width: "16px", height: "16px", cursor: "pointer" }}
-          />
-          <label
-            htmlFor="leaderboard-opt-in-chk"
-            style={{
-              fontSize: "0.8125rem",
-              color: "#8cdbfd",
-              fontWeight: "bold",
-              cursor: "pointer"
-            }}
-          >
-            Opt-in to Global Leaderboard rankings
-          </label>
         </div>
       </div>
     </div>
