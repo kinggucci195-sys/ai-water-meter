@@ -1,10 +1,9 @@
 {
   "buildCommand": "npm install --prefix web-app && npm run app:build",
   "outputDirectory": "web-app/dist",
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
   ]
