@@ -513,6 +513,9 @@ function AccountDashboard({ email }: { email?: string }) {
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [usageData, setUsageData] = useState<DailyUsageData[]>([]);
+  const [optedIn, setOptedIn] = useState(false);
+  const [optedInName, setOptedInName] = useState("");
+
   useEffect(() => {
     let channel: ReturnType<NonNullable<typeof supabase>["channel"]> | null = null;
 
@@ -537,6 +540,21 @@ function AccountDashboard({ email }: { email?: string }) {
           setIsDemo(true);
           setLoading(false);
           return;
+        }
+
+        // Fetch leaderboard profile status
+        const { data: profileData } = await client
+          .from("leaderboard_profiles")
+          .select("visible, display_name")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (profileData) {
+          setOptedIn(profileData.visible);
+          setOptedInName(profileData.display_name || "");
+        } else {
+          setOptedIn(false);
+          setOptedInName(email ? email.split("@")[0] : "AI Explorer");
         }
 
         const fetchLatestData = async () => {
@@ -602,6 +620,68 @@ function AccountDashboard({ email }: { email?: string }) {
       }
     };
   }, [email]);
+
+  const handleToggleOptIn = async (newVal: boolean) => {
+    if (!supabase || isDemo) return;
+    try {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const fallbackName = email ? email.split("@")[0] : "AI Explorer";
+      const nameToSave = optedInName.trim() || fallbackName;
+      const { error } = await supabase.from("leaderboard_profiles").upsert({
+        user_id: userId,
+        display_name: nameToSave,
+        visible: newVal
+      });
+
+      if (!error) {
+        setOptedIn(newVal);
+        if (!optedInName.trim()) {
+          setOptedInName(nameToSave);
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleSaveLeaderboardName = async () => {
+    if (!supabase || isDemo) return;
+    const nameToSave = optedInName.trim();
+    if (!nameToSave) {
+      alert("Please enter a valid display name.");
+      return;
+    }
+    try {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const { error } = await supabase.from("leaderboard_profiles").upsert({
+        user_id: userId,
+        display_name: nameToSave,
+        visible: optedIn
+      });
+
+      if (!error) {
+        alert("Leaderboard display name saved!");
+      } else {
+        alert(`Failed to save: ${error.message}`);
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(`Error saving name: ${err.message}`);
+      } else {
+        alert("Error saving name.");
+      }
+    }
+  };
 
   const stats = useMemo(() => {
     if (usageData.length === 0) {
@@ -1106,6 +1186,85 @@ function AccountDashboard({ email }: { email?: string }) {
                 </span>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Leaderboard Settings Panel */}
+      <div
+        style={{
+          background: "rgba(255, 255, 255, 0.02)",
+          border: "1px solid rgba(255, 255, 255, 0.06)",
+          borderRadius: "12px",
+          padding: "20px",
+          marginBottom: "28px"
+        }}
+      >
+        <h3 style={{ margin: "0 0 10px", fontSize: "1rem", color: "#fff" }}>
+          🏆 Global Leaderboard Settings
+        </h3>
+        <p style={{ margin: "0 0 16px", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+          Opt-in to show your water footprints and rankings publicly.
+        </p>
+
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <label style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.7)" }}>
+              Display Name:
+            </label>
+            <input
+              type="text"
+              value={optedInName}
+              onChange={(e) => setOptedInName(e.target.value)}
+              disabled={isDemo}
+              style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: "6px",
+                color: "#fff",
+                fontSize: "0.8125rem",
+                padding: "6px 12px",
+                outline: "none"
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSaveLeaderboardName}
+              disabled={isDemo}
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                borderRadius: "6px",
+                color: "#fff",
+                fontSize: "0.75rem",
+                padding: "6px 12px",
+                cursor: "pointer"
+              }}
+            >
+              Save Name
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+            <input
+              id="leaderboard-opt-in-chk"
+              type="checkbox"
+              checked={optedIn}
+              onChange={(e) => handleToggleOptIn(e.target.checked)}
+              disabled={isDemo}
+              style={{ width: "16px", height: "16px", cursor: "pointer" }}
+            />
+            <label
+              htmlFor="leaderboard-opt-in-chk"
+              style={{
+                fontSize: "0.8125rem",
+                color: "#8cdbfd",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
+            >
+              Opt-in to Global Leaderboard rankings
+            </label>
           </div>
         </div>
       </div>
