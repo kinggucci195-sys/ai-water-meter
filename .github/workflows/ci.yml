@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - test
+      - staging
+      - production
+      - "codex/**"
+  pull_request:
+    branches:
+      - main
+      - dev
+      - test
+      - staging
+      - production
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      target_environment: ${{ steps.environment.outputs.target_environment }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - id: environment
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            dev) TARGET_ENVIRONMENT="dev" ;;
+            test) TARGET_ENVIRONMENT="test" ;;
+            staging) TARGET_ENVIRONMENT="staging" ;;
+            production) TARGET_ENVIRONMENT="production" ;;
+            main) TARGET_ENVIRONMENT="production-candidate" ;;
+            *) TARGET_ENVIRONMENT="preview" ;;
+          esac
+          echo "target_environment=${TARGET_ENVIRONMENT}" >> "$GITHUB_OUTPUT"
+          echo "### AI Water Meter CI" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: ${GITHUB_REF_NAME}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target environment: ${TARGET_ENVIRONMENT}" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm ci
+      - run: npm run ci
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ai-water-meter-extension-${{ steps.environment.outputs.target_environment }}
+          path: release/ai-water-meter-*.zip
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: junit-${{ steps.environment.outputs.target_environment }}
+          path: coverage/junit.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    needs: test-build
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: xvfb-run -a npm run smoke
