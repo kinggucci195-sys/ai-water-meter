@@ -20,7 +20,81 @@ type LeaderboardEntry = {
   water_saved_ml_estimate: number;
 };
 
+type DailyUsageData = {
+  usage_date: string;
+  input_tokens_est: number;
+  output_tokens_est: number;
+  energy_wh: number;
+  water_ml_mid: number;
+  carbon_g: number;
+  site: string;
+};
+
 const demoEntries: LeaderboardEntry[] = [];
+
+// Local formatters to ensure zero monorepo path complications
+function formatMilliliters(value: number): string {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)} L`;
+  }
+  return `${value.toFixed(0)} mL`;
+}
+
+function formatWh(value: number): string {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(2)} kWh`;
+  }
+  return `${value.toFixed(1)} Wh`;
+}
+
+function formatCarbon(value: number): string {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(2)} kg CO2e`;
+  }
+  return `${value.toFixed(1)} g CO2e`;
+}
+
+function formatTokens(count: number): string {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)}M`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return count.toString();
+}
+
+function generateDemoUsage(): DailyUsageData[] {
+  const data: DailyUsageData[] = [];
+  const today = new Date();
+  // Generate last 168 days (24 weeks) of activity with some realistic gaps
+  for (let i = 167; i >= 0; i--) {
+    if (Math.random() < 0.25) continue; // 25% gaps
+
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toISOString().split("T")[0];
+
+    const promptCount = Math.floor(Math.random() * 8) + 1;
+    const inputTokens = promptCount * (Math.floor(Math.random() * 400) + 100);
+    const outputTokens = promptCount * (Math.floor(Math.random() * 800) + 200);
+    const weightedTokens = outputTokens + inputTokens * 0.5;
+    const energyWh = (weightedTokens / 500) * 0.3;
+    const waterMl = energyWh * 5.52;
+    const carbonG = (energyWh / 1000) * 350;
+
+    data.push({
+      usage_date: dateStr,
+      input_tokens_est: inputTokens,
+      output_tokens_est: outputTokens,
+      energy_wh: Number(energyWh.toFixed(2)),
+      water_ml_mid: Math.round(waterMl),
+      carbon_g: Number(carbonG.toFixed(2)),
+      site: Math.random() > 0.5 ? "ChatGPT" : "Claude"
+    });
+  }
+  return data;
+}
 
 function App() {
   const path = window.location.pathname;
@@ -36,7 +110,6 @@ function App() {
   const title = isAuthPage ? "Connect AI Water Meter" : "Global Water Awareness";
 
   useEffect(() => {
-    // Always fetch auth providers config (will mock if no supabase is configured)
     void loadAuthProviders().then(setAuthProviders);
 
     if (!supabase) {
@@ -72,25 +145,36 @@ function App() {
     }
 
     if (path.startsWith("/auth/extension/start")) {
+      if (email) {
+        return <AccountDashboard email={email} />;
+      }
       return <AuthStart authProviders={authProviders} email={email} />;
+    }
+
+    if (path === "/account") {
+      return <AccountDashboard email={email} />;
     }
 
     return <Leaderboard entries={entries} email={email} period={period} setPeriod={setPeriod} />;
   }, [authProviders, email, entries, path, period]);
 
+  const isAccountPage = path === "/account" || (path.startsWith("/auth/extension/start") && email);
+
   return (
     <main>
-      <section className="hero">
-        <div>
-          <span>AI Water Meter</span>
-          <h1>{title}</h1>
-          <p>
-            Source-backed estimates, aggregate-only sync, and opt-in rankings. No prompt text leaves
-            your device.
-          </p>
-        </div>
-        <WaterMascot2D />
-      </section>
+      {!isAccountPage && (
+        <section className="hero">
+          <div>
+            <span>AI Water Meter</span>
+            <h1>{title}</h1>
+            <p>
+              Source-backed estimates, aggregate-only sync, and opt-in rankings. No prompt text
+              leaves your device.
+            </p>
+          </div>
+          <WaterMascot2D />
+        </section>
+      )}
       {!hasSupabaseConfig && <SetupNotice />}
       {routeView}
     </main>
@@ -114,34 +198,13 @@ function AuthStart({
             synced from the extension.
           </p>
           <p className="success" style={{ marginTop: "24px" }}>
-            Signed in as <strong>{email}</strong>{" "}
-            <button
-              type="button"
-              className="text-link-btn"
-              style={{
-                background: "none",
-                border: "none",
-                color: "#4da6ff",
-                cursor: "pointer",
-                textDecoration: "underline",
-                padding: 0,
-                fontSize: "inherit",
-                marginLeft: "8px"
-              }}
-              onClick={() => {
-                localStorage.removeItem("sb-mock-email");
-                if (supabase) {
-                  void supabase.auth.signOut().then(() => {
-                    window.location.reload();
-                  });
-                } else {
-                  window.location.reload();
-                }
-              }}
-            >
-              (Sign out)
-            </button>
+            Signed in as <strong>{email}</strong>
           </p>
+          <div className="button-row">
+            <a className="text-link" href="/account">
+              Go to Account Dashboard
+            </a>
+          </div>
         </>
       ) : (
         <>
@@ -255,12 +318,30 @@ function Leaderboard({
 }) {
   return (
     <section className="panel">
-      <div className="section-heading" style={{ marginBottom: "12px" }}>
+      <div className="section-heading" style={{ marginBottom: "20px" }}>
         <div>
-          <h2>Leaderboard</h2>
-          <p>Ranked by awareness/reduction score, not who used the most water.</p>
+          <h2 style={{ margin: 0, fontSize: "1.5rem", color: "#fff", fontWeight: "bold" }}>
+            Global Leaderboard
+          </h2>
+          <p style={{ margin: "4px 0 0", color: "oklch(0.75 0.02 240)", fontSize: "0.875rem" }}>
+            Ranked by AI water savings and conversation efficiency.
+          </p>
         </div>
-        <a className="text-link" href="/auth/extension/start">
+        <a
+          className="text-link"
+          href={email ? "/account" : "/auth/extension/start"}
+          style={{
+            background: "oklch(0.55 0.11 185)",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "6px",
+            padding: "8px 16px",
+            fontSize: "0.875rem",
+            fontWeight: "bold",
+            textDecoration: "none",
+            boxShadow: "0 0 15px oklch(0.55 0.11 185 / 0.3)"
+          }}
+        >
           {email ? "Account" : "Sign in"}
         </a>
       </div>
@@ -269,10 +350,10 @@ function Leaderboard({
         className="leaderboard-tabs"
         style={{
           display: "flex",
-          gap: "6px",
-          marginBottom: "16px",
-          borderBottom: "1px solid oklch(0.34 0.03 248 / 0.12)",
-          paddingBottom: "8px"
+          gap: "8px",
+          marginBottom: "20px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          paddingBottom: "10px"
         }}
       >
         {(["daily", "weekly", "monthly", "all_time"] as const).map((p) => {
@@ -284,15 +365,15 @@ function Leaderboard({
               type="button"
               onClick={() => setPeriod(p)}
               style={{
-                background: isActive ? "oklch(0.55 0.11 185)" : "transparent",
-                border: "none",
-                borderRadius: "0.25rem",
-                color: isActive ? "#ffffff" : "oklch(0.34 0.03 248 / 0.8)",
+                background: isActive ? "linear-gradient(135deg, #0e3054, #1c5d9b)" : "transparent",
+                border: isActive ? "1px solid #8cdbfd" : "1px solid transparent",
+                borderRadius: "6px",
+                color: isActive ? "#ffffff" : "rgba(255, 255, 255, 0.6)",
                 cursor: "pointer",
                 fontSize: "0.8125rem",
                 fontWeight: "bold",
-                padding: "6px 12px",
-                transition: "all 0.15s ease"
+                padding: "8px 16px",
+                transition: "all 0.2s ease"
               }}
             >
               {label}
@@ -301,26 +382,837 @@ function Leaderboard({
         })}
       </div>
 
-      <div className="leaderboard">
+      <div
+        className="leaderboard"
+        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+      >
         {entries.length > 0 ? (
-          entries.map((entry) => (
-            <article key={entry.rank}>
-              <strong>#{entry.rank}</strong>
-              <div>
-                <h3>{entry.display_name}</h3>
-                <p>
-                  {entry.badge} / confidence {entry.confidence}
-                </p>
-              </div>
-              <span>{entry.score}</span>
-            </article>
-          ))
+          entries.map((entry, idx) => {
+            let rankColor = "rgba(255,255,255,0.1)";
+            let rankTextColor = "rgba(255,255,255,0.6)";
+            let borderGlow = "1px solid rgba(255,255,255,0.06)";
+
+            if (entry.rank === 1) {
+              rankColor = "linear-gradient(135deg, #ffc837, #ff8008)";
+              rankTextColor = "#fff";
+              borderGlow = "1.5px solid #ffc837";
+            } else if (entry.rank === 2) {
+              rankColor = "linear-gradient(135deg, #b3cdd1, #9fa4a6)";
+              rankTextColor = "#fff";
+              borderGlow = "1.5px solid #b3cdd1";
+            } else if (entry.rank === 3) {
+              rankColor = "linear-gradient(135deg, #b87333, #ab7a4e)";
+              rankTextColor = "#fff";
+              borderGlow = "1.5px solid #b87333";
+            }
+
+            return (
+              <article
+                key={entry.rank}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "16px 20px",
+                  background: "rgba(255,255,255,0.02)",
+                  border: borderGlow,
+                  borderRadius: "10px",
+                  gap: "18px",
+                  transition: "transform 0.2s ease, background 0.2s ease",
+                  animation: `slideInRow 0.35s ease-out both`,
+                  animationDelay: `${0.05 * Math.min(idx, 10)}s`
+                }}
+                className="leaderboard-row"
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: rankColor,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                    fontSize: "0.9375rem",
+                    color: rankTextColor,
+                    boxShadow: entry.rank <= 3 ? "0 0 10px rgba(255,255,255,0.1)" : "none"
+                  }}
+                >
+                  #{entry.rank}
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: 0, fontSize: "1rem", color: "#fff" }}>
+                    {entry.display_name}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "2px 0 0",
+                      fontSize: "0.75rem",
+                      color: "rgba(255,255,255,0.4)"
+                    }}
+                  >
+                    Badge:{" "}
+                    <span style={{ color: "#8cdbfd", fontWeight: "bold" }}>{entry.badge}</span> ·
+                    Confidence: {entry.confidence}
+                  </p>
+                </div>
+
+                <div style={{ textAlign: "right" }}>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "0.9375rem",
+                      fontWeight: "bold",
+                      color: "#4ea1f1"
+                    }}
+                  >
+                    {formatMilliliters(entry.water_saved_ml_estimate)}
+                  </span>
+                  <small style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.3)" }}>
+                    saved
+                  </small>
+                </div>
+
+                <div style={{ textAlign: "right", minWidth: "64px" }}>
+                  <span style={{ fontSize: "1.125rem", fontWeight: "bold", color: "#8cdbfd" }}>
+                    {entry.score}
+                  </span>
+                  <small
+                    style={{
+                      display: "block",
+                      fontSize: "0.6875rem",
+                      color: "rgba(255,255,255,0.3)"
+                    }}
+                  >
+                    points
+                  </small>
+                </div>
+              </article>
+            );
+          })
         ) : (
-          <p style={{ textAlign: "center", color: "oklch(0.55 0.03 240)", padding: "20px 0" }}>
+          <p style={{ textAlign: "center", color: "oklch(0.55 0.03 240)", padding: "32px 0" }}>
             No {period === "all_time" ? "all-time" : period} rankings submitted yet. Enable
             leaderboard opt-in to appear here!
           </p>
         )}
+      </div>
+    </section>
+  );
+}
+
+function AccountDashboard({ email }: { email?: string }) {
+  const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
+  const [usageData, setUsageData] = useState<DailyUsageData[]>([]);
+
+  useEffect(() => {
+    async function loadUsage() {
+      if (!supabase) {
+        setUsageData(generateDemoUsage());
+        setIsDemo(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+
+        if (!userId) {
+          setUsageData(generateDemoUsage());
+          setIsDemo(true);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("usage_daily")
+          .select(
+            "usage_date,input_tokens_est,output_tokens_est,energy_wh,water_ml_mid,carbon_g,site"
+          )
+          .eq("user_id", userId)
+          .order("usage_date", { ascending: false });
+
+        if (error || !data || data.length === 0) {
+          setUsageData(generateDemoUsage());
+          setIsDemo(true);
+        } else {
+          setUsageData(data as DailyUsageData[]);
+          setIsDemo(false);
+        }
+      } catch {
+        setUsageData(generateDemoUsage());
+        setIsDemo(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadUsage();
+  }, [email]);
+
+  const stats = useMemo(() => {
+    if (usageData.length === 0) {
+      return {
+        totalTokens: 0,
+        totalWater: 0,
+        totalCarbon: 0,
+        totalEnergy: 0,
+        peakTokens: 0,
+        longestStreak: 0,
+        currentStreak: 0,
+        costEstimate: 0,
+        promptEfficiency: 0
+      };
+    }
+
+    const totalInput = usageData.reduce((acc, c) => acc + c.input_tokens_est, 0);
+    const totalOutput = usageData.reduce((acc, c) => acc + c.output_tokens_est, 0);
+    const totalTokens = totalInput + totalOutput;
+    const totalWater = usageData.reduce((acc, c) => acc + c.water_ml_mid, 0);
+    const totalCarbon = usageData.reduce((acc, c) => acc + c.carbon_g, 0);
+    const totalEnergy = usageData.reduce((acc, c) => acc + c.energy_wh, 0);
+    const peakTokens = Math.max(
+      ...usageData.map((d) => d.input_tokens_est + d.output_tokens_est),
+      0
+    );
+
+    const costEstimate = (totalInput / 1000) * 0.002 + (totalOutput / 1000) * 0.015;
+    const promptEfficiency = totalInput > 0 ? (totalOutput / totalInput) * 100 : 0;
+
+    const dates = Array.from(new Set(usageData.map((d) => d.usage_date))).sort();
+    let longestStreak = 0;
+    let currentStreak = 0;
+    let tempStreak = 0;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+    let lastDate: Date | null = null;
+
+    for (const dateStr of dates) {
+      const currDate = new Date(dateStr);
+      if (lastDate) {
+        const diffTime = Math.abs(currDate.getTime() - lastDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          tempStreak++;
+        } else if (diffDays > 1) {
+          if (tempStreak > longestStreak) {
+            longestStreak = tempStreak;
+          }
+          tempStreak = 1;
+        }
+      } else {
+        tempStreak = 1;
+      }
+      lastDate = currDate;
+    }
+    if (tempStreak > longestStreak) {
+      longestStreak = tempStreak;
+    }
+
+    const hasToday = dates.includes(todayStr);
+    const hasYesterday = dates.includes(yesterdayStr);
+    if (hasToday || hasYesterday) {
+      let streakCount = 0;
+      const checkDate = hasToday ? new Date() : yesterday;
+      while (true) {
+        const checkStr = checkDate.toISOString().split("T")[0];
+        if (dates.includes(checkStr)) {
+          streakCount++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      currentStreak = streakCount;
+    }
+
+    return {
+      totalTokens,
+      totalWater,
+      totalCarbon,
+      totalEnergy,
+      peakTokens,
+      longestStreak: longestStreak || (usageData.length > 0 ? 1 : 0),
+      currentStreak,
+      costEstimate,
+      promptEfficiency
+    };
+  }, [usageData]);
+
+  const heatmapCells = useMemo(() => {
+    const cells = [];
+    const today = new Date();
+    for (let i = 167; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0];
+      const record = usageData.find((d) => d.usage_date === dateStr);
+      cells.push({
+        date: dateStr,
+        water: record ? record.water_ml_mid : 0,
+        record
+      });
+    }
+    return cells;
+  }, [usageData]);
+
+  const weeklyReports = useMemo(() => {
+    const groups: {
+      [key: string]: { water: number; energy: number; tokens: number; days: number };
+    } = {};
+    usageData.forEach((d) => {
+      const date = new Date(d.usage_date);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(date.setDate(diff));
+      const mondayStr = monday.toISOString().split("T")[0];
+
+      if (!groups[mondayStr]) {
+        groups[mondayStr] = { water: 0, energy: 0, tokens: 0, days: 0 };
+      }
+      groups[mondayStr].water += d.water_ml_mid;
+      groups[mondayStr].energy += d.energy_wh;
+      groups[mondayStr].tokens += d.input_tokens_est + d.output_tokens_est;
+      groups[mondayStr].days += 1;
+    });
+
+    return Object.entries(groups)
+      .map(([weekStart, data]) => ({
+        weekStart,
+        ...data
+      }))
+      .sort((a, b) => b.weekStart.localeCompare(a.weekStart))
+      .slice(0, 5);
+  }, [usageData]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "48px 0", color: "#8cdbfd" }}>
+        <div
+          className="spinner"
+          style={{
+            margin: "24px auto",
+            width: "40px",
+            height: "40px",
+            border: "4px solid rgba(255,255,255,0.1)",
+            borderRadius: "50%",
+            borderTopColor: "#8cdbfd",
+            animation: "spin 1s linear infinite"
+          }}
+        ></div>
+        <p>Loading your footprint analytics...</p>
+      </div>
+    );
+  }
+
+  const initials = email ? email.substring(0, 2).toUpperCase() : "ME";
+  const displayName = email ? email.split("@")[0] : "AI Explorer";
+
+  return (
+    <section className="panel" style={{ marginTop: "24px" }}>
+      {isDemo && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "oklch(0.3 0.05 25 / 0.5)",
+            border: "1px solid oklch(0.7 0.1 25 / 0.3)",
+            borderRadius: "8px",
+            color: "oklch(0.75 0.1 25)",
+            fontSize: "0.8125rem",
+            marginBottom: "20px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "8px"
+          }}
+        >
+          <span>
+            Showing Demo Data. Once you connect your browser extension and start chatting, your
+            actual footprints will sync here!
+          </span>
+          <button
+            type="button"
+            className="text-link-btn"
+            style={{
+              border: "none",
+              color: "#fff",
+              background: "oklch(0.55 0.11 185)",
+              padding: "4px 10px",
+              borderRadius: "4px",
+              fontSize: "0.75rem",
+              cursor: "pointer"
+            }}
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </button>
+        </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px" }}>
+        <div
+          style={{
+            width: "72px",
+            height: "72px",
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #0e3054, #8cdbfd)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#ffffff",
+            fontSize: "1.75rem",
+            fontWeight: "bold",
+            boxShadow: "0 0 20px rgba(140, 219, 253, 0.2)"
+          }}
+        >
+          {initials}
+        </div>
+        <div>
+          <h2 style={{ margin: 0, color: "#fff", fontSize: "1.625rem" }}>{displayName}</h2>
+          <p style={{ margin: "4px 0 0", color: "oklch(0.55 0.03 240)", fontSize: "0.875rem" }}>
+            {email} · <span style={{ color: "#8cdbfd", fontWeight: "bold" }}>Synced Account</span>
+          </p>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: "10px" }}>
+          <a
+            className="text-link"
+            href="/"
+            style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "6px",
+              color: "#fff",
+              fontSize: "0.8125rem",
+              padding: "6px 12px",
+              minHeight: "auto"
+            }}
+          >
+            Leaderboard
+          </a>
+          <button
+            type="button"
+            style={{
+              background: "none",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: "6px",
+              color: "rgba(255,255,255,0.6)",
+              fontSize: "0.8125rem",
+              padding: "6px 12px",
+              cursor: "pointer",
+              minHeight: "auto"
+            }}
+            onClick={() => {
+              localStorage.removeItem("sb-mock-email");
+              if (supabase) {
+                void supabase.auth.signOut().then(() => {
+                  window.location.href = "/";
+                });
+              } else {
+                window.location.href = "/";
+              }
+            }}
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "14px",
+          marginBottom: "28px"
+        }}
+      >
+        <div className="stats-card">
+          <span className="stats-label">Lifetime Tokens</span>
+          <strong className="stats-value">{formatTokens(stats.totalTokens)}</strong>
+          <span className="stats-subtext">Total inference count</span>
+        </div>
+        <div className="stats-card">
+          <span className="stats-label">Peak Daily Volume</span>
+          <strong className="stats-value">{formatTokens(stats.peakTokens)}</strong>
+          <span className="stats-subtext">Single day record</span>
+        </div>
+        <div className="stats-card">
+          <span className="stats-label">Current Streak</span>
+          <strong className="stats-value">{stats.currentStreak} days</strong>
+          <span className="stats-subtext">Consecutive active days</span>
+        </div>
+        <div className="stats-card">
+          <span className="stats-label">Longest Streak</span>
+          <strong className="stats-value">{stats.longestStreak} days</strong>
+          <span className="stats-subtext">All-time record</span>
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: "rgba(255, 255, 255, 0.02)",
+          border: "1px solid rgba(255, 255, 255, 0.06)",
+          borderRadius: "12px",
+          padding: "20px",
+          marginBottom: "28px"
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "14px"
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: "1rem", color: "#fff" }}>Water Footprint Grid</h3>
+          <div
+            style={{
+              display: "flex",
+              gap: "4px",
+              fontSize: "0.6875rem",
+              color: "rgba(255,255,255,0.4)"
+            }}
+          >
+            <span>Less</span>
+            <div
+              style={{ width: "10px", height: "10px", background: "#1a1a24", borderRadius: "2px" }}
+            ></div>
+            <div
+              style={{ width: "10px", height: "10px", background: "#0e3054", borderRadius: "2px" }}
+            ></div>
+            <div
+              style={{ width: "10px", height: "10px", background: "#1c5d9b", borderRadius: "2px" }}
+            ></div>
+            <div
+              style={{ width: "10px", height: "10px", background: "#4ea1f1", borderRadius: "2px" }}
+            ></div>
+            <div
+              style={{ width: "10px", height: "10px", background: "#8cdbfd", borderRadius: "2px" }}
+            ></div>
+            <span>More</span>
+          </div>
+        </div>
+
+        <div style={{ overflowX: "auto", paddingBottom: "8px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: "repeat(7, 10px)",
+              gridAutoFlow: "column",
+              gridAutoColumns: "10px",
+              gap: "3px",
+              justifyContent: "start",
+              width: "max-content"
+            }}
+          >
+            {heatmapCells.map((cell, idx) => {
+              let color = "#1a1a24";
+              if (cell.water > 0 && cell.water <= 100) color = "#0e3054";
+              else if (cell.water > 100 && cell.water <= 300) color = "#1c5d9b";
+              else if (cell.water > 300 && cell.water <= 600) color = "#4ea1f1";
+              else if (cell.water > 600) color = "#8cdbfd";
+
+              return (
+                <div
+                  key={idx}
+                  title={`${cell.date}: ${formatMilliliters(cell.water)}`}
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "2px",
+                    background: color,
+                    transition: "transform 0.1s ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "20px",
+          marginBottom: "28px"
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            borderRadius: "12px",
+            padding: "20px"
+          }}
+        >
+          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
+            Cost & Token Analytics
+          </h3>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "14px",
+              marginBottom: "16px"
+            }}
+          >
+            <div>
+              <span
+                style={{ display: "block", fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}
+              >
+                Estimated AI Cost
+              </span>
+              <strong style={{ fontSize: "1.5rem", color: "#4ea1f1" }}>
+                ${stats.costEstimate.toFixed(4)}
+              </strong>
+            </div>
+            <div>
+              <span
+                style={{ display: "block", fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}
+              >
+                Prompt Efficiency
+              </span>
+              <strong style={{ fontSize: "1.5rem", color: "#8cdbfd" }}>
+                {stats.promptEfficiency.toFixed(1)}%
+              </strong>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.75rem",
+                  marginBottom: "4px"
+                }}
+              >
+                <span>Cost Analysis (Conciseness)</span>
+                <span>
+                  {stats.promptEfficiency > 100 ? "Highly concise answers" : "Verbose answers"}
+                </span>
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "6px",
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: "3px",
+                  overflow: "hidden"
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.min(stats.promptEfficiency, 100)}%`,
+                    height: "100%",
+                    background: "linear-gradient(90deg, #0e3054, #8cdbfd)",
+                    borderRadius: "3px"
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            borderRadius: "12px",
+            padding: "20px"
+          }}
+        >
+          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
+            Resource footprint
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.4)",
+                  marginBottom: "4px"
+                }}
+              >
+                Water Footprint
+              </span>
+              <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+                {formatMilliliters(stats.totalWater)}
+              </strong>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "rgba(255,255,255,0.3)",
+                  marginTop: "2px"
+                }}
+              >
+                boil ~{(stats.totalEnergy * 10.75).toFixed(0)} mL equivalent
+              </small>
+            </div>
+            <div>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.4)",
+                  marginBottom: "4px"
+                }}
+              >
+                Energy footprint
+              </span>
+              <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+                {formatWh(stats.totalEnergy)}
+              </strong>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "rgba(255,255,255,0.3)",
+                  marginTop: "2px"
+                }}
+              >
+                charge phone {Math.round(stats.totalEnergy * 360).toLocaleString()}s
+              </small>
+            </div>
+            <div>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.4)",
+                  marginBottom: "4px"
+                }}
+              >
+                Carbon Emissions
+              </span>
+              <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+                {formatCarbon(stats.totalCarbon)}
+              </strong>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "rgba(255,255,255,0.3)",
+                  marginTop: "2px"
+                }}
+              >
+                location-based CO2e
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "20px"
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            borderRadius: "12px",
+            padding: "20px"
+          }}
+        >
+          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
+            Weekly footprint summaries
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {weeklyReports.map((week) => (
+              <div
+                key={week.weekStart}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  background: "rgba(255,255,255,0.02)",
+                  borderRadius: "6px"
+                }}
+              >
+                <span style={{ fontSize: "0.75rem", fontWeight: "bold" }}>
+                  Week of {week.weekStart}
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "#8cdbfd", fontWeight: "bold" }}>
+                  {formatMilliliters(week.water)} used ({week.days} active days)
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            borderRadius: "12px",
+            padding: "20px"
+          }}
+        >
+          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>History logs</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "0.75rem",
+                textAlign: "left"
+              }}
+            >
+              <thead>
+                <tr
+                  style={{
+                    borderBottom: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.4)"
+                  }}
+                >
+                  <th style={{ padding: "6px 4px" }}>Date</th>
+                  <th style={{ padding: "6px 4px" }}>Site</th>
+                  <th style={{ padding: "6px 4px" }}>Tokens</th>
+                  <th style={{ padding: "6px 4px" }}>Water</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usageData.slice(0, 5).map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td style={{ padding: "8px 4px", color: "rgba(255,255,255,0.7)" }}>
+                      {row.usage_date}
+                    </td>
+                    <td style={{ padding: "8px 4px", color: "#fff" }}>{row.site}</td>
+                    <td style={{ padding: "8px 4px" }}>
+                      {(row.input_tokens_est + row.output_tokens_est).toLocaleString()}
+                    </td>
+                    <td style={{ padding: "8px 4px", color: "#4ea1f1", fontWeight: "bold" }}>
+                      {formatMilliliters(row.water_ml_mid)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -341,7 +1233,6 @@ function SetupNotice() {
 
 async function signIn(provider: "github" | "google") {
   if (!supabase) {
-    // Enable Mock Auth redirect
     const mockEmail = `mock-${provider}-user@example.com`;
     window.location.href = `/auth/callback?mock=true&email=${encodeURIComponent(mockEmail)}`;
     return;
@@ -357,7 +1248,6 @@ async function signIn(provider: "github" | "google") {
 
 async function loadAuthProviders(): Promise<AuthProviderAvailability> {
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Enable mock auth providers locally so they can be clicked
     return {
       github: true,
       google: true
