@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { formatCarbon, formatMilliliters, formatWh } from "../estimator/format";
-import type { DailyUsageRecord } from "../storage";
+import type { DailyUsageRecord, MonthlyUsageRecord } from "../storage";
 import type { SessionSnapshot } from "./chat-observer";
+import { DropletScene } from "./droplet-scene";
 
 export type SidebarApi = {
-  update(snapshot: SessionSnapshot, daily?: DailyUsageRecord): void;
+  update(snapshot: SessionSnapshot, daily?: DailyUsageRecord, monthly?: MonthlyUsageRecord): void;
   setStatus(message: string): void;
 };
 
 type SidebarProps = {
   daily?: DailyUsageRecord;
+  monthly?: MonthlyUsageRecord;
   onReset: () => void;
   snapshot?: SessionSnapshot;
   status: string;
@@ -20,7 +22,7 @@ type SidebarProps = {
  * Floating estimate meter rendered inside a Shadow DOM so host chat pages cannot
  * accidentally inherit or break its styling.
  */
-function SidebarApp({ daily, onReset, snapshot, status }: SidebarProps) {
+function SidebarApp({ daily, monthly, onReset, snapshot, status }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const total = snapshot?.totalEstimate;
 
@@ -44,24 +46,38 @@ function SidebarApp({ daily, onReset, snapshot, status }: SidebarProps) {
         </header>
         {!collapsed && (
           <div className="body">
-            <div className="primary">
-              <span>Estimated water</span>
-              <strong>{total ? formatMilliliters(total.totalWaterMl) : "Scanning..."}</strong>
-              <small>
-                {total
-                  ? `${formatMilliliters(total.lowTotalWaterMl)}-${formatMilliliters(
-                      total.highTotalWaterMl
-                    )} estimate range`
-                  : "Visible chat only"}
-              </small>
+            <div className="primary" data-slot="footprint-summary">
+              <DropletScene />
+              <div>
+                <span>Estimated footprint range</span>
+                <strong>{total ? formatMilliliters(total.totalWaterMl) : "Scanning..."}</strong>
+                <small>
+                  {total
+                    ? `${formatMilliliters(total.lowTotalWaterMl)}-${formatMilliliters(
+                        total.highTotalWaterMl
+                      )} from visible text`
+                    : "Visible chat only"}
+                </small>
+              </div>
             </div>
+            <p className="disclosure">
+              Not provider telemetry. Local estimate from published factors.
+            </p>
             <dl>
+              <div>
+                <dt>Direct water</dt>
+                <dd>{total ? formatMilliliters(total.directWaterMl) : "-"}</dd>
+              </div>
+              <div>
+                <dt>Grid water</dt>
+                <dd>{total ? formatMilliliters(total.indirectGridWaterMl) : "-"}</dd>
+              </div>
               <div>
                 <dt>Energy</dt>
                 <dd>{total ? formatWh(total.energyWh) : "-"}</dd>
               </div>
               <div>
-                <dt>Carbon</dt>
+                <dt>CO2e</dt>
                 <dd>{total ? formatCarbon(total.carbonGrams) : "-"}</dd>
               </div>
               <div>
@@ -71,6 +87,10 @@ function SidebarApp({ daily, onReset, snapshot, status }: SidebarProps) {
               <div>
                 <dt>Today</dt>
                 <dd>{daily ? formatMilliliters(daily.totalWaterMl) : "-"}</dd>
+              </div>
+              <div>
+                <dt>This month</dt>
+                <dd>{monthly ? formatMilliliters(monthly.totalWaterMl) : "-"}</dd>
               </div>
             </dl>
             <p>{status}</p>
@@ -95,12 +115,14 @@ export function mountSidebar(onReset: () => void): SidebarApi {
   const root: Root = createRoot(rootTarget);
   let currentSnapshot: SessionSnapshot | undefined;
   let currentDaily: DailyUsageRecord | undefined;
+  let currentMonthly: MonthlyUsageRecord | undefined;
   let currentStatus = "Estimates stay local in your browser.";
 
   const render = () => {
     root.render(
       <SidebarApp
         daily={currentDaily}
+        monthly={currentMonthly}
         onReset={onReset}
         snapshot={currentSnapshot}
         status={currentStatus}
@@ -111,9 +133,10 @@ export function mountSidebar(onReset: () => void): SidebarApi {
   render();
 
   return {
-    update(snapshot, daily) {
+    update(snapshot, daily, monthly) {
       currentSnapshot = snapshot;
       currentDaily = daily;
+      currentMonthly = monthly;
       render();
     },
     setStatus(message) {
@@ -170,9 +193,37 @@ const styles = `
   }
   .body { padding: 0.75rem; }
   .primary {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    align-items: center;
+    gap: 0.75rem;
     padding: 0.75rem;
     border-radius: 0.5rem;
     background: oklch(0.94 0.04 190);
+  }
+  .droplet-scene {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, oklch(1 0 0 / 0.82), transparent 24%),
+      linear-gradient(145deg, oklch(0.87 0.05 205), oklch(0.74 0.09 185));
+    overflow: hidden;
+  }
+  .droplet-scene[data-fallback="true"]::before {
+    content: "";
+    display: block;
+    width: 2rem;
+    height: 2.75rem;
+    margin: 0.875rem auto;
+    border-radius: 50% 50% 55% 55%;
+    background: oklch(0.95 0.05 195 / 0.95);
+    transform: rotate(10deg);
+  }
+  .droplet-scene canvas {
+    width: 4.5rem;
+    height: 4.5rem;
+    display: block;
   }
   .primary span, .primary small {
     display: block;
@@ -213,6 +264,13 @@ const styles = `
     font-size: 0.75rem;
     line-height: 1.35;
   }
+  .disclosure {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid oklch(0.34 0.03 248 / 0.12);
+    border-radius: 0.5rem;
+    background: oklch(0.98 0.01 230 / 0.78);
+  }
   .reset {
     width: 100%;
     min-height: 2.125rem;
@@ -229,6 +287,7 @@ const styles = `
     .eyebrow, .primary span, .primary small, dt, p { color: oklch(0.78 0.03 235); }
     .primary { background: oklch(0.34 0.06 190); }
     .primary strong { color: oklch(0.82 0.11 185); }
+    .disclosure { background: oklch(0.26 0.03 248 / 0.78); }
     dl div { border-color: oklch(0.88 0.03 235 / 0.14); }
     .icon, .reset {
       border-color: oklch(0.88 0.03 235 / 0.2);

@@ -10,7 +10,8 @@ It does not claim exact provider telemetry. Providers do not expose exact per-pr
 - Optional indirect grid-electricity water.
 - Estimated energy.
 - Estimated location-based carbon.
-- Session and daily totals.
+- Session, daily, and monthly totals.
+- A small Three.js water droplet scene in the sidebar.
 - The active methodology and assumptions in the options page.
 
 ## Default Method
@@ -41,6 +42,8 @@ npm run smoke
 
 Load `dist/` as an unpacked extension in Chrome or Edge after `npm run build`.
 
+That unpacked flow is for development and reviewer testing. Public installs without developer mode require Chrome Web Store or Microsoft Edge Add-ons approval.
+
 ## Privacy
 
 The extension processes visible page text locally in the browser. It does not send prompts, responses, or estimates to any server.
@@ -55,6 +58,9 @@ The build generates PNG icons, validates manifest references, checks for remote-
 
 - [Architecture](./ARCHITECTURE.md)
 - [Data and assumptions](./DATASET.md)
+- [Account sync plan](./ACCOUNT_SYNC.md)
 - [Branching and promotion](./BRANCHING.md)
+- [Public release plan](./PUBLIC_RELEASE.md)
+- [Product review](./PRODUCT_REVIEW.md)
 - [Store review notes](./STORE_REVIEW_NOTES.md)
 - [Roadmap](./ROADMAP.md)

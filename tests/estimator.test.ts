@@ -5,7 +5,7 @@ import {
   subtractEstimate,
   sumEstimates
 } from "../src/estimator/estimate";
-import { todayKey } from "../src/storage";
+import { monthKey, todayKey } from "../src/storage";
 
 describe("estimateTokens", () => {
   it("uses a transparent four-character token approximation", () => {
@@ -64,5 +64,11 @@ describe("subtractEstimate", () => {
 describe("todayKey", () => {
   it("uses local date components instead of UTC serialization", () => {
     expect(todayKey(new Date(2026, 6, 2, 1, 30))).toBe("2026-07-02");
+  });
+});
+
+describe("monthKey", () => {
+  it("uses local month components", () => {
+    expect(monthKey(new Date(2026, 6, 2, 1, 30))).toBe("2026-07");
   });
 });

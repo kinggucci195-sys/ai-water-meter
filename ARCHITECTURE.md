@@ -10,9 +10,10 @@ AI Water Meter is a local-first Manifest V3 browser extension.
 - `src/content/sidebar.tsx`: React 19 Shadow DOM sidebar UI.
 - `src/popup/`: React popup for daily totals.
 - `src/options/`: React methodology page.
-- `src/background/service-worker.ts`: minimal MV3 service worker for install defaults.
+- `src/background/service-worker.ts`: MV3 service worker for install defaults and serialized usage writes.
 - `src/estimator/`: pure estimator math and formatting.
-- `src/storage.ts`: local daily aggregate storage via `chrome.storage.local`.
+- `src/storage.ts`: local daily and monthly aggregate storage via `chrome.storage.local`.
+- `src/storage-messages.ts`: typed content-script to service-worker message contract for aggregate writes.
 
 ## Data Flow
 
@@ -22,8 +23,9 @@ Supported AI chat page
   -> local token approximation estimates visible text volume
   -> estimator converts tokens into energy, water, and carbon ranges
   -> sidebar renders current session estimates
-  -> storage stores only derived daily totals
-  -> popup reads daily totals from local extension storage
+  -> content script sends usage deltas to the service worker
+  -> service worker serializes aggregate writes to local storage
+  -> popup reads daily and monthly totals from local extension storage
 ```
 
 ## Data Boundaries
@@ -50,6 +52,7 @@ Sources are listed in `README.md`; the methodology is exposed in the options pag
 - Existing visible chat history is treated as baseline on page load.
 - Daily totals only add newly observed deltas after baseline.
 - Snapshot persistence is serialized to avoid duplicate deltas during streamed responses.
+- Aggregate writes are routed through the service worker to reduce cross-tab read-modify-write races.
 - Results are shown as estimates with uncertainty ranges.
 
 ## Build Shape

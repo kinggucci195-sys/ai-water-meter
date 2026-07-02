@@ -1,16 +1,16 @@
 import { subtractEstimate, type UsageEstimate } from "../estimator/estimate";
-import { addToDailyUsage, getDailyUsage, resetDailyUsage } from "../storage";
+import type { StorageRequest, StorageResponse } from "../storage-messages";
+import { getDailyUsage, getMonthlyUsage } from "../storage";
 import { createChatObserver } from "./chat-observer";
 import { detectProfile } from "./page-detectors";
 import { mountSidebar } from "./sidebar";
 
 const profile = detectProfile(window.location);
 const sidebar = mountSidebar(async () => {
-  await resetDailyUsage();
+  const response = await sendStorageRequest({ type: "usage:reset-today" });
   sidebar.setStatus("Today's total was reset.");
-  const daily = await getDailyUsage();
   if (lastSnapshot) {
-    sidebar.update(lastSnapshot, daily);
+    sidebar.update(lastSnapshot, response.daily, response.monthly);
   }
 });
 
@@ -31,12 +31,12 @@ createChatObserver(profile, (snapshot) => {
 
 async function persistSnapshot(snapshot: Parameters<typeof sidebar.update>[0]): Promise<void> {
   lastSnapshot = snapshot;
-  let daily = await getDailyUsage();
+  let [daily, monthly] = await Promise.all([getDailyUsage(), getMonthlyUsage()]);
 
   if (!hasBaseline) {
     hasBaseline = true;
     lastPersistedTotal = snapshot.totalEstimate;
-    sidebar.update(snapshot, daily);
+    sidebar.update(snapshot, daily, monthly);
     sidebar.setStatus("Existing visible chat is treated as baseline.");
     return;
   }
@@ -53,9 +53,22 @@ async function persistSnapshot(snapshot: Parameters<typeof sidebar.update>[0]): 
     lastPersistedTotal = snapshot.totalEstimate;
 
     if (delta.weightedTokens > 0) {
-      daily = await addToDailyUsage(delta);
+      const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
+      daily = response.daily;
+      monthly = response.monthly;
     }
   }
 
-  sidebar.update(snapshot, daily);
+  sidebar.update(snapshot, daily, monthly);
+}
+
+async function sendStorageRequest(
+  message: StorageRequest
+): Promise<Extract<StorageResponse, { ok: true }>> {
+  const response = (await chrome.runtime.sendMessage(message)) as StorageResponse | undefined;
+  if (!response?.ok) {
+    throw new Error(response?.error ?? "Unable to update local usage totals.");
+  }
+
+  return response;
 }

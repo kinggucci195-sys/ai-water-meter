@@ -27,13 +27,21 @@ span {
 }
 
 h1 {
-  margin: 4px 0 14px;
+  margin: 4px 0 8px;
   color: oklch(0.48 0.11 185);
   font-size: 30px;
 }
 
+p {
+  margin: 0 0 14px;
+  color: oklch(0.46 0.04 240);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 dl {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin: 0 0 14px;
 }

@@ -30,6 +30,7 @@
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^6.0.3",
     "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
@@ -53,7 +54,8 @@
     "clsx": "^2.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "three": "^0.185.1"
   },
   "jest-junit": {
     "outputDirectory": "coverage",

@@ -5,6 +5,12 @@ export type DailyUsageRecord = UsageEstimate & {
   updatedAt: string;
 };
 
+export type MonthlyUsageRecord = UsageEstimate & {
+  days: number;
+  month: string;
+  updatedAt?: string;
+};
+
 const DAILY_PREFIX = "daily:";
 
 export async function addToDailyUsage(
@@ -40,6 +46,48 @@ export async function getDailyUsage(date = todayKey()): Promise<DailyUsageRecord
   return result[key] as DailyUsageRecord | undefined;
 }
 
+export async function getMonthlyUsage(month = monthKey()): Promise<MonthlyUsageRecord> {
+  const allRecords = await chrome.storage.local.get(null);
+  const monthPrefix = `${DAILY_PREFIX}${month}-`;
+  const records = Object.entries(allRecords)
+    .filter(([key]) => key.startsWith(monthPrefix))
+    .map(([, value]) => value as DailyUsageRecord);
+
+  return records.reduce<MonthlyUsageRecord>(
+    (total, record) => ({
+      days: total.days + 1,
+      month,
+      updatedAt: mostRecentDate(total.updatedAt, record.updatedAt),
+      inputTokens: total.inputTokens + record.inputTokens,
+      outputTokens: total.outputTokens + record.outputTokens,
+      weightedTokens: total.weightedTokens + record.weightedTokens,
+      energyWh: total.energyWh + record.energyWh,
+      directWaterMl: total.directWaterMl + record.directWaterMl,
+      indirectGridWaterMl: total.indirectGridWaterMl + record.indirectGridWaterMl,
+      totalWaterMl: total.totalWaterMl + record.totalWaterMl,
+      carbonGrams: total.carbonGrams + record.carbonGrams,
+      lowTotalWaterMl: total.lowTotalWaterMl + record.lowTotalWaterMl,
+      highTotalWaterMl: total.highTotalWaterMl + record.highTotalWaterMl,
+      profileId: record.profileId
+    }),
+    {
+      days: 0,
+      month,
+      inputTokens: 0,
+      outputTokens: 0,
+      weightedTokens: 0,
+      energyWh: 0,
+      directWaterMl: 0,
+      indirectGridWaterMl: 0,
+      totalWaterMl: 0,
+      carbonGrams: 0,
+      lowTotalWaterMl: 0,
+      highTotalWaterMl: 0,
+      profileId: "mixed"
+    }
+  );
+}
+
 export async function resetDailyUsage(date = todayKey()): Promise<void> {
   await chrome.storage.local.remove(`${DAILY_PREFIX}${date}`);
 }
@@ -49,4 +97,22 @@ export function todayKey(date = new Date()): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function monthKey(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
+function mostRecentDate(left?: string, right?: string): string | undefined {
+  if (!left) {
+    return right;
+  }
+
+  if (!right) {
+    return left;
+  }
+
+  return left > right ? left : right;
 }
