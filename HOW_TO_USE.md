@@ -26,15 +26,25 @@ npm run build
 
 The sidebar appears on the page. Existing visible chat is treated as baseline. New prompts and streamed output update the session estimate, daily total, and monthly total.
 
-## Local Login And Leaderboard App
+## Hosted Login And Leaderboard App
 
-The extension now opens the local app by default:
+The extension opens the Vercel-hosted app by default:
 
 ```text
-http://127.0.0.1:5174
+https://web-app-woad-rho.vercel.app
 ```
 
-Start it with:
+For Google/GitHub login to complete, Supabase Auth must allow this redirect URL:
+
+```text
+https://web-app-woad-rho.vercel.app/auth/callback
+```
+
+The app was deployed with the Supabase project URL and publishable key, so the setup warning should not appear on Vercel. If OAuth providers are not enabled in Supabase yet, the buttons can still return a provider configuration error.
+
+## Local Login And Leaderboard Development
+
+Start the local app with:
 
 ```bash
 cd web-app
@@ -42,9 +52,9 @@ npm install
 npm run dev
 ```
 
-Then click `Sign in` or `Leaderboard` in the extension.
+To make the unpacked extension point back at local development, set `appBaseUrl` in extension sync storage to `http://127.0.0.1:5174`, or temporarily change `DEFAULT_APP_BASE_URL` in `src/background/service-worker.ts`.
 
-Without Supabase env vars, the app shows setup instructions and demo leaderboard rows. To enable Google/GitHub login, create `web-app/.env.local`:
+Without local Supabase env vars, the app shows setup instructions and demo leaderboard rows. To enable Google/GitHub login locally, create `web-app/.env.local`:
 
 ```bash
 VITE_SUPABASE_URL=https://ffgynwxpjkrkwvkrucoz.supabase.co
@@ -58,13 +68,29 @@ In Supabase Auth, enable Google and GitHub providers and add this redirect URL:
 http://127.0.0.1:5174/auth/callback
 ```
 
-Production later needs:
+The Vercel preview needs:
+
+```text
+https://web-app-woad-rho.vercel.app/auth/callback
+```
+
+Custom production domain later needs:
 
 ```text
 https://app.aiwatermeter.com/auth/callback
 ```
 
 ## VS Code Extension In Development
+
+Name: `AI Water Meter`
+
+Extension ID after Marketplace publish: `ai-water-meter.ai-water-meter-vscode`
+
+Local VSIX package:
+
+```text
+vscode-extension/ai-water-meter-vscode-0.1.0.vsix
+```
 
 ```bash
 cd vscode-extension

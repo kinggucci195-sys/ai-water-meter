@@ -1,7 +1,7 @@
 import { isStorageRequest, type StorageRequest, type StorageResponse } from "../storage-messages";
 import { addToDailyUsage, getDailyUsage, getMonthlyUsage, resetDailyUsage } from "../storage";
 
-const DEFAULT_APP_BASE_URL = "http://127.0.0.1:5174";
+const DEFAULT_APP_BASE_URL = "https://web-app-woad-rho.vercel.app";
 const APP_BASE_URL_KEY = "appBaseUrl";
 
 chrome.runtime.onInstalled.addListener(() => {

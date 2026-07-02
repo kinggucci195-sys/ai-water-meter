@@ -6,5 +6,8 @@ dist/
 release/
 artifacts/
 output/
+.vercel/
+**/.vercel/
+*.vsix
 *.log
 .DS_Store

@@ -12,7 +12,7 @@ It does not claim exact provider telemetry. Providers do not expose exact per-pr
 - Estimated location-based carbon.
 - Session, daily, and monthly totals.
 - A small Three.js water mascot scene in the sidebar.
-- Clickable sign-in and leaderboard entry points for the future hosted app.
+- Clickable sign-in and leaderboard entry points for the hosted app.
 - The active methodology and assumptions in the options page.
 
 ## Default Method
@@ -44,6 +44,10 @@ npm run smoke
 Load `dist/` as an unpacked extension in Chrome or Edge after `npm run build`.
 
 That unpacked flow is for development and reviewer testing. Public installs without developer mode require Chrome Web Store or Microsoft Edge Add-ons approval.
+
+Hosted app preview:
+
+https://web-app-woad-rho.vercel.app
 
 For local sign-in and leaderboard development:
 
