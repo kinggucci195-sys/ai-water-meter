@@ -22,15 +22,28 @@ export function AuthCallback() {
       return;
     }
 
-    void supabase.auth.getSession().then(({ data, error }) => {
-      setStatus(
-        error
-          ? error.message
-          : data.session
-            ? "Signed in. You can return to the app."
-            : "No session found."
-      );
-    });
+    const code = params.get("code");
+    if (code) {
+      void supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        setStatus(
+          error
+            ? `Sign-in error: ${error.message}`
+            : data.session
+              ? "Signed in. You can return to the app."
+              : "Code exchanged, but no session returned."
+        );
+      });
+    } else {
+      void supabase.auth.getSession().then(({ data, error }) => {
+        setStatus(
+          error
+            ? error.message
+            : data.session
+              ? "Signed in. You can return to the app."
+              : "No session found."
+        );
+      });
+    }
   }, []);
 
   return (
