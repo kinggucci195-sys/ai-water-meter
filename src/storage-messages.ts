@@ -10,7 +10,7 @@ export type StorageRequest =
       type: "usage:reset-today";
     }
   | {
-      path: "/auth/extension/start" | "/leaderboard";
+      path: "/auth/extension/start" | "/leaderboard" | "/account";
       type: "app:open";
     };
 

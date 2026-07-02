@@ -44,10 +44,6 @@ export function PopupApp() {
     return () => chrome.storage.onChanged.removeListener(handleStorageChange);
   }, []);
 
-  const handleSignOut = async () => {
-    await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
-  };
-
   const daily = usage?.daily;
   const phoneChargeSecs = daily ? Math.round(daily.energyWh * 360) : 0;
   const boilMl = daily ? (daily.energyWh * 10.75).toFixed(1) : "0.0";
@@ -135,42 +131,20 @@ export function PopupApp() {
 
       <div className="actions">
         {userEmail ? (
-          <div
-            className="user-account-info"
-            style={{
-              gridColumn: "span 2",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-              width: "100%"
-            }}
-          >
-            <span
-              className="account-label"
-              style={{
-                fontSize: "11px",
-                color: "oklch(0.48 0.05 238)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap"
-              }}
+          <>
+            <button
+              type="button"
+              onClick={() => sendPopupRequest({ path: "/account", type: "app:open" })}
             >
-              Signed in as <strong>{userEmail}</strong>
-            </span>
-            <div
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", width: "100%" }}
+              Account
+            </button>
+            <button
+              type="button"
+              onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
             >
-              <button type="button" onClick={handleSignOut}>
-                Sign out
-              </button>
-              <button
-                type="button"
-                onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
-              >
-                Leaderboard
-              </button>
-            </div>
-          </div>
+              Leaderboard
+            </button>
+          </>
         ) : (
           <>
             <button

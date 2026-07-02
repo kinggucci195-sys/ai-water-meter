@@ -648,8 +648,14 @@ function AccountDashboard({ email }: { email?: string }) {
   }, [usageData]);
 
   const heatmapCells = useMemo(() => {
-    const cells = [];
+    const cells: {
+      date: string;
+      water: number;
+      record?: (typeof usageData)[0];
+      isToday: boolean;
+    }[] = [];
     const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
     for (let i = 167; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
@@ -658,11 +664,32 @@ function AccountDashboard({ email }: { email?: string }) {
       cells.push({
         date: dateStr,
         water: record ? record.water_ml_mid : 0,
-        record
+        record,
+        isToday: dateStr === todayStr
       });
     }
     return cells;
   }, [usageData]);
+
+  const heatmapMonths = useMemo(() => {
+    const months: { label: string; column: number }[] = [];
+    const today = new Date();
+    let lastMonth = -1;
+    for (let i = 167; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const month = date.getMonth();
+      if (month !== lastMonth) {
+        const colIndex = Math.floor((167 - i) / 7);
+        months.push({
+          label: date.toLocaleDateString("en", { month: "short" }),
+          column: colIndex
+        });
+        lastMonth = month;
+      }
+    }
+    return months;
+  }, []);
 
   const weeklyReports = useMemo(() => {
     const groups: {
@@ -845,12 +872,16 @@ function AccountDashboard({ email }: { email?: string }) {
         </div>
         <div className="stats-card">
           <span className="stats-label">Current Streak</span>
-          <strong className="stats-value">{stats.currentStreak} days</strong>
+          <strong className="stats-value">
+            {stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}
+          </strong>
           <span className="stats-subtext">Consecutive active days</span>
         </div>
         <div className="stats-card">
           <span className="stats-label">Longest Streak</span>
-          <strong className="stats-value">{stats.longestStreak} days</strong>
+          <strong className="stats-value">
+            {stats.longestStreak} {stats.longestStreak === 1 ? "day" : "days"}
+          </strong>
           <span className="stats-subtext">All-time record</span>
         </div>
       </div>
@@ -876,70 +907,157 @@ function AccountDashboard({ email }: { email?: string }) {
           <div
             style={{
               display: "flex",
-              gap: "4px",
+              gap: "5px",
+              alignItems: "center",
               fontSize: "0.6875rem",
               color: "rgba(255,255,255,0.4)"
             }}
           >
             <span>Less</span>
             <div
-              style={{ width: "10px", height: "10px", background: "#1a1a24", borderRadius: "2px" }}
+              style={{ width: "14px", height: "14px", background: "#161B22", borderRadius: "3px" }}
             ></div>
             <div
-              style={{ width: "10px", height: "10px", background: "#0e3054", borderRadius: "2px" }}
+              style={{ width: "14px", height: "14px", background: "#0E4377", borderRadius: "3px" }}
             ></div>
             <div
-              style={{ width: "10px", height: "10px", background: "#1c5d9b", borderRadius: "2px" }}
+              style={{ width: "14px", height: "14px", background: "#1A6FC4", borderRadius: "3px" }}
             ></div>
             <div
-              style={{ width: "10px", height: "10px", background: "#4ea1f1", borderRadius: "2px" }}
+              style={{ width: "14px", height: "14px", background: "#2D8CFF", borderRadius: "3px" }}
             ></div>
             <div
-              style={{ width: "10px", height: "10px", background: "#8cdbfd", borderRadius: "2px" }}
+              style={{ width: "14px", height: "14px", background: "#79C0FF", borderRadius: "3px" }}
             ></div>
             <span>More</span>
           </div>
         </div>
 
-        <div style={{ overflowX: "auto", paddingBottom: "8px" }}>
+        <div
+          style={{
+            overflowX: "auto",
+            paddingBottom: "8px",
+            WebkitOverflowScrolling: "touch"
+          }}
+        >
           <div
             style={{
-              display: "grid",
-              gridTemplateRows: "repeat(7, 10px)",
-              gridAutoFlow: "column",
-              gridAutoColumns: "10px",
-              gap: "3px",
-              justifyContent: "start",
-              width: "max-content"
+              display: "inline-grid",
+              gridTemplateAreas: '"days squares" "empty months"',
+              gap: "4px"
             }}
           >
-            {heatmapCells.map((cell, idx) => {
-              let color = "#1a1a24";
-              if (cell.water > 0 && cell.water <= 100) color = "#0e3054";
-              else if (cell.water > 100 && cell.water <= 300) color = "#1c5d9b";
-              else if (cell.water > 300 && cell.water <= 600) color = "#4ea1f1";
-              else if (cell.water > 600) color = "#8cdbfd";
+            {/* Day-of-week labels */}
+            <div
+              style={{
+                gridArea: "days",
+                display: "grid",
+                gridTemplateRows: "repeat(7, 14px)",
+                gap: "3px",
+                alignItems: "center",
+                paddingRight: "4px"
+              }}
+            >
+              <span
+                style={{ gridRow: 1, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
+              ></span>
+              <span style={{ gridRow: 2, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
+                Mon
+              </span>
+              <span
+                style={{ gridRow: 3, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
+              ></span>
+              <span style={{ gridRow: 4, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
+                Wed
+              </span>
+              <span
+                style={{ gridRow: 5, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
+              ></span>
+              <span style={{ gridRow: 6, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
+                Fri
+              </span>
+              <span
+                style={{ gridRow: 7, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
+              ></span>
+            </div>
 
-              return (
-                <div
-                  key={idx}
-                  title={`${cell.date}: ${formatMilliliters(cell.water)}`}
+            {/* Main heatmap grid */}
+            <div
+              style={{
+                gridArea: "squares",
+                display: "grid",
+                gridTemplateRows: "repeat(7, 14px)",
+                gridAutoFlow: "column",
+                gridAutoColumns: "14px",
+                gap: "3px",
+                justifyContent: "start",
+                width: "max-content"
+              }}
+            >
+              {heatmapCells.map((cell, idx) => {
+                let color = "#161B22";
+                if (cell.water > 0 && cell.water <= 50) color = "#0E4377";
+                else if (cell.water > 50 && cell.water <= 200) color = "#1A6FC4";
+                else if (cell.water > 200 && cell.water <= 500) color = "#2D8CFF";
+                else if (cell.water > 500) color = "#79C0FF";
+
+                return (
+                  <div
+                    key={idx}
+                    title={`${cell.date}: ${formatMilliliters(cell.water)}`}
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      borderRadius: "3px",
+                      background: color,
+                      position: "relative" as const,
+                      zIndex: cell.isToday ? 1 : 0,
+                      boxShadow: cell.isToday
+                        ? "0 0 0 2px rgba(255,255,255,0.7), 0 0 8px rgba(45,140,255,0.5)"
+                        : "none",
+                      transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                      cursor: "pointer"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.3)";
+                      e.currentTarget.style.zIndex = "2";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                      e.currentTarget.style.zIndex = cell.isToday ? "1" : "0";
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Empty corner cell */}
+            <div style={{ gridArea: "empty" }}></div>
+
+            {/* Month labels row */}
+            <div
+              style={{
+                gridArea: "months",
+                position: "relative",
+                height: "18px",
+                width: `${Math.ceil(168 / 7) * 17}px`
+              }}
+            >
+              {heatmapMonths.map((m, i) => (
+                <span
+                  key={i}
                   style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "2px",
-                    background: color,
-                    transition: "transform 0.1s ease"
+                    position: "absolute",
+                    left: `${m.column * 17}px`,
+                    fontSize: "0.625rem",
+                    color: "rgba(255,255,255,0.4)",
+                    whiteSpace: "nowrap"
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "scale(1.2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)";
-                  }}
-                />
-              );
-            })}
+                >
+                  {m.label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>

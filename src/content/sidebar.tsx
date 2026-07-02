@@ -44,7 +44,6 @@ function SidebarApp({
   daily,
   onLeaderboard,
   onSignIn,
-  onSignOut,
   reaction,
   snapshot,
   status,
@@ -185,43 +184,19 @@ function SidebarApp({
             )}
             <div className="actions">
               {userEmail ? (
-                <div
-                  className="user-account-info"
-                  style={{
-                    gridColumn: "span 2",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.375rem"
-                  }}
-                >
-                  <span
-                    className="account-label"
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "oklch(0.48 0.05 238)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open("https://web-app-woad-rho.vercel.app/account", "_blank")
+                    }
                   >
-                    Signed in as <strong>{userEmail}</strong>
-                  </span>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "0.5rem",
-                      width: "100%"
-                    }}
-                  >
-                    <button type="button" onClick={onSignOut}>
-                      Sign out
-                    </button>
-                    <button type="button" onClick={onLeaderboard}>
-                      Leaderboard
-                    </button>
-                  </div>
-                </div>
+                    Account
+                  </button>
+                  <button type="button" onClick={onLeaderboard}>
+                    Leaderboard
+                  </button>
+                </>
               ) : (
                 <>
                   <button type="button" onClick={onSignIn}>
@@ -347,11 +322,11 @@ const styles = `
   .meter {
     width: 260px;
     overflow: hidden;
-    border: 1px solid oklch(0.34 0.03 248 / 0.2);
+    border: 1px solid oklch(0.88 0.03 235 / 0.18);
     border-radius: 0.5rem;
-    background: oklch(0.99 0.01 230 / 0.96);
-    color: oklch(0.22 0.04 248);
-    box-shadow: 0 14px 45px oklch(0.18 0.04 248 / 0.18);
+    background: oklch(0.22 0.03 248 / 0.96);
+    color: oklch(0.96 0.01 230);
+    box-shadow: 0 14px 45px oklch(0.08 0.04 248 / 0.35);
     backdrop-filter: blur(12px);
     font-family: Urbanist, Inter, ui-sans-serif, system-ui, sans-serif;
   }
@@ -361,12 +336,12 @@ const styles = `
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.75rem 0.75rem 0.625rem;
-    border-bottom: 1px solid oklch(0.34 0.03 248 / 0.12);
+    border-bottom: 1px solid oklch(0.88 0.03 235 / 0.14);
   }
   .eyebrow {
     display: block;
     margin-bottom: 0.125rem;
-    color: oklch(0.48 0.05 238);
+    color: oklch(0.78 0.03 235);
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0;
@@ -374,9 +349,9 @@ const styles = `
   }
   strong { font-size: 0.9375rem; line-height: 1.2; }
   .icon, .reset {
-    border: 1px solid oklch(0.34 0.03 248 / 0.2);
-    background: oklch(1 0 0);
-    color: oklch(0.22 0.04 248);
+    border: 1px solid oklch(0.88 0.03 235 / 0.2);
+    background: oklch(0.28 0.03 248);
+    color: oklch(0.96 0.01 230);
     cursor: pointer;
     font: inherit;
   }
@@ -395,9 +370,7 @@ const styles = `
     gap: 0.75rem;
     padding: 0.75rem;
     border-radius: 0.5rem;
-    background:
-      radial-gradient(circle at 18% 30%, oklch(1 0 0 / 0.9), transparent 18%),
-      linear-gradient(135deg, oklch(0.94 0.04 190), oklch(0.88 0.07 205));
+    background: oklch(0.34 0.06 190);
   }
   @keyframes mascot-wobble {
     0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -419,13 +392,13 @@ const styles = `
   }
   .primary span, .primary small {
     display: block;
-    color: oklch(0.48 0.05 238);
+    color: oklch(0.78 0.03 235);
     font-size: 0.75rem;
   }
   .primary strong {
     display: block;
     margin: 0.1875rem 0;
-    color: oklch(0.48 0.11 185);
+    color: oklch(0.82 0.11 185);
     font-size: 1.625rem;
   }
   dl {
@@ -437,11 +410,11 @@ const styles = `
   dl div {
     min-width: 0;
     padding: 0.5625rem;
-    border: 1px solid oklch(0.34 0.03 248 / 0.12);
+    border: 1px solid oklch(0.88 0.03 235 / 0.14);
     border-radius: 0.5rem;
   }
   dt {
-    color: oklch(0.55 0.03 240);
+    color: oklch(0.78 0.03 235);
     font-size: 0.6875rem;
   }
   dd {
@@ -452,7 +425,7 @@ const styles = `
   }
   p {
     margin: 0 0 0.625rem;
-    color: oklch(0.49 0.04 240);
+    color: oklch(0.78 0.03 235);
     font-size: 0.75rem;
     line-height: 1.35;
   }
@@ -460,18 +433,18 @@ const styles = `
     margin: 0.5rem 0 0;
     padding: 0.5rem 0.625rem;
     border-radius: 0.5rem;
-    background: oklch(0.96 0.03 195);
-    color: oklch(0.34 0.07 205);
+    background: oklch(0.28 0.04 205);
+    color: oklch(0.85 0.06 195);
     font-weight: 700;
   }
   .reaction-long_or_heavy,
   .reaction-uncertain {
-    background: oklch(0.95 0.06 85);
-    color: oklch(0.42 0.08 72);
+    background: oklch(0.31 0.05 76);
+    color: oklch(0.86 0.08 86);
   }
   .reaction-error {
-    background: oklch(0.95 0.05 25);
-    color: oklch(0.44 0.11 25);
+    background: oklch(0.3 0.05 25);
+    color: oklch(0.86 0.08 25);
   }
   .quick-stats {
     margin-bottom: 0.5rem;
@@ -485,7 +458,7 @@ const styles = `
     border: 0;
     border-radius: 0.4375rem;
     background: transparent;
-    color: oklch(0.43 0.09 205);
+    color: oklch(0.78 0.08 195);
     cursor: pointer;
     font: inherit;
     font-size: 0.75rem;
@@ -499,49 +472,29 @@ const styles = `
   }
   .actions button {
     min-height: 2rem;
-    border: 1px solid oklch(0.34 0.03 248 / 0.16);
+    border: 1px solid oklch(0.88 0.03 235 / 0.2);
     border-radius: 0.4375rem;
-    background: oklch(1 0 0);
-    color: oklch(0.26 0.04 245);
+    background: oklch(0.28 0.03 248);
+    color: oklch(0.96 0.01 230);
     cursor: pointer;
     font: inherit;
     font-size: 0.75rem;
     font-weight: 800;
   }
+  .actions button:hover {
+    background: oklch(0.35 0.04 248);
+  }
   .disclosure {
     margin: 0.5rem 0 0;
     padding: 0.5rem 0.625rem;
-    border: 1px solid oklch(0.34 0.03 248 / 0.12);
+    border: 1px solid oklch(0.88 0.03 235 / 0.14);
     border-radius: 0.5rem;
-    background: oklch(0.98 0.01 230 / 0.78);
+    background: oklch(0.26 0.03 248 / 0.78);
   }
   .reset {
     width: 100%;
     min-height: 2.125rem;
     border-radius: 0.4375rem;
     font-weight: 700;
-  }
-  @media (prefers-color-scheme: dark) {
-    .meter {
-      border-color: oklch(0.88 0.03 235 / 0.18);
-      background: oklch(0.22 0.03 248 / 0.96);
-      color: oklch(0.96 0.01 230);
-    }
-    header { border-color: oklch(0.88 0.03 235 / 0.14); }
-    .eyebrow, .primary span, .primary small, dt, p { color: oklch(0.78 0.03 235); }
-    .primary { background: oklch(0.34 0.06 190); }
-    .primary strong { color: oklch(0.82 0.11 185); }
-    .reaction { background: oklch(0.28 0.04 205); color: oklch(0.85 0.06 195); }
-    .reaction-long_or_heavy,
-    .reaction-uncertain { background: oklch(0.31 0.05 76); color: oklch(0.86 0.08 86); }
-    .reaction-error { background: oklch(0.3 0.05 25); color: oklch(0.86 0.08 25); }
-    .disclosure { background: oklch(0.26 0.03 248 / 0.78); }
-    dl div { border-color: oklch(0.88 0.03 235 / 0.14); }
-    .icon, .reset, .actions button {
-      border-color: oklch(0.88 0.03 235 / 0.2);
-      background: oklch(0.28 0.03 248);
-      color: oklch(0.96 0.01 230);
-    }
-    .link-button { color: oklch(0.78 0.08 195); }
   }
 `;
