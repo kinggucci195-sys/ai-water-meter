@@ -44,6 +44,28 @@ if (isWebApp) {
       }
     }, 500);
   }
+
+  // 1. Web App -> Extension Sign-Out Sync
+  const syncSignOutFromWebApp = () => {
+    const token = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+    const mockEmail = localStorage.getItem("sb-mock-email");
+    chrome.storage.local.get("userEmail", (data) => {
+      const localEmail = (data as { userEmail?: string }).userEmail;
+      if (!token && !mockEmail && localEmail) {
+        void chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
+      }
+    });
+  };
+  setInterval(syncSignOutFromWebApp, 1000);
+
+  // 2. Extension -> Web App Sign-Out Sync
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local" && changes.userEmail && !changes.userEmail.newValue) {
+      localStorage.removeItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+      localStorage.removeItem("sb-mock-email");
+      window.location.reload();
+    }
+  });
 } else {
   const profile = detectProfile(window.location);
   const sidebar = mountSidebar(
