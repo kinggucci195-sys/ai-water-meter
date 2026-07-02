@@ -20,6 +20,7 @@ type PopupUsage = {
 export function PopupApp() {
   const [usage, setUsage] = useState<PopupUsage | undefined>();
   const [userEmail, setUserEmail] = useState<string | undefined>();
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   useEffect(() => {
     void Promise.all([getDailyUsage(), getMonthlyUsage()]).then(([daily, monthly]) => {
@@ -47,14 +48,18 @@ export function PopupApp() {
     await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
   };
 
+  const daily = usage?.daily;
+  const phoneChargeSecs = daily ? Math.round(daily.energyWh * 360) : 0;
+  const boilMl = daily ? (daily.energyWh * 10.75).toFixed(1) : "0.0";
+
   return (
     <main>
       <header className="popup-hero">
         <div>
           <span>AI Water Meter</span>
-          <h1>{usage?.daily ? formatMilliliters(usage.daily.totalWaterMl) : "0 mL"}</h1>
+          <h1>{daily ? formatMilliliters(daily.totalWaterMl) : "0 mL"}</h1>
         </div>
-        <DropletScene state={usage?.daily ? "updated" : "streaming_output"} />
+        <DropletScene state={daily ? "updated" : "streaming_output"} />
       </header>
       <p>Today, estimated locally from visible chat text. Not provider telemetry.</p>
       <dl className="summary">
@@ -64,17 +69,70 @@ export function PopupApp() {
         </div>
         <div>
           <dt>Energy today</dt>
-          <dd>{usage?.daily ? formatWh(usage.daily.energyWh) : "0 Wh"}</dd>
+          <dd>{daily ? formatWh(daily.energyWh) : "0 Wh"}</dd>
         </div>
         <div>
           <dt>Carbon today</dt>
-          <dd>{usage?.daily ? formatCarbon(usage.daily.carbonGrams) : "0 g CO2e"}</dd>
+          <dd>{daily ? formatCarbon(daily.carbonGrams) : "0 g CO2e"}</dd>
         </div>
         <div>
           <dt>Active days</dt>
           <dd>{usage ? usage.monthly.days : 0}</dd>
         </div>
       </dl>
+
+      <button
+        type="button"
+        className="secondary"
+        onClick={() => setShowBreakdown((v) => !v)}
+        style={{ marginBottom: "8px" }}
+      >
+        {showBreakdown ? "Hide breakdown" : "Show breakdown"}
+      </button>
+
+      {showBreakdown && daily && (
+        <div style={{ marginBottom: "10px" }}>
+          <dl className="summary">
+            <div>
+              <dt>Prompt tokens</dt>
+              <dd>{daily.inputTokens.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt>Response tokens</dt>
+              <dd>{daily.outputTokens.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt>Compute</dt>
+              <dd>{daily.weightedTokens.toLocaleString()} WT</dd>
+            </div>
+            <div>
+              <dt>Cooling water</dt>
+              <dd>{formatMilliliters(daily.directWaterMl + daily.indirectGridWaterMl)}</dd>
+            </div>
+          </dl>
+          {daily.energyWh > 0 && (
+            <div
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                background: "oklch(0.94 0.04 190)",
+                fontSize: "11px",
+                lineHeight: "1.45",
+                color: "oklch(0.34 0.06 238)"
+              }}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "3px" }}>Equivalents:</div>
+              <div>
+                ⚡ Charging phone: <strong>{phoneChargeSecs} seconds</strong>
+              </div>
+              <div>
+                🔥 Boiling water: <strong>{boilMl} mL</strong>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="actions">
         {userEmail ? (
           <div
@@ -130,9 +188,6 @@ export function PopupApp() {
           </>
         )}
       </div>
-      <button type="button" className="secondary" onClick={() => chrome.runtime.openOptionsPage()}>
-        Methodology
-      </button>
     </main>
   );
 }

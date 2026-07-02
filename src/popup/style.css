@@ -54,30 +54,31 @@ dl {
   margin: 0 0 14px;
 }
 
+@keyframes mascot-wobble {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+}
+
 .droplet-scene {
   width: 76px;
   height: 76px;
   padding: 0;
-  border: 1px solid oklch(0.83 0.06 200);
-  border-radius: 8px;
-  background: oklch(0.88 0.06 195);
+  border: 2px solid oklch(0.83 0.06 200);
+  border-radius: 50%;
+  background: linear-gradient(135deg, oklch(0.96 0.03 195), oklch(0.88 0.07 205));
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.droplet-scene canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.droplet-scene[data-fallback="true"]::before {
-  display: grid;
-  height: 100%;
-  place-items: center;
-  color: oklch(0.48 0.11 185);
-  content: "0 mL";
-  font-size: 12px;
-  font-weight: 900;
+.droplet-scene img {
+  animation: mascot-wobble 3s ease-in-out infinite;
 }
 
 dl div {

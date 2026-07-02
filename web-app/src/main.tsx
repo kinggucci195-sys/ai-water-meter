@@ -31,6 +31,7 @@ function App() {
   const [email, setEmail] = useState<string | undefined>(() => {
     return localStorage.getItem("sb-mock-email") || undefined;
   });
+  const [period, setPeriod] = useState<"weekly" | "monthly" | "all_time">("weekly");
   const isAuthPage = path.startsWith("/auth");
   const title = isAuthPage ? "Connect AI Water Meter" : "Global Water Awareness";
 
@@ -52,16 +53,18 @@ function App() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leaderboard_entries" },
-        () => void loadLeaderboard(setEntries)
+        () => void loadLeaderboard(period, setEntries)
       )
       .subscribe();
-
-    void loadLeaderboard(setEntries);
 
     return () => {
       void client.removeChannel(channel);
     };
-  }, []);
+  }, [period]);
+
+  useEffect(() => {
+    void loadLeaderboard(period, setEntries);
+  }, [period]);
 
   const routeView = useMemo(() => {
     if (path === "/auth/callback") {
@@ -72,8 +75,8 @@ function App() {
       return <AuthStart authProviders={authProviders} email={email} />;
     }
 
-    return <Leaderboard entries={entries} email={email} />;
-  }, [authProviders, email, entries, path]);
+    return <Leaderboard entries={entries} email={email} period={period} setPeriod={setPeriod} />;
+  }, [authProviders, email, entries, path, period]);
 
   return (
     <main>
@@ -239,10 +242,20 @@ function AuthCallback() {
   );
 }
 
-function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardEntry[] }) {
+function Leaderboard({
+  email,
+  entries,
+  period,
+  setPeriod
+}: {
+  email?: string;
+  entries: LeaderboardEntry[];
+  period: "weekly" | "monthly" | "all_time";
+  setPeriod: (period: "weekly" | "monthly" | "all_time") => void;
+}) {
   return (
     <section className="panel">
-      <div className="section-heading">
+      <div className="section-heading" style={{ marginBottom: "12px" }}>
         <div>
           <h2>Leaderboard</h2>
           <p>Ranked by awareness/reduction score, not who used the most water.</p>
@@ -251,6 +264,43 @@ function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardE
           {email ? "Account" : "Sign in"}
         </a>
       </div>
+
+      <div
+        className="leaderboard-tabs"
+        style={{
+          display: "flex",
+          gap: "6px",
+          marginBottom: "16px",
+          borderBottom: "1px solid oklch(0.34 0.03 248 / 0.12)",
+          paddingBottom: "8px"
+        }}
+      >
+        {(["weekly", "monthly", "all_time"] as const).map((p) => {
+          const isActive = period === p;
+          const label = p === "all_time" ? "All Time" : p.charAt(0).toUpperCase() + p.slice(1);
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPeriod(p)}
+              style={{
+                background: isActive ? "oklch(0.55 0.11 185)" : "transparent",
+                border: "none",
+                borderRadius: "0.25rem",
+                color: isActive ? "#ffffff" : "oklch(0.34 0.03 248 / 0.8)",
+                cursor: "pointer",
+                fontSize: "0.8125rem",
+                fontWeight: "bold",
+                padding: "6px 12px",
+                transition: "all 0.15s ease"
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="leaderboard">
         {entries.length > 0 ? (
           entries.map((entry) => (
@@ -267,7 +317,8 @@ function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardE
           ))
         ) : (
           <p style={{ textAlign: "center", color: "oklch(0.55 0.03 240)", padding: "20px 0" }}>
-            No rankings submitted yet. Enable leaderboard opt-in to appear here!
+            No {period === "all_time" ? "all-time" : period} rankings submitted yet. Enable
+            leaderboard opt-in to appear here!
           </p>
         )}
       </div>
@@ -330,7 +381,10 @@ async function loadAuthProviders(): Promise<AuthProviderAvailability> {
   }
 }
 
-async function loadLeaderboard(setEntries: (entries: LeaderboardEntry[]) => void) {
+async function loadLeaderboard(
+  period: "weekly" | "monthly" | "all_time",
+  setEntries: (entries: LeaderboardEntry[]) => void
+) {
   if (!supabase) {
     return;
   }
@@ -338,12 +392,11 @@ async function loadLeaderboard(setEntries: (entries: LeaderboardEntry[]) => void
   const { data } = await supabase
     .from("leaderboard_entries")
     .select("rank,badge,confidence,display_name,score,water_saved_ml_estimate")
+    .eq("period", period)
     .order("rank", { ascending: true })
     .limit(25);
 
-  if (data?.length) {
-    setEntries(data as LeaderboardEntry[]);
-  }
+  setEntries((data ?? []) as LeaderboardEntry[]);
 }
 
 createRoot(document.getElementById("root")!).render(

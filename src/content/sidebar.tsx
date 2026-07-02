@@ -42,9 +42,7 @@ type SidebarProps = {
  */
 function SidebarApp({
   daily,
-  monthly,
   onLeaderboard,
-  onReset,
   onSignIn,
   onSignOut,
   reaction,
@@ -110,32 +108,80 @@ function SidebarApp({
               {detailsOpen ? "Hide details" : "Show details"}
             </button>
             {detailsOpen && (
-              <dl className="detail-stats">
-                <div>
-                  <dt>Direct water</dt>
-                  <dd>{total ? formatMilliliters(total.directWaterMl) : "-"}</dd>
-                </div>
-                <div>
-                  <dt>Grid water</dt>
-                  <dd>{total ? formatMilliliters(total.indirectGridWaterMl) : "-"}</dd>
-                </div>
-                <div>
-                  <dt>CO2e</dt>
-                  <dd>{total ? formatCarbon(total.carbonGrams) : "-"}</dd>
-                </div>
-                <div>
-                  <dt>Turns</dt>
-                  <dd>{snapshot?.turnCount ?? "-"}</dd>
-                </div>
-                <div>
-                  <dt>Today</dt>
-                  <dd>{daily ? formatMilliliters(daily.totalWaterMl) : "-"}</dd>
-                </div>
-                <div>
-                  <dt>This month</dt>
-                  <dd>{monthly ? formatMilliliters(monthly.totalWaterMl) : "-"}</dd>
-                </div>
-              </dl>
+              <>
+                <h4
+                  style={{
+                    fontSize: "0.75rem",
+                    margin: "8px 0 4px",
+                    color: "oklch(0.48 0.05 238)",
+                    fontWeight: "bold"
+                  }}
+                >
+                  Breakdown
+                </h4>
+                <dl className="detail-stats">
+                  <div>
+                    <dt>Prompt tokens</dt>
+                    <dd>{total ? total.inputTokens.toLocaleString() : "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Response tokens</dt>
+                    <dd>{total ? total.outputTokens.toLocaleString() : "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Compute</dt>
+                    <dd>{total ? `${total.weightedTokens.toLocaleString()} WT` : "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Electricity</dt>
+                    <dd>{total ? formatWh(total.energyWh) : "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Cooling water</dt>
+                    <dd>
+                      {total
+                        ? formatMilliliters(total.directWaterMl + total.indirectGridWaterMl)
+                        : "-"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>CO2e</dt>
+                    <dd>{total ? formatCarbon(total.carbonGrams) : "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Turns</dt>
+                    <dd>{snapshot?.turnCount ?? "-"}</dd>
+                  </div>
+                  <div>
+                    <dt>Today total</dt>
+                    <dd>{daily ? formatMilliliters(daily.totalWaterMl) : "-"}</dd>
+                  </div>
+                </dl>
+                {total && total.energyWh > 0 && (
+                  <div
+                    className="comparisons"
+                    style={{
+                      marginTop: "8px",
+                      padding: "8px",
+                      borderRadius: "0.375rem",
+                      background: "oklch(0.96 0.03 195 / 0.4)",
+                      border: "1px solid oklch(0.34 0.03 248 / 0.08)",
+                      fontSize: "0.75rem",
+                      color: "oklch(0.34 0.07 205)",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    <div style={{ fontWeight: "bold", marginBottom: "4px" }}>Equivalents:</div>
+                    <div>
+                      ⚡ Charging phone: <strong>{Math.round(total.energyWh * 360)} seconds</strong>
+                      .
+                    </div>
+                    <div style={{ marginTop: "2px" }}>
+                      🔥 Boiling water: <strong>{(total.energyWh * 10.75).toFixed(1)} mL</strong>.
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div className="actions">
               {userEmail ? (
@@ -191,9 +237,6 @@ function SidebarApp({
             <p className="disclosure">
               Visible text only. Processed locally. Not provider telemetry.
             </p>
-            <button type="button" className="reset" onClick={onReset}>
-              Reset today
-            </button>
           </div>
         )}
       </section>
@@ -356,29 +399,23 @@ const styles = `
       radial-gradient(circle at 18% 30%, oklch(1 0 0 / 0.9), transparent 18%),
       linear-gradient(135deg, oklch(0.94 0.04 190), oklch(0.88 0.07 205));
   }
+  @keyframes mascot-wobble {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-4px) rotate(2deg); }
+  }
   .droplet-scene {
     width: 4.5rem;
     height: 4.5rem;
     border-radius: 50%;
-    background:
-      radial-gradient(circle at 35% 30%, oklch(1 0 0 / 0.82), transparent 24%),
-      linear-gradient(145deg, oklch(0.87 0.05 205), oklch(0.74 0.09 185));
+    background: linear-gradient(135deg, oklch(0.96 0.03 195), oklch(0.88 0.07 205));
+    border: 2px solid oklch(1 0 0 / 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
   }
-  .droplet-scene[data-fallback="true"]::before {
-    content: "";
-    display: block;
-    width: 2rem;
-    height: 2.75rem;
-    margin: 0.875rem auto;
-    border-radius: 50% 50% 55% 55%;
-    background: oklch(0.95 0.05 195 / 0.95);
-    transform: rotate(10deg);
-  }
-  .droplet-scene canvas {
-    width: 4.5rem;
-    height: 4.5rem;
-    display: block;
+  .droplet-scene img {
+    animation: mascot-wobble 3s ease-in-out infinite;
   }
   .primary span, .primary small {
     display: block;
