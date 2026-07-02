@@ -512,6 +512,7 @@ function Leaderboard({
 function AccountDashboard({ email }: { email?: string }) {
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [isMockMode, setIsMockMode] = useState(false);
   const [usageData, setUsageData] = useState<DailyUsageData[]>([]);
   const [optedIn, setOptedIn] = useState(false);
   const [optedInName, setOptedInName] = useState("");
@@ -523,6 +524,7 @@ function AccountDashboard({ email }: { email?: string }) {
       if (!supabase) {
         setUsageData(generateDemoUsage());
         setIsDemo(true);
+        setIsMockMode(true);
         setLoading(false);
         return;
       }
@@ -538,6 +540,7 @@ function AccountDashboard({ email }: { email?: string }) {
         if (!userId) {
           setUsageData(generateDemoUsage());
           setIsDemo(true);
+          setIsMockMode(true);
           setLoading(false);
           return;
         }
@@ -569,6 +572,7 @@ function AccountDashboard({ email }: { email?: string }) {
           if (!error && data) {
             setUsageData(data as DailyUsageData[]);
             setIsDemo(false);
+            setIsMockMode(false);
           }
         };
 
@@ -583,9 +587,11 @@ function AccountDashboard({ email }: { email?: string }) {
         if (error || !data || data.length === 0) {
           setUsageData(generateDemoUsage());
           setIsDemo(true);
+          setIsMockMode(false);
         } else {
           setUsageData(data as DailyUsageData[]);
           setIsDemo(false);
+          setIsMockMode(false);
         }
 
         // Subscribe to realtime database inserts/updates for the user's usage logs
@@ -622,7 +628,7 @@ function AccountDashboard({ email }: { email?: string }) {
   }, [email]);
 
   const handleToggleOptIn = async (newVal: boolean) => {
-    if (!supabase || isDemo) return;
+    if (!supabase || isMockMode) return;
     try {
       const {
         data: { session }
@@ -650,7 +656,7 @@ function AccountDashboard({ email }: { email?: string }) {
   };
 
   const handleSaveLeaderboardName = async () => {
-    if (!supabase || isDemo) return;
+    if (!supabase || isMockMode) return;
     const nameToSave = optedInName.trim();
     if (!nameToSave) {
       alert("Please enter a valid display name.");
@@ -1216,7 +1222,7 @@ function AccountDashboard({ email }: { email?: string }) {
               type="text"
               value={optedInName}
               onChange={(e) => setOptedInName(e.target.value)}
-              disabled={isDemo}
+              disabled={isMockMode}
               style={{
                 background: "rgba(255, 255, 255, 0.05)",
                 border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -1230,7 +1236,7 @@ function AccountDashboard({ email }: { email?: string }) {
             <button
               type="button"
               onClick={handleSaveLeaderboardName}
-              disabled={isDemo}
+              disabled={isMockMode}
               style={{
                 background: "rgba(255, 255, 255, 0.1)",
                 border: "1px solid rgba(255, 255, 255, 0.15)",
@@ -1251,7 +1257,7 @@ function AccountDashboard({ email }: { email?: string }) {
               type="checkbox"
               checked={optedIn}
               onChange={(e) => handleToggleOptIn(e.target.checked)}
-              disabled={isDemo}
+              disabled={isMockMode}
               style={{ width: "16px", height: "16px", cursor: "pointer" }}
             />
             <label
