@@ -1,7 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function WaterMascot2D() {
   const [mascotIndex, setMascotIndex] = useState<number>(1);
+  const [isWiggling, setIsWiggling] = useState<boolean>(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsWiggling(true);
+      setMascotIndex((prev) => (prev % 6) + 1);
+      
+      const timer = setTimeout(() => {
+        setIsWiggling(false);
+      }, 500); // matches the 0.5s CSS wiggle duration
+      
+      return () => clearTimeout(timer);
+    }, 5000); // changes expression every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const triggerManualWiggle = () => {
+    setIsWiggling(true);
+    setTimeout(() => setIsWiggling(false), 500);
+  };
 
   return (
     <div className="mascot-stage-2d" aria-label="Animated AI Water Meter droplet mascot">
@@ -14,25 +35,9 @@ export function WaterMascot2D() {
         <img
           src={`/mascots/mascot_${mascotIndex}.png`}
           alt={`AI Water Meter mascot version ${mascotIndex}`}
-          className="mascot-character"
+          className={`mascot-character ${isWiggling ? "wiggling" : ""}`}
+          onClick={triggerManualWiggle}
         />
-      </div>
-
-      <div className="mascot-selector">
-        <span>Select expression:</span>
-        <div className="selector-buttons">
-          {[1, 2, 3, 4, 5, 6].map((index) => (
-            <button
-              key={index}
-              type="button"
-              className={`selector-btn ${mascotIndex === index ? "active" : ""}`}
-              onClick={() => setMascotIndex(index)}
-              title={`Expression ${index}`}
-            >
-              {index}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

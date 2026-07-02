@@ -242,7 +242,8 @@ button:disabled {
   animation: mascot-hover-dance 1.2s ease-in-out infinite;
 }
 
-.mascot-character:active {
+.mascot-character:active,
+.mascot-character.wiggling {
   animation: mascot-wiggle 0.5s ease-in-out;
 }
 
