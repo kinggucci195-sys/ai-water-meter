@@ -103,52 +103,62 @@ function AuthStart({
 }) {
   return (
     <section className="panel">
-      <h2>Sign in for sync and leaderboard</h2>
-      <p>
-        Use Google or GitHub to create an account. Sync and leaderboard are separate opt-ins; the
-        extension should upload only daily aggregate estimates after you allow it.
-      </p>
       {email ? (
-        <p className="success">
-          Signed in as {email}{" "}
-          <button
-            type="button"
-            className="text-link-btn"
-            style={{
-              background: "none",
-              border: "none",
-              color: "#4da6ff",
-              cursor: "pointer",
-              textDecoration: "underline",
-              padding: 0,
-              fontSize: "inherit",
-              marginLeft: "8px"
-            }}
-            onClick={() => {
-              localStorage.removeItem("sb-mock-email");
-              if (supabase) {
-                void supabase.auth.signOut().then(() => {
+        <>
+          <h2>Connected to AI Water Meter</h2>
+          <p>
+            Your account is linked. Your daily aggregates and leaderboard rankings will be securely
+            synced from the extension.
+          </p>
+          <p className="success" style={{ marginTop: "24px" }}>
+            Signed in as <strong>{email}</strong>{" "}
+            <button
+              type="button"
+              className="text-link-btn"
+              style={{
+                background: "none",
+                border: "none",
+                color: "#4da6ff",
+                cursor: "pointer",
+                textDecoration: "underline",
+                padding: 0,
+                fontSize: "inherit",
+                marginLeft: "8px"
+              }}
+              onClick={() => {
+                localStorage.removeItem("sb-mock-email");
+                if (supabase) {
+                  void supabase.auth.signOut().then(() => {
+                    window.location.reload();
+                  });
+                } else {
                   window.location.reload();
-                });
-              } else {
-                window.location.reload();
-              }
-            }}
-          >
-            (Sign out)
-          </button>
-        </p>
-      ) : null}
-      <div className="button-row">
-        <button type="button" onClick={() => signIn("google")} disabled={!authProviders.google}>
-          {providerButtonLabel("google", authProviders.google)}
-        </button>
-        <button type="button" onClick={() => signIn("github")} disabled={!authProviders.github}>
-          {providerButtonLabel("github", authProviders.github)}
-        </button>
-      </div>
-      {(!supabase || !authProviders.google) && <GoogleSetupNotice />}
-      {(!supabase || !authProviders.github) && <GitHubSetupNotice />}
+                }
+              }}
+            >
+              (Sign out)
+            </button>
+          </p>
+        </>
+      ) : (
+        <>
+          <h2>Sign in for sync and leaderboard</h2>
+          <p>
+            Use Google or GitHub to create an account. Sync and leaderboard are separate opt-ins;
+            the extension should upload only daily aggregate estimates after you allow it.
+          </p>
+          <div className="button-row">
+            <button type="button" onClick={() => signIn("google")} disabled={!authProviders.google}>
+              {providerButtonLabel("google", authProviders.google)}
+            </button>
+            <button type="button" onClick={() => signIn("github")} disabled={!authProviders.github}>
+              {providerButtonLabel("github", authProviders.github)}
+            </button>
+          </div>
+          {(!supabase || !authProviders.google) && <GoogleSetupNotice />}
+          {(!supabase || !authProviders.github) && <GitHubSetupNotice />}
+        </>
+      )}
       <p className="fineprint">
         This development page uses Supabase OAuth with PKCE. The extension-device code exchange is
         the next backend step.
