@@ -30,48 +30,7 @@ type DailyUsageData = {
   site: string;
 };
 
-const demoEntries: LeaderboardEntry[] = [
-  {
-    rank: 1,
-    display_name: "EcoCoder_99",
-    badge: "conservationist",
-    confidence: "high",
-    score: 12500,
-    water_saved_ml_estimate: 12500
-  },
-  {
-    rank: 2,
-    display_name: "Mascot Pip 🐧",
-    badge: "tracker",
-    confidence: "medium",
-    score: 9800,
-    water_saved_ml_estimate: 9800
-  },
-  {
-    rank: 3,
-    display_name: "cookiesharkie0112",
-    badge: "water_saver",
-    confidence: "high",
-    score: 8400,
-    water_saved_ml_estimate: 8400
-  },
-  {
-    rank: 4,
-    display_name: "GreenByte",
-    badge: "tracker",
-    confidence: "low",
-    score: 6200,
-    water_saved_ml_estimate: 6200
-  },
-  {
-    rank: 5,
-    display_name: "AquaSaver",
-    badge: "tracker",
-    confidence: "medium",
-    score: 4100,
-    water_saved_ml_estimate: 4100
-  }
-];
+const demoEntries: LeaderboardEntry[] = [];
 
 // Local formatters to ensure zero monorepo path complications
 function formatMilliliters(value: number): string {
@@ -1642,7 +1601,6 @@ async function loadLeaderboard(
   setEntries: (entries: LeaderboardEntry[]) => void
 ) {
   if (!supabase) {
-    setEntries(demoEntries);
     return;
   }
 
@@ -1653,11 +1611,7 @@ async function loadLeaderboard(
     .order("rank", { ascending: true })
     .limit(25);
 
-  if (!data || data.length === 0) {
-    setEntries(demoEntries);
-  } else {
-    setEntries(data as LeaderboardEntry[]);
-  }
+  setEntries((data ?? []) as LeaderboardEntry[]);
 }
 
 createRoot(document.getElementById("root")!).render(
