@@ -165,18 +165,10 @@ function AuthStart({
         </p>
       ) : null}
       <div className="button-row">
-        <button
-          type="button"
-          onClick={() => signIn("google")}
-          disabled={!authProviders.google}
-        >
+        <button type="button" onClick={() => signIn("google")} disabled={!authProviders.google}>
           {providerButtonLabel("google", authProviders.google)}
         </button>
-        <button
-          type="button"
-          onClick={() => signIn("github")}
-          disabled={!authProviders.github}
-        >
+        <button type="button" onClick={() => signIn("github")} disabled={!authProviders.github}>
           {providerButtonLabel("github", authProviders.github)}
         </button>
       </div>

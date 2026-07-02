@@ -335,7 +335,8 @@ button:disabled {
 
 /* Premium 2D Animations (Squash, Stretch, Float, Breathe) */
 @keyframes mascot-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -344,7 +345,8 @@ button:disabled {
 }
 
 @keyframes mascot-breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1, 1) rotate(0deg);
   }
   25% {
@@ -359,7 +361,8 @@ button:disabled {
 }
 
 @keyframes mascot-hover-dance {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-8px) scale(1, 1) rotate(0deg);
   }
   30% {
@@ -382,8 +385,14 @@ button:disabled {
 }
 
 @keyframes mascot-wiggle {
-  0%, 100% { transform: rotate(0) scale(1); }
-  25% { transform: rotate(-10deg) scale(1.1, 0.9); }
-  75% { transform: rotate(10deg) scale(0.9, 1.1); }
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1, 0.9);
+  }
+  75% {
+    transform: rotate(10deg) scale(0.9, 1.1);
+  }
 }
-
