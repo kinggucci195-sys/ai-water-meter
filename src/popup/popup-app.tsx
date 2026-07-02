@@ -19,12 +19,33 @@ type PopupUsage = {
  */
 export function PopupApp() {
   const [usage, setUsage] = useState<PopupUsage | undefined>();
+  const [userEmail, setUserEmail] = useState<string | undefined>();
 
   useEffect(() => {
     void Promise.all([getDailyUsage(), getMonthlyUsage()]).then(([daily, monthly]) => {
       setUsage({ daily, monthly });
     });
+
+    chrome.storage.local.get("userEmail", (data) => {
+      setUserEmail((data as { userEmail?: string }).userEmail);
+    });
+
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName === "local" && changes.userEmail) {
+        setUserEmail(changes.userEmail.newValue as string | undefined);
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
   }, []);
+
+  const handleSignOut = async () => {
+    await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
+  };
 
   return (
     <main>
@@ -55,18 +76,59 @@ export function PopupApp() {
         </div>
       </dl>
       <div className="actions">
-        <button
-          type="button"
-          onClick={() => sendPopupRequest({ path: "/auth/extension/start", type: "app:open" })}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
-        >
-          Leaderboard
-        </button>
+        {userEmail ? (
+          <div
+            className="user-account-info"
+            style={{
+              gridColumn: "span 2",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              width: "100%"
+            }}
+          >
+            <span
+              className="account-label"
+              style={{
+                fontSize: "11px",
+                color: "oklch(0.48 0.05 238)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}
+            >
+              Signed in as <strong>{userEmail}</strong>
+            </span>
+            <div
+              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", width: "100%" }}
+            >
+              <button type="button" onClick={handleSignOut}>
+                Sign out
+              </button>
+              <button
+                type="button"
+                onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
+              >
+                Leaderboard
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => sendPopupRequest({ path: "/auth/extension/start", type: "app:open" })}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
+            >
+              Leaderboard
+            </button>
+          </>
+        )}
       </div>
       <button type="button" className="secondary" onClick={() => chrome.runtime.openOptionsPage()}>
         Methodology

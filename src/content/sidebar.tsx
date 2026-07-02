@@ -11,9 +11,11 @@ export type SidebarApi = {
     snapshot: SessionSnapshot,
     daily?: DailyUsageRecord,
     monthly?: MonthlyUsageRecord,
-    reaction?: SidebarReaction
+    reaction?: SidebarReaction,
+    userEmail?: string
   ): void;
   setStatus(message: string): void;
+  setUserEmail(email?: string): void;
 };
 
 export type SidebarReaction = {
@@ -27,9 +29,11 @@ type SidebarProps = {
   onReset: () => void;
   onLeaderboard: () => void;
   onSignIn: () => void;
+  onSignOut?: () => void;
   reaction: SidebarReaction;
   snapshot?: SessionSnapshot;
   status: string;
+  userEmail?: string;
 };
 
 /**
@@ -42,9 +46,11 @@ function SidebarApp({
   onLeaderboard,
   onReset,
   onSignIn,
+  onSignOut,
   reaction,
   snapshot,
-  status
+  status,
+  userEmail
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -132,12 +138,54 @@ function SidebarApp({
               </dl>
             )}
             <div className="actions">
-              <button type="button" onClick={onSignIn}>
-                Sign in
-              </button>
-              <button type="button" onClick={onLeaderboard}>
-                Leaderboard
-              </button>
+              {userEmail ? (
+                <div
+                  className="user-account-info"
+                  style={{
+                    gridColumn: "span 2",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.375rem"
+                  }}
+                >
+                  <span
+                    className="account-label"
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "oklch(0.48 0.05 238)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    Signed in as <strong>{userEmail}</strong>
+                  </span>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "0.5rem",
+                      width: "100%"
+                    }}
+                  >
+                    <button type="button" onClick={onSignOut}>
+                      Sign out
+                    </button>
+                    <button type="button" onClick={onLeaderboard}>
+                      Leaderboard
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button type="button" onClick={onSignIn}>
+                    Sign in
+                  </button>
+                  <button type="button" onClick={onLeaderboard}>
+                    Leaderboard
+                  </button>
+                </>
+              )}
             </div>
             <p>{status}</p>
             <p className="disclosure">
@@ -156,7 +204,8 @@ function SidebarApp({
 export function mountSidebar(
   onReset: () => void,
   onSignIn: () => void,
-  onLeaderboard: () => void
+  onLeaderboard: () => void,
+  onSignOut?: () => void
 ): SidebarApi {
   const host = document.createElement("div");
   host.id = "ai-water-meter-root";
@@ -171,6 +220,7 @@ export function mountSidebar(
   let currentMonthly: MonthlyUsageRecord | undefined;
   let currentReaction: SidebarReaction = { state: "idle" };
   let currentStatus = "Estimates stay local in your browser.";
+  let currentUserEmail: string | undefined;
 
   const render = () => {
     root.render(
@@ -180,9 +230,11 @@ export function mountSidebar(
         onLeaderboard={onLeaderboard}
         onReset={onReset}
         onSignIn={onSignIn}
+        onSignOut={onSignOut}
         reaction={currentReaction}
         snapshot={currentSnapshot}
         status={currentStatus}
+        userEmail={currentUserEmail}
       />
     );
   };
@@ -190,15 +242,22 @@ export function mountSidebar(
   render();
 
   return {
-    update(snapshot, daily, monthly, reaction) {
+    update(snapshot, daily, monthly, reaction, userEmail) {
       currentSnapshot = snapshot;
       currentDaily = daily;
       currentMonthly = monthly;
       currentReaction = reaction ?? currentReaction;
+      if (userEmail !== undefined) {
+        currentUserEmail = userEmail;
+      }
       render();
     },
     setStatus(message) {
       currentStatus = message;
+      render();
+    },
+    setUserEmail(email) {
+      currentUserEmail = email;
       render();
     }
   };

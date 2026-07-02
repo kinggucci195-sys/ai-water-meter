@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mascot Character Test</title>
+    <style>
+      body {
+        background-color: #0b1d3a;
+        color: #ffffff;
+        font-family: sans-serif;
+        text-align: center;
+        padding: 40px;
+      }
+      h1 {
+        margin-bottom: 40px;
+      }
+      .mascot-container {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+      .mascot-card {
+        background-color: #162a45;
+        border: 2px solid #234268;
+        border-radius: 12px;
+        padding: 20px;
+        width: 250px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s;
+      }
+      .mascot-card:hover {
+        transform: translateY(-5px);
+      }
+      .mascot-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        background-color: transparent;
+      }
+      .mascot-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 15px;
+        color: #4da6ff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mascot Character Set Options</h1>
+    <div class="mascot-container">
+      <div class="mascot-card">
+        <img src="mascot_1.png" alt="Mascot 1" />
+        <div class="mascot-title">Mascot 1</div>
+      </div>
+      <div class="mascot-card">
+        <img src="mascot_2.png" alt="Mascot 2" />
+        <div class="mascot-title">Mascot 2</div>
+      </div>
+      <div class="mascot-card">
+        <img src="mascot_3.png" alt="Mascot 3" />
+        <div class="mascot-title">Mascot 3</div>
+      </div>
+      <div class="mascot-card">
+        <img src="mascot_4.png" alt="Mascot 4" />
+        <div class="mascot-title">Mascot 4</div>
+      </div>
+    </div>
+  </body>
+</html>

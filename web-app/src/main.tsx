@@ -8,7 +8,7 @@ import {
   type SupabaseAuthSettings
 } from "./auth-config";
 import { appOrigin, hasSupabaseConfig, supabase, supabaseAnonKey, supabaseUrl } from "./supabase";
-import { WaterMascot3D } from "./WaterMascot3D";
+import { WaterMascot2D } from "./WaterMascot2D";
 import "./style.css";
 
 type LeaderboardEntry = {
@@ -20,32 +20,7 @@ type LeaderboardEntry = {
   water_saved_ml_estimate: number;
 };
 
-const demoEntries: LeaderboardEntry[] = [
-  {
-    badge: "7-day tracker",
-    confidence: "medium",
-    display_name: "RiverMinder",
-    rank: 1,
-    score: 1280,
-    water_saved_ml_estimate: 240
-  },
-  {
-    badge: "Concise prompts",
-    confidence: "medium",
-    display_name: "AquaPilot",
-    rank: 2,
-    score: 1195,
-    water_saved_ml_estimate: 215
-  },
-  {
-    badge: "Local-first",
-    confidence: "high",
-    display_name: "PipFriend",
-    rank: 3,
-    score: 1110,
-    water_saved_ml_estimate: 188
-  }
-];
+const demoEntries: LeaderboardEntry[] = [];
 
 function App() {
   const path = window.location.pathname;
@@ -53,18 +28,25 @@ function App() {
     defaultAuthProviderAvailability
   );
   const [entries, setEntries] = useState<LeaderboardEntry[]>(demoEntries);
-  const [email, setEmail] = useState<string | undefined>();
+  const [email, setEmail] = useState<string | undefined>(() => {
+    return localStorage.getItem("sb-mock-email") || undefined;
+  });
   const isAuthPage = path.startsWith("/auth");
   const title = isAuthPage ? "Connect AI Water Meter" : "Global Water Awareness";
 
   useEffect(() => {
+    // Always fetch auth providers config (will mock if no supabase is configured)
+    void loadAuthProviders().then(setAuthProviders);
+
     if (!supabase) {
       return undefined;
     }
 
     const client = supabase;
-    void loadAuthProviders().then(setAuthProviders);
-    void client.auth.getUser().then(({ data }) => setEmail(data.user?.email));
+    const mockEmail = localStorage.getItem("sb-mock-email");
+    if (!mockEmail) {
+      void client.auth.getUser().then(({ data }) => setEmail(data.user?.email));
+    }
     const channel = client
       .channel("leaderboard_entries")
       .on(
@@ -104,7 +86,7 @@ function App() {
             your device.
           </p>
         </div>
-        <WaterMascot3D />
+        <WaterMascot2D />
       </section>
       {!hasSupabaseConfig && <SetupNotice />}
       {routeView}
@@ -126,25 +108,47 @@ function AuthStart({
         Use Google or GitHub to create an account. Sync and leaderboard are separate opt-ins; the
         extension should upload only daily aggregate estimates after you allow it.
       </p>
-      {email ? <p className="success">Signed in as {email}</p> : null}
+      {email ? (
+        <p className="success">
+          Signed in as {email}{" "}
+          <button
+            type="button"
+            className="text-link-btn"
+            style={{
+              background: "none",
+              border: "none",
+              color: "#4da6ff",
+              cursor: "pointer",
+              textDecoration: "underline",
+              padding: 0,
+              fontSize: "inherit",
+              marginLeft: "8px"
+            }}
+            onClick={() => {
+              localStorage.removeItem("sb-mock-email");
+              if (supabase) {
+                void supabase.auth.signOut().then(() => {
+                  window.location.reload();
+                });
+              } else {
+                window.location.reload();
+              }
+            }}
+          >
+            (Sign out)
+          </button>
+        </p>
+      ) : null}
       <div className="button-row">
-        <button
-          type="button"
-          onClick={() => signIn("google")}
-          disabled={!supabase || !authProviders.google}
-        >
+        <button type="button" onClick={() => signIn("google")} disabled={!authProviders.google}>
           {providerButtonLabel("google", authProviders.google)}
         </button>
-        <button
-          type="button"
-          onClick={() => signIn("github")}
-          disabled={!supabase || !authProviders.github}
-        >
+        <button type="button" onClick={() => signIn("github")} disabled={!authProviders.github}>
           {providerButtonLabel("github", authProviders.github)}
         </button>
       </div>
-      {!authProviders.google && <GoogleSetupNotice />}
-      {!authProviders.github && <GitHubSetupNotice />}
+      {(!supabase || !authProviders.google) && <GoogleSetupNotice />}
+      {(!supabase || !authProviders.github) && <GitHubSetupNotice />}
       <p className="fineprint">
         This development page uses Supabase OAuth with PKCE. The extension-device code exchange is
         the next backend step.
@@ -183,12 +187,23 @@ function GoogleSetupNotice() {
 }
 
 function AuthCallback() {
-  const [status, setStatus] = useState(
-    supabase ? "Completing sign-in..." : "Supabase env vars are not configured."
-  );
+  const [status, setStatus] = useState("Completing sign-in...");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mock") === "true") {
+      const mockEmail = params.get("email") || "mock-developer@example.com";
+      localStorage.setItem("sb-mock-email", mockEmail);
+      Promise.resolve().then(() => {
+        setStatus(`Signed in as ${mockEmail} (Mock Mode). You can return to the app.`);
+      });
+      return;
+    }
+
     if (!supabase) {
+      Promise.resolve().then(() => {
+        setStatus("Supabase env vars are not configured.");
+      });
       return;
     }
 
@@ -207,7 +222,7 @@ function AuthCallback() {
     <section className="panel">
       <h2>Auth callback</h2>
       <p>{status}</p>
-      <a className="text-link" href="/leaderboard">
+      <a className="text-link" href="/">
         Open leaderboard
       </a>
     </section>
@@ -227,18 +242,24 @@ function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardE
         </a>
       </div>
       <div className="leaderboard">
-        {entries.map((entry) => (
-          <article key={entry.rank}>
-            <strong>#{entry.rank}</strong>
-            <div>
-              <h3>{entry.display_name}</h3>
-              <p>
-                {entry.badge} / confidence {entry.confidence}
-              </p>
-            </div>
-            <span>{entry.score}</span>
-          </article>
-        ))}
+        {entries.length > 0 ? (
+          entries.map((entry) => (
+            <article key={entry.rank}>
+              <strong>#{entry.rank}</strong>
+              <div>
+                <h3>{entry.display_name}</h3>
+                <p>
+                  {entry.badge} / confidence {entry.confidence}
+                </p>
+              </div>
+              <span>{entry.score}</span>
+            </article>
+          ))
+        ) : (
+          <p style={{ textAlign: "center", color: "oklch(0.55 0.03 240)", padding: "20px 0" }}>
+            No rankings submitted yet. Enable leaderboard opt-in to appear here!
+          </p>
+        )}
       </div>
     </section>
   );
@@ -259,6 +280,9 @@ function SetupNotice() {
 
 async function signIn(provider: "github" | "google") {
   if (!supabase) {
+    // Enable Mock Auth redirect
+    const mockEmail = `mock-${provider}-user@example.com`;
+    window.location.href = `/auth/callback?mock=true&email=${encodeURIComponent(mockEmail)}`;
     return;
   }
 
@@ -272,7 +296,11 @@ async function signIn(provider: "github" | "google") {
 
 async function loadAuthProviders(): Promise<AuthProviderAvailability> {
   if (!supabaseUrl || !supabaseAnonKey) {
-    return defaultAuthProviderAvailability;
+    // Enable mock auth providers locally so they can be clicked
+    return {
+      github: true,
+      google: true
+    };
   }
 
   try {

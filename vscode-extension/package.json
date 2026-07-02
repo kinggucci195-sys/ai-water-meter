@@ -4,8 +4,8 @@
   "description": "Estimate AI prompt water, energy, and carbon impact inside VS Code without storing raw text.",
   "version": "0.1.0",
   "publisher": "ai-water-meter",
-  "private": true,
   "license": "MIT",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/kinggucci195-sys/ai-water-meter.git",
@@ -16,10 +16,19 @@
     "url": "https://github.com/kinggucci195-sys/ai-water-meter/issues"
   },
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Education"
+  ],
+  "keywords": [
+    "water",
+    "energy",
+    "carbon",
+    "sustainability",
+    "green-it",
+    "ai-estimation"
   ],
   "activationEvents": [
     "onCommand:aiWaterMeter.estimateSelection",
@@ -59,13 +68,16 @@
     }
   },
   "scripts": {
-    "compile": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js",
-    "package": "vsce package"
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc --noEmit && esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --minify",
+    "watch": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --watch",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.7.0",
     "esbuild": "^0.28.1",
-    "@types/vscode": "^1.105.0",
+    "@types/vscode": "^1.85.0",
     "typescript": "^6.0.3"
   }
 }
