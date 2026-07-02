@@ -50,9 +50,15 @@ In Google Auth Platform / Google Cloud:
 
 ```text
 Application type: Web application
+Scopes:
+openid
+.../auth/userinfo.email
+.../auth/userinfo.profile
+
 Authorized JavaScript origins:
 https://web-app-woad-rho.vercel.app
 http://127.0.0.1:5174
+http://localhost:5174
 
 Authorized redirect URIs:
 https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback
@@ -73,6 +79,37 @@ In Supabase URL Configuration, keep these allowed redirect URLs:
 ```text
 https://web-app-woad-rho.vercel.app/auth/callback
 http://127.0.0.1:5174/auth/callback
+http://localhost:5174/auth/callback
+```
+
+## GitHub Auth Setup
+
+Supabase currently reports GitHub sign-in as disabled until a GitHub OAuth App is created and its credentials are saved in Supabase.
+
+In GitHub Developer Settings / OAuth Apps:
+
+```text
+Application name:
+AI Water Meter
+
+Homepage URL:
+https://web-app-woad-rho.vercel.app
+
+Authorization callback URL:
+https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback
+
+Enable Device Flow:
+Unchecked
+```
+
+In Supabase:
+
+```text
+Authentication -> Sign In / Providers -> GitHub
+Enable GitHub
+Paste the GitHub Client ID
+Paste the GitHub Client Secret
+Save
 ```
 
 ## Local Login And Leaderboard Development

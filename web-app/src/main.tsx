@@ -144,6 +144,7 @@ function AuthStart({
         </button>
       </div>
       {!authProviders.google && <GoogleSetupNotice />}
+      {!authProviders.github && <GitHubSetupNotice />}
       <p className="fineprint">
         This development page uses Supabase OAuth with PKCE. The extension-device code exchange is
         the next backend step.
@@ -152,15 +153,30 @@ function AuthStart({
   );
 }
 
+function GitHubSetupNotice() {
+  return (
+    <div className="provider-notice">
+      <strong>GitHub sign-in is not enabled in Supabase yet.</strong>
+      <p>
+        Create a GitHub OAuth App with homepage URL `https://web-app-woad-rho.vercel.app` and
+        authorization callback URL `https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback`.
+        Leave device flow unchecked. Then paste the Client ID and Client Secret into Supabase
+        Authentication / Sign In / Providers / GitHub.
+      </p>
+    </div>
+  );
+}
+
 function GoogleSetupNotice() {
   return (
     <div className="provider-notice">
       <strong>Google sign-in is not enabled in Supabase yet.</strong>
       <p>
-        Enable Authentication / Sign In / Google in Supabase with a Google OAuth web client. Add
-        `https://web-app-woad-rho.vercel.app` as an authorized JavaScript origin in Google, and add
-        the Supabase callback URL as the authorized redirect URI:
-        `https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback`.
+        Supabase currently reports Google as disabled. In Google, create a Web application OAuth
+        client with `https://web-app-woad-rho.vercel.app` as the authorized JavaScript origin and
+        `https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback` as the authorized redirect URI.
+        Then paste that Client ID and Client Secret into Supabase Authentication / Sign In /
+        Providers / Google.
       </p>
     </div>
   );
