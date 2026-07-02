@@ -5,6 +5,8 @@
   "description": "A Chrome/Edge extension that estimates operational water and energy used by AI chat sessions.",
   "type": "module",
   "scripts": {
+    "app:build": "npm --prefix web-app run build",
+    "app:dev": "npm --prefix web-app run dev",
     "build": "node scripts/generate-icons.mjs && vite build && node scripts/build-content-script.mjs && node scripts/validate-extension.mjs && node scripts/package-extension.mjs",
     "lint": "eslint .",
     "format": "prettier --check .",

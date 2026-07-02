@@ -45,6 +45,16 @@ Load `dist/` as an unpacked extension in Chrome or Edge after `npm run build`.
 
 That unpacked flow is for development and reviewer testing. Public installs without developer mode require Chrome Web Store or Microsoft Edge Add-ons approval.
 
+For local sign-in and leaderboard development:
+
+```bash
+cd web-app
+npm install
+npm run dev
+```
+
+See [How to use](./HOW_TO_USE.md) for browser, web app, Supabase, VS Code, and Strix setup.
+
 ## Privacy
 
 The extension processes visible page text locally in the browser. It does not send prompts, responses, or estimates to any server.
@@ -62,6 +72,7 @@ The build generates PNG icons, validates manifest references, checks for remote-
 - [Account sync plan](./ACCOUNT_SYNC.md)
 - [Branching and promotion](./BRANCHING.md)
 - [Global leaderboard plan](./LEADERBOARD.md)
+- [How to use](./HOW_TO_USE.md)
 - [Public release plan](./PUBLIC_RELEASE.md)
 - [Product review](./PRODUCT_REVIEW.md)
 - [Store review notes](./STORE_REVIEW_NOTES.md)

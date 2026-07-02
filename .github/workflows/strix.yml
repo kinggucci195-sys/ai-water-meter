@@ -1,0 +1,49 @@
+name: Strix Security Scan
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - test
+      - staging
+      - production
+
+permissions:
+  contents: read
+
+jobs:
+  strix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check Strix secrets
+        id: secrets
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+        run: |
+          if [ -n "$LLM_API_KEY" ] && [ -n "$STRIX_LLM" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip when secrets are missing
+        if: steps.secrets.outputs.configured != 'true'
+        run: echo "Skipping Strix. Configure STRIX_LLM and LLM_API_KEY repository secrets to enable."
+
+      - name: Install Strix
+        if: steps.secrets.outputs.configured == 'true'
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Run Strix quick scan
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+        run: strix -n --target ./ --scan-mode quick

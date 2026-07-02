@@ -1,8 +1,12 @@
 import { isStorageRequest, type StorageRequest, type StorageResponse } from "../storage-messages";
 import { addToDailyUsage, getDailyUsage, getMonthlyUsage, resetDailyUsage } from "../storage";
 
+const DEFAULT_APP_BASE_URL = "http://127.0.0.1:5174";
+const APP_BASE_URL_KEY = "appBaseUrl";
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({
+    [APP_BASE_URL_KEY]: DEFAULT_APP_BASE_URL,
     methodology: "modern-text-2026",
     privacyMode: "local-only"
   });
@@ -39,11 +43,20 @@ async function handleStorageRequest(message: StorageRequest): Promise<StorageRes
   }
 
   if (message.type === "app:open") {
-    await chrome.tabs.create({ url: `https://app.aiwatermeter.com${message.path}` });
+    const appBaseUrl = await getAppBaseUrl();
+    await chrome.tabs.create({ url: `${appBaseUrl}${message.path}` });
     return { ok: true };
   }
 
   await resetDailyUsage();
   const [daily, monthly] = await Promise.all([getDailyUsage(), getMonthlyUsage()]);
   return { daily, monthly, ok: true };
+}
+
+async function getAppBaseUrl(): Promise<string> {
+  const stored = await chrome.storage.sync.get(APP_BASE_URL_KEY);
+  const value = stored[APP_BASE_URL_KEY];
+  return typeof value === "string" && value.startsWith("http")
+    ? value.replace(/\/$/, "")
+    : DEFAULT_APP_BASE_URL;
 }
