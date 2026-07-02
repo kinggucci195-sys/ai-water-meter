@@ -64,6 +64,13 @@ function formatTokens(count: number): string {
   return count.toString();
 }
 
+function toLocalYMD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function generateDemoUsage(): DailyUsageData[] {
   const data: DailyUsageData[] = [];
   const today = new Date();
@@ -73,7 +80,7 @@ function generateDemoUsage(): DailyUsageData[] {
 
     const date = new Date(today);
     date.setDate(today.getDate() - i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = toLocalYMD(date);
 
     const promptCount = Math.floor(Math.random() * 8) + 1;
     const inputTokens = promptCount * (Math.floor(Math.random() * 400) + 100);
@@ -506,8 +513,9 @@ function AccountDashboard({ email }: { email?: string }) {
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [usageData, setUsageData] = useState<DailyUsageData[]>([]);
-
   useEffect(() => {
+    let channel: ReturnType<NonNullable<typeof supabase>["channel"]> | null = null;
+
     async function loadUsage() {
       if (!supabase) {
         setUsageData(generateDemoUsage());
@@ -516,10 +524,12 @@ function AccountDashboard({ email }: { email?: string }) {
         return;
       }
 
+      const client = supabase;
+
       try {
         const {
           data: { session }
-        } = await supabase.auth.getSession();
+        } = await client.auth.getSession();
         const userId = session?.user?.id;
 
         if (!userId) {
@@ -529,7 +539,22 @@ function AccountDashboard({ email }: { email?: string }) {
           return;
         }
 
-        const { data, error } = await supabase
+        const fetchLatestData = async () => {
+          const { data, error } = await client
+            .from("usage_daily")
+            .select(
+              "usage_date,input_tokens_est,output_tokens_est,energy_wh,water_ml_mid,carbon_g,site"
+            )
+            .eq("user_id", userId)
+            .order("usage_date", { ascending: false });
+
+          if (!error && data) {
+            setUsageData(data as DailyUsageData[]);
+            setIsDemo(false);
+          }
+        };
+
+        const { data, error } = await client
           .from("usage_daily")
           .select(
             "usage_date,input_tokens_est,output_tokens_est,energy_wh,water_ml_mid,carbon_g,site"
@@ -544,6 +569,23 @@ function AccountDashboard({ email }: { email?: string }) {
           setUsageData(data as DailyUsageData[]);
           setIsDemo(false);
         }
+
+        // Subscribe to realtime database inserts/updates for the user's usage logs
+        channel = client
+          .channel(`usage_daily_changes_${userId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "usage_daily",
+              filter: `user_id=eq.${userId}`
+            },
+            () => {
+              void fetchLatestData();
+            }
+          )
+          .subscribe();
       } catch {
         setUsageData(generateDemoUsage());
         setIsDemo(true);
@@ -553,6 +595,12 @@ function AccountDashboard({ email }: { email?: string }) {
     }
 
     void loadUsage();
+
+    return () => {
+      if (channel && supabase) {
+        void supabase.removeChannel(channel);
+      }
+    };
   }, [email]);
 
   const stats = useMemo(() => {
@@ -588,10 +636,10 @@ function AccountDashboard({ email }: { email?: string }) {
     let longestStreak = 0;
     let currentStreak = 0;
     let tempStreak = 0;
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = toLocalYMD(new Date());
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    const yesterdayStr = toLocalYMD(yesterday);
 
     let lastDate: Date | null = null;
 
@@ -623,7 +671,7 @@ function AccountDashboard({ email }: { email?: string }) {
       let streakCount = 0;
       const checkDate = hasToday ? new Date() : yesterday;
       while (true) {
-        const checkStr = checkDate.toISOString().split("T")[0];
+        const checkStr = toLocalYMD(checkDate);
         if (dates.includes(checkStr)) {
           streakCount++;
           checkDate.setDate(checkDate.getDate() - 1);
@@ -655,11 +703,11 @@ function AccountDashboard({ email }: { email?: string }) {
       isToday: boolean;
     }[] = [];
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
+    const todayStr = toLocalYMD(today);
     for (let i = 167; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = toLocalYMD(date);
       const record = usageData.find((d) => d.usage_date === dateStr);
       cells.push({
         date: dateStr,
@@ -700,7 +748,7 @@ function AccountDashboard({ email }: { email?: string }) {
       const day = date.getDay();
       const diff = date.getDate() - day + (day === 0 ? -6 : 1);
       const monday = new Date(date.setDate(diff));
-      const mondayStr = monday.toISOString().split("T")[0];
+      const mondayStr = toLocalYMD(monday);
 
       if (!groups[mondayStr]) {
         groups[mondayStr] = { water: 0, energy: 0, tokens: 0, days: 0 };

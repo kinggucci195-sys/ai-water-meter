@@ -11,36 +11,64 @@ const isWebApp =
   host.includes("vercel.app") || host.includes("127.0.0.1") || host.includes("localhost");
 
 if (isWebApp) {
-  if (window.location.pathname.startsWith("/auth/callback")) {
-    const checkSession = setInterval(async () => {
-      let email: string | null = null;
-      let supabaseToken = "";
-      let supabaseUserId = "";
+  // Sync Web App Session -> Extension Storage (whenever Web App is open and logged in)
+  const syncSessionFromWebApp = () => {
+    let email: string | null = null;
+    let supabaseToken = "";
+    let supabaseUserId = "";
 
-      const mockEmail = localStorage.getItem("sb-mock-email");
-      if (mockEmail) {
-        email = mockEmail;
-      } else {
-        const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-        if (tokenStr) {
-          try {
-            const parsed = JSON.parse(tokenStr);
-            email = parsed?.user?.email || null;
-            supabaseToken = parsed?.access_token || "";
-            supabaseUserId = parsed?.user?.id || "";
-          } catch {
-            // Ignore parsing errors from corrupted token storage
-          }
+    const mockEmail = localStorage.getItem("sb-mock-email");
+    if (mockEmail) {
+      email = mockEmail;
+    } else {
+      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+      if (tokenStr) {
+        try {
+          const parsed = JSON.parse(tokenStr);
+          email = parsed?.user?.email || null;
+          supabaseToken = parsed?.access_token || "";
+          supabaseUserId = parsed?.user?.id || "";
+        } catch {
+          // Ignore parsing errors
         }
       }
-      if (email) {
+    }
+
+    if (email) {
+      chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId"], (data) => {
+        const storedEmail = (data as { userEmail?: string }).userEmail;
+        const storedToken = (data as { supabaseToken?: string }).supabaseToken;
+        const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
+
+        if (
+          storedEmail !== email ||
+          storedToken !== supabaseToken ||
+          storedUserId !== supabaseUserId
+        ) {
+          void chrome.storage.local.set({
+            userEmail: email,
+            supabaseToken,
+            supabaseUserId
+          });
+        }
+      });
+    }
+  };
+
+  // Run session sync immediately and keep in sync every second
+  syncSessionFromWebApp();
+  setInterval(syncSessionFromWebApp, 1000);
+
+  // Close callback redirection tabs specifically
+  if (window.location.pathname.startsWith("/auth/callback")) {
+    const checkSession = setInterval(async () => {
+      const mockEmail = localStorage.getItem("sb-mock-email");
+      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+      if (mockEmail || tokenStr) {
         clearInterval(checkSession);
-        await chrome.storage.local.set({
-          userEmail: email,
-          supabaseToken,
-          supabaseUserId
-        });
-        chrome.runtime.sendMessage({ type: "tab:close" });
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ type: "tab:close" });
+        }, 300);
       }
     }, 500);
   }
