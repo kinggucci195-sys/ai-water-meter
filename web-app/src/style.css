@@ -63,13 +63,31 @@ p {
   line-height: 1.6;
 }
 
-.hero img {
+.mascot-stage {
   width: 100%;
   aspect-ratio: 1 / 1;
+  min-height: 280px;
   border-radius: 8px;
-  object-fit: cover;
-  object-position: left center;
+  background:
+    radial-gradient(circle at 44% 34%, oklch(0.93 0.06 195), transparent 30%),
+    linear-gradient(150deg, oklch(0.21 0.07 248), oklch(0.32 0.08 205));
   box-shadow: 0 24px 70px oklch(0.2 0.04 248 / 0.18);
+  overflow: hidden;
+}
+
+.mascot-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mascot-stage[data-fallback="true"]::before {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: oklch(0.92 0.05 195);
+  content: "AI Water Meter";
+  font-weight: 900;
 }
 
 .panel,
@@ -158,7 +176,7 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .hero img {
+  .mascot-stage {
     max-height: 280px;
   }
 

@@ -37,7 +37,7 @@ export function DropletScene({ state }: { state: MascotState }) {
     let animationFrame = 0;
 
     try {
-      renderer = new WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer = new WebGLRenderer({ alpha: false, antialias: true, preserveDrawingBuffer: true });
     } catch {
       host.dataset.fallback = "true";
       return undefined;

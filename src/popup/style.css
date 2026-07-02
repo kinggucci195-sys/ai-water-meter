@@ -18,6 +18,14 @@ main {
   padding: 16px;
 }
 
+.popup-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 span {
   color: oklch(0.48 0.05 238);
   font-size: 12px;
@@ -46,7 +54,33 @@ dl {
   margin: 0 0 14px;
 }
 
-div {
+.droplet-scene {
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 1px solid oklch(0.83 0.06 200);
+  border-radius: 8px;
+  background: oklch(0.88 0.06 195);
+  overflow: hidden;
+}
+
+.droplet-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.droplet-scene[data-fallback="true"]::before {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: oklch(0.48 0.11 185);
+  content: "0 mL";
+  font-size: 12px;
+  font-weight: 900;
+}
+
+dl div {
   padding: 10px;
   border: 1px solid oklch(0.9 0.02 235);
   border-radius: 8px;

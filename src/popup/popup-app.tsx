@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DropletScene } from "../content/droplet-scene";
 import { formatCarbon, formatMilliliters, formatWh } from "../estimator/format";
 import type { StorageRequest } from "../storage-messages";
 import {
@@ -27,8 +28,13 @@ export function PopupApp() {
 
   return (
     <main>
-      <span>AI Water Meter</span>
-      <h1>{usage?.daily ? formatMilliliters(usage.daily.totalWaterMl) : "0 mL"}</h1>
+      <header className="popup-hero">
+        <div>
+          <span>AI Water Meter</span>
+          <h1>{usage?.daily ? formatMilliliters(usage.daily.totalWaterMl) : "0 mL"}</h1>
+        </div>
+        <DropletScene state={usage?.daily ? "updated" : "streaming_output"} />
+      </header>
       <p>Today, estimated locally from visible chat text. Not provider telemetry.</p>
       <dl className="summary">
         <div>

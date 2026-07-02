@@ -1,6 +1,7 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { appOrigin, hasSupabaseConfig, supabase } from "./supabase";
+import { WaterMascot3D } from "./WaterMascot3D";
 import "./style.css";
 
 type LeaderboardEntry = {
@@ -92,7 +93,7 @@ function App() {
             your device.
           </p>
         </div>
-        <img src="/mascots/water-drop-mascots.jpg" alt="Water droplet mascot expressions" />
+        <WaterMascot3D />
       </section>
       {!hasSupabaseConfig && <SetupNotice />}
       {routeView}
@@ -163,7 +164,7 @@ function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardE
       <div className="section-heading">
         <div>
           <h2>Leaderboard</h2>
-          <p>Ranked by awareness/reduction score, not “who used the most water.”</p>
+          <p>Ranked by awareness/reduction score, not who used the most water.</p>
         </div>
         <a className="text-link" href="/auth/extension/start">
           {email ? "Account" : "Sign in"}
@@ -176,7 +177,7 @@ function Leaderboard({ email, entries }: { email?: string; entries: LeaderboardE
             <div>
               <h3>{entry.display_name}</h3>
               <p>
-                {entry.badge} · confidence {entry.confidence}
+                {entry.badge} / confidence {entry.confidence}
               </p>
             </div>
             <span>{entry.score}</span>
