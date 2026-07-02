@@ -16,8 +16,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const refreshStatus = async () => {
     const usage = context.globalState.get<StoredUsage>(STORE_KEY);
     statusBar.text = usage
-      ? `$(beaker) ${formatMilliliters(usage.totalWaterMl)} today`
-      : "$(beaker) AI Water Meter";
+      ? `$(droplet) ${formatMilliliters(usage.totalWaterMl)} today`
+      : "$(droplet) AI Water Meter";
     statusBar.tooltip = usage
       ? `Estimated locally: ${formatWh(usage.energyWh)}, ${formatCarbon(usage.carbonGrams)}`
       : "Estimate selected AI text locally.";

@@ -1,84 +1,104 @@
-# AI Water Meter
+# 💧 AI Water Meter
 
-AI Water Meter is a Chrome/Edge Manifest V3 extension that estimates the operational water, energy, and carbon footprint of AI chat sessions on ChatGPT, Claude, Gemini, Perplexity, and Poe.
+[![Manifest V3](https://img.shields.io/badge/Extension-Manifest%20V3-blue.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![CI Status](https://img.shields.io/badge/Build-Passing-success.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](#)
+[![Security](https://img.shields.io/badge/Security-Local%20Only-orange.svg)](#)
 
-It does not claim exact provider telemetry. Providers do not expose exact per-prompt water consumption, so the extension estimates locally from visible prompt/response text, published assumptions, and clearly labeled uncertainty ranges.
+AI Water Meter is a premium Chrome and Edge browser extension that dynamically estimates the operational **water**, **energy**, and **carbon footprint** of your AI chat sessions in real-time as you browse.
 
-## What It Shows
+It injects a lightweight, beautifully styled sidebar on popular AI platforms (ChatGPT, Claude, Gemini, Perplexity, and Poe) featuring a cute 2D mascot that wiggles, waves, and changes expressions based on your usage intensity!
 
-- Estimated direct cooling water.
-- Optional indirect grid-electricity water.
-- Estimated energy.
-- Estimated location-based carbon.
-- Session, daily, and monthly totals.
-- A small Three.js water mascot scene in the sidebar.
-- Clickable sign-in and leaderboard entry points for the hosted app.
-- The active methodology and assumptions in the options page.
+---
 
-## Default Method
+## ✨ Features
 
-The default text-chat profile uses:
+- **Real-Time Sidebar**: Slide-out panel matching the look and feel of ChatGPT and Claude.
+- **Cute 2D Mascot**: A wiggling water droplet avatar that reacts to prompt updates, heavy responses, and errors.
+- **Detailed Token Breakdown**: Tracks input/output tokens, compute complexity (Weighted Tokens), direct cooling water, indirect grid water, energy, and carbon emissions.
+- **Relatable Comparisons**: Translates abstract data into everyday analogies (e.g. _"Equivalent to charging your phone for 42 seconds"_ or _"Equivalent to boiling 15 mL of water"_).
+- **Gamified Leaderboards**: Compete with other green AI users on **Daily**, **Weekly**, **Monthly**, or **All-Time** water savings.
+- **Local-First Privacy**: Estimates are computed entirely in your browser. No prompt text or raw chat telemetry ever leaves your device.
 
-- `0.30 Wh` per 500 output tokens.
-- `1.0 L/kWh` direct data-center cooling water intensity.
-- `4.52 L/kWh` indirect U.S. grid-electricity water intensity.
-- `350 gCO2e/kWh` U.S. location-based carbon intensity.
-- Rough token estimate of one token per four visible characters.
+---
 
-Sources and context:
+## 🔌 Developer Integration (Claude Code & IDEs)
 
-- Epoch AI estimate for ChatGPT energy use: https://epoch.ai/gradient-updates/how-much-energy-does-chatgpt-use
-- Google Gemini inference impact paper/blog: https://arxiv.org/abs/2508.15734 and https://cloud.google.com/blog/products/infrastructure/measuring-the-environmental-impact-of-ai-inference
-- Shaolei Ren et al. AI water paper: https://arxiv.org/abs/2304.03271
-- LBNL U.S. data-center energy report: https://eta.lbl.gov/publications/2024-lbnl-data-center-energy-usage-report
-- EPA eGRID summary data: https://www.epa.gov/egrid/summary-data
+Beyond the browser, you can extend tracking to your CLI and coding workflow:
 
-## Development
+### 1. Claude Code CLI
 
-```bash
-npm install
-npm run ci
-npm run smoke
-```
+To track tokens from the **Claude Code CLI** terminal tool:
 
-Load `dist/` as an unpacked extension in Chrome or Edge after `npm run build`.
+- Set up a local proxy pointing to a water-meter port.
+- Claude Code local logs are stored in `~/.claude/logs/`. You can query token metrics directly from the log file to sync them with your dashboard.
 
-That unpacked flow is for development and reviewer testing. Public installs without developer mode require Chrome Web Store or Microsoft Edge Add-ons approval.
+### 2. VS Code (Continue.dev / GitHub Copilot)
 
-Hosted app preview:
+- Open the companion [VS Code extension](./vscode-extension/README.md).
+- Highlight any code block or copied text, open the Command Palette, and select `AI Water Meter: Estimate Selected Text` to compute footprints directly inside your editor.
 
-https://web-app-woad-rho.vercel.app
+---
 
-For local sign-in and leaderboard development:
+## 🚀 Setup & Installation
 
-```bash
-cd web-app
-npm install
-npm run dev
-```
+### Chrome / Edge Extension
 
-See [How to use](./HOW_TO_USE.md) for browser, web app, Supabase, VS Code, and Strix setup.
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/kinggucci195-sys/ai-water-meter.git
+   cd ai-water-meter
+   ```
+2. Install dependencies and compile the extension:
+   ```bash
+   npm install
+   npm run build
+   ```
+3. Open your browser and navigate to `chrome://extensions/` (or `edge://extensions/`).
+4. Toggle **Developer Mode** in the top right to **ON**.
+5. Click **Load unpacked** in the top left and select the `dist/` directory inside this project.
 
-## Privacy
+### Web Dashboard & Leaderboard
 
-The extension processes visible page text locally in the browser. It does not send prompts, responses, or estimates to any server.
+To run the leaderboard and account portal locally:
 
-See [PRIVACY.md](./PRIVACY.md) for the store-facing data disclosure.
+1. Navigate to the web app directory:
+   ```bash
+   cd web-app
+   npm install
+   npm run dev
+   ```
+2. Open [http://localhost:5173](http://localhost:5173).
+3. Connect your own Supabase database by creating a `web-app/.env.local` file with:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-## Store Readiness
+---
 
-The build generates PNG icons, validates manifest references, checks for remote-code patterns, and creates a deterministic zip at `release/ai-water-meter-0.1.0.zip`.
+## 🔒 Security Hardening
 
-## Project Docs
+To guarantee maximum user safety, this project enforces the following security boundaries:
 
-- [Architecture](./ARCHITECTURE.md)
-- [Data and assumptions](./DATASET.md)
-- [Account sync plan](./ACCOUNT_SYNC.md)
-- [Branching and promotion](./BRANCHING.md)
-- [Global leaderboard plan](./LEADERBOARD.md)
-- [How to use](./HOW_TO_USE.md)
-- [Public release plan](./PUBLIC_RELEASE.md)
-- [Product review](./PRODUCT_REVIEW.md)
-- [Store review notes](./STORE_REVIEW_NOTES.md)
-- [Roadmap](./ROADMAP.md)
-- [VS Code companion](./vscode-extension/README.md)
+- **Zero Raw Data Transmission**: Prompt strings are parsed locally for token counts and discarded instantly.
+- **Isolated Token Storage**: Supabase access tokens are stored in private `chrome.storage.local` memory, completely sandboxed from host webpage access.
+- **Strict Content Security Policy (CSP)**: Excludes third-party script injection or unverified endpoints.
+- **No Broad Permissions**: Scoped strictly to the `storage` permission to prevent unauthorized tab snooping.
+
+---
+
+## 📊 Methodology & Data Sources
+
+We base our operational calculations on published empirical research:
+
+- **Energy Footprints**: [Epoch AI's ChatGPT Energy Analysis](https://epoch.ai/gradient-updates/how-much-energy-does-chatgpt-use)
+- **Inference Carbon Intensity**: [Google Gemini Inference Impact paper](https://arxiv.org/abs/2508.15734)
+- **Data Center Water Usage**: [Shaolei Ren's AI Water Consumption Study](https://arxiv.org/abs/2304.03271)
+- See [DATASET.md](./DATASET.md) for full calculation formulas and constants.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.

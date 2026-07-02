@@ -31,7 +31,7 @@ function App() {
   const [email, setEmail] = useState<string | undefined>(() => {
     return localStorage.getItem("sb-mock-email") || undefined;
   });
-  const [period, setPeriod] = useState<"weekly" | "monthly" | "all_time">("weekly");
+  const [period, setPeriod] = useState<"daily" | "weekly" | "monthly" | "all_time">("daily");
   const isAuthPage = path.startsWith("/auth");
   const title = isAuthPage ? "Connect AI Water Meter" : "Global Water Awareness";
 
@@ -250,8 +250,8 @@ function Leaderboard({
 }: {
   email?: string;
   entries: LeaderboardEntry[];
-  period: "weekly" | "monthly" | "all_time";
-  setPeriod: (period: "weekly" | "monthly" | "all_time") => void;
+  period: "daily" | "weekly" | "monthly" | "all_time";
+  setPeriod: (period: "daily" | "weekly" | "monthly" | "all_time") => void;
 }) {
   return (
     <section className="panel">
@@ -275,7 +275,7 @@ function Leaderboard({
           paddingBottom: "8px"
         }}
       >
-        {(["weekly", "monthly", "all_time"] as const).map((p) => {
+        {(["daily", "weekly", "monthly", "all_time"] as const).map((p) => {
           const isActive = period === p;
           const label = p === "all_time" ? "All Time" : p.charAt(0).toUpperCase() + p.slice(1);
           return (
@@ -382,7 +382,7 @@ async function loadAuthProviders(): Promise<AuthProviderAvailability> {
 }
 
 async function loadLeaderboard(
-  period: "weekly" | "monthly" | "all_time",
+  period: "daily" | "weekly" | "monthly" | "all_time",
   setEntries: (entries: LeaderboardEntry[]) => void
 ) {
   if (!supabase) {
