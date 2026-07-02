@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import {
   AmbientLight,
+  BufferGeometry,
   Color,
   DirectionalLight,
+  Float32BufferAttribute,
   Mesh,
   MeshPhysicalMaterial,
   PerspectiveCamera,
@@ -62,15 +64,10 @@ export function DropletScene({ state }: { state: MascotState }) {
       clearcoatRoughness: 0.2
     });
 
-    const droplet = new Mesh(new SphereGeometry(1, 48, 48), material);
-    droplet.scale.set(0.72, 1.05, 0.72);
-    droplet.position.y = -0.12;
+    const droplet = new Mesh(createDropletGeometry(56, 32), material);
+    droplet.scale.set(0.72, 0.82, 0.62);
+    droplet.position.y = 0.02;
     scene.add(droplet);
-
-    const top = new Mesh(new SphereGeometry(0.48, 48, 48), material);
-    top.scale.set(0.5, 0.75, 0.5);
-    top.position.y = 0.82;
-    scene.add(top);
 
     const eyeMaterial = new MeshPhysicalMaterial({
       color: new Color().setHSL(0.61, 0.45, 0.18),
@@ -118,13 +115,9 @@ export function DropletScene({ state }: { state: MascotState }) {
       const float = Math.sin(time / 900) * profile.floatAmount;
       const wobble = Math.sin(time / 180) * profile.wobbleAmount;
       droplet.rotation.y = time / profile.turnSpeed;
-      top.rotation.y = time / (profile.turnSpeed * 0.86);
       droplet.rotation.z = wobble;
-      top.rotation.z = wobble * 0.7;
-      droplet.scale.set(0.72 + profile.scaleBoost, 1.05 + profile.stretch, 0.72);
-      top.scale.set(0.5 + profile.scaleBoost * 0.5, 0.75 + profile.stretch * 0.45, 0.5);
-      droplet.position.y = -0.12 + float;
-      top.position.y = 0.82 + float;
+      droplet.scale.set(0.72 + profile.scaleBoost, 0.82 + profile.stretch, 0.62);
+      droplet.position.y = 0.02 + float;
       leftEye.position.y = 0.22 + float + profile.eyeLift;
       rightEye.position.y = 0.22 + float + profile.eyeLift;
       leftEye.scale.y = profile.eyeScaleY;
@@ -147,7 +140,6 @@ export function DropletScene({ state }: { state: MascotState }) {
       mouthMaterial.dispose();
       rippleMaterial.dispose();
       droplet.geometry.dispose();
-      top.geometry.dispose();
       leftEye.geometry.dispose();
       rightEye.geometry.dispose();
       mouth.geometry.dispose();
@@ -157,6 +149,54 @@ export function DropletScene({ state }: { state: MascotState }) {
   }, []);
 
   return <div className="droplet-scene" ref={hostRef} aria-hidden="true" />;
+}
+
+function createDropletGeometry(radialSegments: number, heightSegments: number) {
+  const vertices: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+
+  for (let yIndex = 0; yIndex <= heightSegments; yIndex += 1) {
+    const v = yIndex / heightSegments;
+    const y = -1.55 + v * 3.1;
+    const radius = dropletRadius(v);
+
+    for (let radialIndex = 0; radialIndex <= radialSegments; radialIndex += 1) {
+      const theta = (radialIndex / radialSegments) * Math.PI * 2;
+      const x = Math.cos(theta) * radius;
+      const z = Math.sin(theta) * radius;
+      vertices.push(x, y, z);
+      normals.push(x, v > 0.74 ? 0.36 : -0.05, z);
+    }
+  }
+
+  for (let yIndex = 0; yIndex < heightSegments; yIndex += 1) {
+    for (let radialIndex = 0; radialIndex < radialSegments; radialIndex += 1) {
+      const a = yIndex * (radialSegments + 1) + radialIndex;
+      const b = a + radialSegments + 1;
+      indices.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+  }
+
+  const geometry = new BufferGeometry();
+  geometry.setIndex(indices);
+  geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function dropletRadius(v: number) {
+  const body = Math.sin(Math.PI * Math.min(v / 0.86, 1)) ** 0.34;
+  const taper = 1 - Math.max(0, v - 0.48) * 1.28;
+  const baseRound = Math.sin(Math.PI * v) ** 0.2;
+  const point = 1 - smoothstep(0.84, 1, v);
+  return Math.max(0.014, 0.96 * body * taper * baseRound * point);
+}
+
+function smoothstep(edge0: number, edge1: number, value: number) {
+  const x = Math.min(1, Math.max(0, (value - edge0) / (edge1 - edge0)));
+  return x * x * (3 - 2 * x);
 }
 
 function createDropletColor() {

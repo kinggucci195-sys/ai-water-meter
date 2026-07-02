@@ -40,7 +40,40 @@ For Google/GitHub login to complete, Supabase Auth must allow this redirect URL:
 https://web-app-woad-rho.vercel.app/auth/callback
 ```
 
-The app was deployed with the Supabase project URL and publishable key, so the setup warning should not appear on Vercel. If OAuth providers are not enabled in Supabase yet, the buttons can still return a provider configuration error.
+The app was deployed with the Supabase project URL and publishable key, so the setup warning should not appear on Vercel. If OAuth providers are not enabled in Supabase yet, the app disables those provider buttons instead of sending users to a raw Supabase JSON error.
+
+## Google Auth Setup
+
+The screenshot error `Unsupported provider: provider is not enabled` means the Supabase Google provider is still off. The app now checks Supabase Auth settings first and disables Google sign-in until Supabase reports it enabled.
+
+In Google Auth Platform / Google Cloud:
+
+```text
+Application type: Web application
+Authorized JavaScript origins:
+https://web-app-woad-rho.vercel.app
+http://127.0.0.1:5174
+
+Authorized redirect URIs:
+https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback
+```
+
+In Supabase:
+
+```text
+Authentication -> Sign In / Providers -> Google
+Enable Google
+Paste the Google Client ID
+Paste the Google Client Secret
+Save
+```
+
+In Supabase URL Configuration, keep these allowed redirect URLs:
+
+```text
+https://web-app-woad-rho.vercel.app/auth/callback
+http://127.0.0.1:5174/auth/callback
+```
 
 ## Local Login And Leaderboard Development
 

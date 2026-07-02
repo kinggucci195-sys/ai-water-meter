@@ -1,6 +1,13 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { appOrigin, hasSupabaseConfig, supabase } from "./supabase";
+import {
+  defaultAuthProviderAvailability,
+  providerAvailabilityFromSettings,
+  providerButtonLabel,
+  type AuthProviderAvailability,
+  type SupabaseAuthSettings
+} from "./auth-config";
+import { appOrigin, hasSupabaseConfig, supabase, supabaseAnonKey, supabaseUrl } from "./supabase";
 import { WaterMascot3D } from "./WaterMascot3D";
 import "./style.css";
 
@@ -42,6 +49,9 @@ const demoEntries: LeaderboardEntry[] = [
 
 function App() {
   const path = window.location.pathname;
+  const [authProviders, setAuthProviders] = useState<AuthProviderAvailability>(
+    defaultAuthProviderAvailability
+  );
   const [entries, setEntries] = useState<LeaderboardEntry[]>(demoEntries);
   const [email, setEmail] = useState<string | undefined>();
   const isAuthPage = path.startsWith("/auth");
@@ -53,6 +63,7 @@ function App() {
     }
 
     const client = supabase;
+    void loadAuthProviders().then(setAuthProviders);
     void client.auth.getUser().then(({ data }) => setEmail(data.user?.email));
     const channel = client
       .channel("leaderboard_entries")
@@ -76,11 +87,11 @@ function App() {
     }
 
     if (path.startsWith("/auth/extension/start")) {
-      return <AuthStart email={email} />;
+      return <AuthStart authProviders={authProviders} email={email} />;
     }
 
     return <Leaderboard entries={entries} email={email} />;
-  }, [email, entries, path]);
+  }, [authProviders, email, entries, path]);
 
   return (
     <main>
@@ -101,7 +112,13 @@ function App() {
   );
 }
 
-function AuthStart({ email }: { email?: string }) {
+function AuthStart({
+  authProviders,
+  email
+}: {
+  authProviders: AuthProviderAvailability;
+  email?: string;
+}) {
   return (
     <section className="panel">
       <h2>Sign in for sync and leaderboard</h2>
@@ -111,18 +128,41 @@ function AuthStart({ email }: { email?: string }) {
       </p>
       {email ? <p className="success">Signed in as {email}</p> : null}
       <div className="button-row">
-        <button type="button" onClick={() => signIn("google")} disabled={!supabase}>
-          Continue with Google
+        <button
+          type="button"
+          onClick={() => signIn("google")}
+          disabled={!supabase || !authProviders.google}
+        >
+          {providerButtonLabel("google", authProviders.google)}
         </button>
-        <button type="button" onClick={() => signIn("github")} disabled={!supabase}>
-          Continue with GitHub
+        <button
+          type="button"
+          onClick={() => signIn("github")}
+          disabled={!supabase || !authProviders.github}
+        >
+          {providerButtonLabel("github", authProviders.github)}
         </button>
       </div>
+      {!authProviders.google && <GoogleSetupNotice />}
       <p className="fineprint">
         This development page uses Supabase OAuth with PKCE. The extension-device code exchange is
         the next backend step.
       </p>
     </section>
+  );
+}
+
+function GoogleSetupNotice() {
+  return (
+    <div className="provider-notice">
+      <strong>Google sign-in is not enabled in Supabase yet.</strong>
+      <p>
+        Enable Authentication / Sign In / Google in Supabase with a Google OAuth web client. Add
+        `https://web-app-woad-rho.vercel.app` as an authorized JavaScript origin in Google, and add
+        the Supabase callback URL as the authorized redirect URI:
+        `https://ffgynwxpjkrkwvkrucoz.supabase.co/auth/v1/callback`.
+      </p>
+    </div>
   );
 }
 
@@ -212,6 +252,28 @@ async function signIn(provider: "github" | "google") {
     },
     provider
   });
+}
+
+async function loadAuthProviders(): Promise<AuthProviderAvailability> {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return defaultAuthProviderAvailability;
+  }
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+      headers: {
+        apikey: supabaseAnonKey
+      }
+    });
+
+    if (!response.ok) {
+      return defaultAuthProviderAvailability;
+    }
+
+    return providerAvailabilityFromSettings((await response.json()) as SupabaseAuthSettings);
+  } catch {
+    return defaultAuthProviderAvailability;
+  }
 }
 
 async function loadLeaderboard(setEntries: (entries: LeaderboardEntry[]) => void) {

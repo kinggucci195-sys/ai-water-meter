@@ -140,6 +140,19 @@ button:disabled {
   font-size: 13px;
 }
 
+.provider-notice {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid oklch(0.86 0.05 82);
+  border-radius: 8px;
+  background: oklch(0.97 0.04 92);
+}
+
+.provider-notice p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
 .success {
   color: oklch(0.42 0.11 150);
   font-weight: 800;
