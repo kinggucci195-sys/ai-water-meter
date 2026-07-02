@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run app:build",
+  "buildCommand": "npm install --prefix web-app && npm run app:build",
   "outputDirectory": "web-app/dist",
   "cleanUrls": true,
   "rewrites": [
