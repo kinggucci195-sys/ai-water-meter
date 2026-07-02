@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { formatCarbon, formatMilliliters, formatWh } from "../estimator/format";
+import type { StorageRequest } from "../storage-messages";
 import {
   getDailyUsage,
   getMonthlyUsage,
@@ -47,9 +48,27 @@ export function PopupApp() {
           <dd>{usage ? usage.monthly.days : 0}</dd>
         </div>
       </dl>
-      <button type="button" onClick={() => chrome.runtime.openOptionsPage()}>
+      <div className="actions">
+        <button
+          type="button"
+          onClick={() => sendPopupRequest({ path: "/auth/extension/start", type: "app:open" })}
+        >
+          Sign in
+        </button>
+        <button
+          type="button"
+          onClick={() => sendPopupRequest({ path: "/leaderboard", type: "app:open" })}
+        >
+          Leaderboard
+        </button>
+      </div>
+      <button type="button" className="secondary" onClick={() => chrome.runtime.openOptionsPage()}>
         Methodology
       </button>
     </main>
   );
+}
+
+function sendPopupRequest(message: StorageRequest): void {
+  void chrome.runtime.sendMessage(message);
 }

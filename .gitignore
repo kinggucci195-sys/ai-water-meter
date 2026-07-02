@@ -2,5 +2,7 @@ node_modules/
 coverage/
 dist/
 release/
+artifacts/
+output/
 *.log
 .DS_Store

@@ -1,0 +1,61 @@
+{
+  "name": "ai-water-meter-vscode",
+  "displayName": "AI Water Meter",
+  "description": "Estimate AI prompt water, energy, and carbon impact inside VS Code without storing raw text.",
+  "version": "0.1.0",
+  "publisher": "ai-water-meter",
+  "private": true,
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:aiWaterMeter.estimateSelection",
+    "onCommand:aiWaterMeter.estimateClipboard",
+    "onCommand:aiWaterMeter.resetToday",
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiWaterMeter.estimateSelection",
+        "title": "AI Water Meter: Estimate Selection"
+      },
+      {
+        "command": "aiWaterMeter.estimateClipboard",
+        "title": "AI Water Meter: Estimate Clipboard"
+      },
+      {
+        "command": "aiWaterMeter.resetToday",
+        "title": "AI Water Meter: Reset Today"
+      },
+      {
+        "command": "aiWaterMeter.openMethodology",
+        "title": "AI Water Meter: Open Methodology"
+      }
+    ],
+    "configuration": {
+      "title": "AI Water Meter",
+      "properties": {
+        "aiWaterMeter.monitorKnownAiTerminals": {
+          "type": "boolean",
+          "default": false,
+          "description": "Future opt-in setting for known AI CLI terminal monitoring. Disabled until privacy-reviewed."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.0",
+    "esbuild": "^0.28.1",
+    "@types/vscode": "^1.105.0",
+    "typescript": "^6.0.3"
+  }
+}

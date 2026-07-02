@@ -74,3 +74,18 @@ button {
   font: inherit;
   font-weight: 800;
 }
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.secondary {
+  background: oklch(1 0 0);
+  color: oklch(0.34 0.06 238);
+}

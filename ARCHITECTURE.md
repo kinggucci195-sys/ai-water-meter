@@ -8,6 +8,7 @@ AI Water Meter is a local-first Manifest V3 browser extension.
 - `src/content/page-detectors.ts`: provider detection and DOM selectors for ChatGPT, Claude, Gemini, Perplexity, and Poe.
 - `src/content/chat-observer.ts`: debounced `MutationObserver` that reads visible chat text and emits session snapshots.
 - `src/content/sidebar.tsx`: React 19 Shadow DOM sidebar UI.
+- `src/content/droplet-scene.tsx`: Three.js local mascot scene with prompt/output reaction states.
 - `src/popup/`: React popup for daily totals.
 - `src/options/`: React methodology page.
 - `src/background/service-worker.ts`: MV3 service worker for install defaults and serialized usage writes.
@@ -22,11 +23,18 @@ Supported AI chat page
   -> content script observes visible user/assistant message blocks
   -> local token approximation estimates visible text volume
   -> estimator converts tokens into energy, water, and carbon ranges
-  -> sidebar renders current session estimates
+  -> sidebar renders current session estimates and mascot reaction state
   -> content script sends usage deltas to the service worker
   -> service worker serializes aggregate writes to local storage
   -> popup reads daily and monthly totals from local extension storage
 ```
+
+Sign-in and leaderboard buttons currently open allowlisted hosted app routes through the service worker:
+
+- `https://app.aiwatermeter.com/auth/extension/start`
+- `https://app.aiwatermeter.com/leaderboard`
+
+They do not upload data until the backend, OAuth flow, privacy policy, and explicit user opt-in are implemented.
 
 ## Data Boundaries
 

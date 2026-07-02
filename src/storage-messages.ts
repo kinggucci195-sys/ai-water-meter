@@ -8,12 +8,16 @@ export type StorageRequest =
     }
   | {
       type: "usage:reset-today";
+    }
+  | {
+      path: "/auth/extension/start" | "/leaderboard";
+      type: "app:open";
     };
 
 export type StorageResponse =
   | {
       daily?: DailyUsageRecord;
-      monthly: MonthlyUsageRecord;
+      monthly?: MonthlyUsageRecord;
       ok: true;
     }
   | {
@@ -27,5 +31,9 @@ export function isStorageRequest(message: unknown): message is StorageRequest {
   }
 
   const candidate = message as { type?: unknown };
-  return candidate.type === "usage:add-delta" || candidate.type === "usage:reset-today";
+  return (
+    candidate.type === "usage:add-delta" ||
+    candidate.type === "usage:reset-today" ||
+    candidate.type === "app:open"
+  );
 }

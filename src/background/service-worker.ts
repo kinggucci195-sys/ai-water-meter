@@ -38,6 +38,11 @@ async function handleStorageRequest(message: StorageRequest): Promise<StorageRes
     return { daily, monthly, ok: true };
   }
 
+  if (message.type === "app:open") {
+    await chrome.tabs.create({ url: `https://app.aiwatermeter.com${message.path}` });
+    return { ok: true };
+  }
+
   await resetDailyUsage();
   const [daily, monthly] = await Promise.all([getDailyUsage(), getMonthlyUsage()]);
   return { daily, monthly, ok: true };

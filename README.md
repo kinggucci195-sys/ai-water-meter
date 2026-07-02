@@ -11,7 +11,8 @@ It does not claim exact provider telemetry. Providers do not expose exact per-pr
 - Estimated energy.
 - Estimated location-based carbon.
 - Session, daily, and monthly totals.
-- A small Three.js water droplet scene in the sidebar.
+- A small Three.js water mascot scene in the sidebar.
+- Clickable sign-in and leaderboard entry points for the future hosted app.
 - The active methodology and assumptions in the options page.
 
 ## Default Method
@@ -60,7 +61,9 @@ The build generates PNG icons, validates manifest references, checks for remote-
 - [Data and assumptions](./DATASET.md)
 - [Account sync plan](./ACCOUNT_SYNC.md)
 - [Branching and promotion](./BRANCHING.md)
+- [Global leaderboard plan](./LEADERBOARD.md)
 - [Public release plan](./PUBLIC_RELEASE.md)
 - [Product review](./PRODUCT_REVIEW.md)
 - [Store review notes](./STORE_REVIEW_NOTES.md)
 - [Roadmap](./ROADMAP.md)
+- [VS Code companion](./vscode-extension/README.md)

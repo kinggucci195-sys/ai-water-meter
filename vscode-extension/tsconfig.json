@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": "..",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "Node16",
+    "types": ["vscode", "node"]
+  },
+  "include": ["src/**/*.ts", "../src/estimator/**/*.ts"]
+}

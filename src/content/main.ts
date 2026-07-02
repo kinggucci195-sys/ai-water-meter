@@ -2,17 +2,26 @@ import { subtractEstimate, type UsageEstimate } from "../estimator/estimate";
 import type { StorageRequest, StorageResponse } from "../storage-messages";
 import { getDailyUsage, getMonthlyUsage } from "../storage";
 import { createChatObserver } from "./chat-observer";
+import { HEAVY_OUTPUT_TOKEN_THRESHOLD, type MascotState } from "./mascot-state";
 import { detectProfile } from "./page-detectors";
-import { mountSidebar } from "./sidebar";
+import { mountSidebar, type SidebarReaction } from "./sidebar";
 
 const profile = detectProfile(window.location);
-const sidebar = mountSidebar(async () => {
-  const response = await sendStorageRequest({ type: "usage:reset-today" });
-  sidebar.setStatus("Today's total was reset.");
-  if (lastSnapshot) {
-    sidebar.update(lastSnapshot, response.daily, response.monthly);
+const sidebar = mountSidebar(
+  async () => {
+    const response = await sendStorageRequest({ type: "usage:reset-today" });
+    sidebar.setStatus("Today reset. Estimates still stay local.");
+    if (lastSnapshot && response.monthly) {
+      sidebar.update(lastSnapshot, response.daily, response.monthly, { state: "reset" });
+    }
+  },
+  async () => {
+    await sendStorageRequest({ path: "/auth/extension/start", type: "app:open" });
+  },
+  async () => {
+    await sendStorageRequest({ path: "/leaderboard", type: "app:open" });
   }
-});
+);
 
 let lastSnapshot: Parameters<typeof sidebar.update>[0] | undefined;
 let lastPersistedTotal: UsageEstimate | undefined;
@@ -23,6 +32,7 @@ createChatObserver(profile, (snapshot) => {
   persistenceQueue = persistenceQueue
     .then(() => persistSnapshot(snapshot))
     .catch((error: unknown) => {
+      sidebar.update(lastSnapshot ?? snapshot, undefined, undefined, { state: "error" });
       sidebar.setStatus(
         error instanceof Error ? error.message : "Unable to update usage estimate."
       );
@@ -30,13 +40,17 @@ createChatObserver(profile, (snapshot) => {
 });
 
 async function persistSnapshot(snapshot: Parameters<typeof sidebar.update>[0]): Promise<void> {
+  const previousSnapshot = lastSnapshot;
   lastSnapshot = snapshot;
   let [daily, monthly] = await Promise.all([getDailyUsage(), getMonthlyUsage()]);
+  let reaction: SidebarReaction = {
+    state: inferReactionState(snapshot, previousSnapshot)
+  };
 
   if (!hasBaseline) {
     hasBaseline = true;
     lastPersistedTotal = snapshot.totalEstimate;
-    sidebar.update(snapshot, daily, monthly);
+    sidebar.update(snapshot, daily, monthly, { state: "baseline" });
     sidebar.setStatus("Existing visible chat is treated as baseline.");
     return;
   }
@@ -55,11 +69,42 @@ async function persistSnapshot(snapshot: Parameters<typeof sidebar.update>[0]): 
     if (delta.weightedTokens > 0) {
       const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
       daily = response.daily;
-      monthly = response.monthly;
+      monthly = response.monthly ?? monthly;
+      reaction = {
+        deltaWaterMl: delta.totalWaterMl,
+        state: delta.outputTokens >= HEAVY_OUTPUT_TOKEN_THRESHOLD ? "long_or_heavy" : "updated"
+      };
     }
   }
 
-  sidebar.update(snapshot, daily, monthly);
+  sidebar.update(snapshot, daily, monthly, reaction);
+}
+
+function inferReactionState(
+  snapshot: Parameters<typeof sidebar.update>[0],
+  previous?: Parameters<typeof sidebar.update>[0]
+): MascotState {
+  if (!previous) {
+    return "idle";
+  }
+
+  if (snapshot.promptCount > previous.promptCount && snapshot.turnCount === previous.turnCount) {
+    return "new_prompt";
+  }
+
+  if (snapshot.responseCharCount > previous.responseCharCount) {
+    return "streaming_output";
+  }
+
+  const rangeRatio =
+    snapshot.totalEstimate.totalWaterMl > 0
+      ? snapshot.totalEstimate.highTotalWaterMl / snapshot.totalEstimate.totalWaterMl
+      : 1;
+  if (rangeRatio >= 2.8) {
+    return "uncertain";
+  }
+
+  return "idle";
 }
 
 async function sendStorageRequest(

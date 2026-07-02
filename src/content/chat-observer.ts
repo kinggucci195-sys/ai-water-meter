@@ -2,7 +2,9 @@ import { estimateUsage, sumEstimates, type UsageEstimate } from "../estimator/es
 import type { ChatPageProfile } from "./page-detectors";
 
 export type SessionSnapshot = {
+  promptCount: number;
   provider: string;
+  responseCharCount: number;
   turnCount: number;
   lastEstimate?: UsageEstimate;
   totalEstimate: UsageEstimate;
@@ -18,19 +20,23 @@ export function createChatObserver(
   let timer: number | undefined;
 
   const emit = () => {
-    const turns = collectTurns(profile);
-    const fingerprint = turns
-      .map((turn) => `${turn.promptText.length}:${turn.responseText.length}`)
-      .join("|");
+    const chat = collectChat(profile);
+    const fingerprint = [
+      chat.promptCount,
+      chat.responseCharCount,
+      ...chat.turns.map((turn) => `${turn.promptText.length}:${turn.responseText.length}`)
+    ].join("|");
     if (fingerprint === lastFingerprint) {
       return;
     }
 
     lastFingerprint = fingerprint;
-    const estimates = turns.map((turn) => estimateUsage(turn));
+    const estimates = chat.turns.map((turn) => estimateUsage(turn));
     listener({
+      promptCount: chat.promptCount,
       provider: profile.provider,
-      turnCount: turns.length,
+      responseCharCount: chat.responseCharCount,
+      turnCount: chat.turns.length,
       lastEstimate: estimates.at(-1),
       totalEstimate: sumEstimates(estimates)
     });
@@ -47,20 +53,33 @@ export function createChatObserver(
   return observer;
 }
 
-function collectTurns(
-  profile: ChatPageProfile
-): Array<{ promptText: string; responseText: string }> {
+function collectChat(profile: ChatPageProfile): {
+  promptCount: number;
+  responseCharCount: number;
+  turns: Array<{ promptText: string; responseText: string }>;
+} {
   const assistantBlocks = getTextBlocks(profile.assistantSelectors);
   const userBlocks = getTextBlocks(profile.userSelectors);
 
   if (!assistantBlocks.length) {
-    return inferGenericTurns();
+    const turns = inferGenericTurns();
+    return {
+      promptCount: 0,
+      responseCharCount: turns.reduce((sum, turn) => sum + turn.responseText.length, 0),
+      turns
+    };
   }
 
-  return assistantBlocks.map((responseText, index) => ({
+  const turns = assistantBlocks.map((responseText, index) => ({
     promptText: userBlocks[index] ?? userBlocks.at(-1) ?? "",
     responseText
   }));
+
+  return {
+    promptCount: userBlocks.length,
+    responseCharCount: assistantBlocks.reduce((sum, text) => sum + text.length, 0),
+    turns
+  };
 }
 
 function getTextBlocks(selectors: string[]): string[] {
