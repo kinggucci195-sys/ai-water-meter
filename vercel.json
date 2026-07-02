@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run app:build",
+  "outputDirectory": "web-app/dist",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
