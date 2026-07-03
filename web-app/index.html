@@ -3,7 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Water Meter</title>
+    
+    <!-- Primary SEO Metadata -->
+    <title>AI Water Meter - Calculate & Track Realtime AI Environmental Footprints</title>
+    <meta name="description" content="Estimate and track the operational water, energy, and carbon footprints of your AI chat sessions in real-time. Optimize your prompt efficiency with our open-source browser extension." />
+    <meta name="keywords" content="AI environmental footprint, carbon footprint tracker, AI water consumption, green computing, browser extension, ChatGPT energy consumption, Claude water usage" />
+    <meta name="author" content="AI Water Meter Team" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook Social Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://web-app-woad-rho.vercel.app/" />
+    <meta property="og:title" content="AI Water Meter - Calculate & Track Realtime AI Environmental Footprints" />
+    <meta property="og:description" content="Track the water, energy, and carbon footprint of ChatGPT, Claude, and Gemini in real-time. Optimize your prompts for environmental sustainability." />
+    <meta property="og:image" content="https://web-app-woad-rho.vercel.app/og-image.png" />
+
+    <!-- Twitter Social Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://web-app-woad-rho.vercel.app/" />
+    <meta name="twitter:title" content="AI Water Meter - Track Realtime AI Environmental Impact" />
+    <meta name="twitter:description" content="Calculate operational water, energy, and carbon usage of AI chat sessions. Install the extension to reduce green computing overhead." />
+    <meta name="twitter:image" content="https://web-app-woad-rho.vercel.app/og-image.png" />
+
+    <!-- AEO JSON-LD Schema (SoftwareApplication & FAQPage) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AI Water Meter",
+        "operatingSystem": "Chrome, Edge, Brave, Firefox",
+        "applicationCategory": "BrowserExtension, Utilities",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "USD"
+        },
+        "description": "An open-source browser extension and dashboard that estimates operational water, energy, and carbon footprints of AI chat sessions locally in real-time.",
+        "author": {
+          "@type": "Organization",
+          "name": "AI Water Meter Open Source Team",
+          "url": "https://github.com/kinggucci195-sys/ai-water-meter"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does the AI Water Meter calculate water and energy footprints?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The AI Water Meter estimates footprints by monitoring input and output token counts of chat prompts locally, mapping them to scientific models of datacenter electricity consumption, direct water cooling, and regional grid carbon intensity."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my AI chat history or private prompt text sent to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The extension processes all token counting and estimation calculations locally on your device. Only aggregated daily usage numbers (total milliliters of water, total watt-hours of energy) are synced to your account."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which AI chat platforms are currently supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The browser extension supports popular platforms including ChatGPT (OpenAI), Claude (Anthropic), Gemini (Google), Perplexity, and Poe."
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
