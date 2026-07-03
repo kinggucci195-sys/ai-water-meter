@@ -77,13 +77,13 @@ function SidebarApp({
             <div className="primary" data-slot="footprint-summary">
               <DropletScene state={reaction.state} />
               <div>
-                <span>Estimated session range</span>
+                <span>{snapshot?.isStreaming ? "Streaming Estimate" : "Live Water Estimate"}</span>
                 <strong>{total ? formatMilliliters(total.totalWaterMl) : "Scanning..."}</strong>
                 <small>
                   {total
                     ? `${formatMilliliters(total.lowTotalWaterMl)}-${formatMilliliters(
                         total.highTotalWaterMl
-                      )} from visible text`
+                      )} · Confidence: ${getConfidenceLabel(total)}`
                     : "Visible chat only"}
                 </small>
               </div>
@@ -98,6 +98,24 @@ function SidebarApp({
                 <dt>Energy</dt>
                 <dd>{total ? formatWh(total.energyWh) : "-"}</dd>
               </div>
+              {snapshot?.latencyMs !== undefined && (
+                <div>
+                  <dt>Latency</dt>
+                  <dd>{snapshot.latencyMs} ms</dd>
+                </div>
+              )}
+              {snapshot?.throughputTps !== undefined && (
+                <div>
+                  <dt>Speed</dt>
+                  <dd>{snapshot.throughputTps} tok/s</dd>
+                </div>
+              )}
+              {snapshot?.isStreaming && total && total.energyWh > 0 && (
+                <div>
+                  <dt>Burn Rate</dt>
+                  <dd>{getBurnRate(total, snapshot)} mL/s</dd>
+                </div>
+              )}
             </dl>
             <button
               type="button"
@@ -282,39 +300,81 @@ export function mountSidebar(
 }
 
 function getReactionCopy(reaction: SidebarReaction, snapshot?: SessionSnapshot): string {
+  const provider = snapshot?.provider ?? "AI";
+
   if (reaction.state === "updated" && reaction.deltaWaterMl && reaction.deltaWaterMl > 0) {
-    return `+${formatMilliliters(reaction.deltaWaterMl)} this turn`;
+    const ml = reaction.deltaWaterMl;
+    if (ml > 5) return `+${formatMilliliters(ml)}. ${provider} is gulping today.`;
+    if (ml > 2) return `+${formatMilliliters(ml)}. That prompt was thirsty.`;
+    return `+${formatMilliliters(ml)} — sip, not a gulp.`;
   }
 
   if (reaction.state === "new_prompt") {
-    return "New prompt noticed.";
+    const quips = [
+      `New prompt incoming. ${provider} is warming up the GPUs.`,
+      "Another one? Your keyboard is on fire.",
+      `Pip sees you typing. ${provider}'s cooling system braces itself.`
+    ];
+    return quips[Math.floor(Math.random() * quips.length)];
   }
 
   if (reaction.state === "streaming_output") {
-    return "Estimating as the reply streams...";
+    const quips = [
+      `${provider} is pouring tokens... and water.`,
+      "Tokens streaming. The meter is ticking.",
+      `${provider}'s data center just turned on another fan.`,
+      "Every character costs a drop. Literally."
+    ];
+    return quips[Math.floor(Math.random() * quips.length)];
   }
 
   if (reaction.state === "long_or_heavy") {
-    return "Longer answer, wider estimate range.";
+    const quips = [
+      `${provider} just wrote half a thesis. That wasn't cheap.`,
+      "That response could fill a swimming pool... of tokens.",
+      `Long answer. ${provider} is thirsty today.`
+    ];
+    return quips[Math.floor(Math.random() * quips.length)];
   }
 
   if (reaction.state === "uncertain") {
-    return "Range widened because provider details are unknown.";
+    return `Wide estimate — ${provider} doesn't share its homework.`;
   }
 
   if (reaction.state === "reset") {
-    return "Today reset.";
+    return "Slate wiped. Pip starts counting from zero.";
   }
 
   if (reaction.state === "error") {
-    return "Could not update local totals.";
+    return "Something broke. Even Pip needs a coffee break.";
   }
 
   if (reaction.state === "baseline") {
-    return "Existing chat set as baseline.";
+    return `Existing chat scanned. Pip is locked in on ${provider}.`;
   }
 
-  return snapshot ? "Pip is watching this session locally." : "Waking up the meter...";
+  return snapshot
+    ? `Pip is watching ${provider}. Every token counts.`
+    : "Waking up the meter...";
+}
+
+function getConfidenceLabel(estimate: { totalWaterMl: number; highTotalWaterMl: number }): string {
+  if (estimate.totalWaterMl <= 0) return "—";
+  const ratio = estimate.highTotalWaterMl / estimate.totalWaterMl;
+  if (ratio < 1.5) return "High";
+  if (ratio < 2.5) return "Medium";
+  return "Low";
+}
+
+function getBurnRate(
+  estimate: { totalWaterMl: number },
+  snapshot: SessionSnapshot
+): string {
+  if (!snapshot.throughputTps || snapshot.throughputTps <= 0) return "—";
+  // Approximate mL per token * tokens per second
+  const mlPerToken = estimate.totalWaterMl / Math.max(1, (snapshot.lastEstimate?.outputTokens ?? 1));
+  const rate = mlPerToken * snapshot.throughputTps;
+  return rate > 0 ? rate.toFixed(2) : "—";
 }
 
 const styles = `

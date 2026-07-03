@@ -506,6 +506,47 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       </div>
 
+      {/* Dopamine Milestones Banner */}
+      <div 
+        className="bento-card" 
+        style={{ 
+          marginBottom: "var(--space-md)", 
+          background: "linear-gradient(135deg, rgba(0, 242, 254, 0.03), rgba(140, 219, 253, 0.05))",
+          border: "1px solid rgba(0, 242, 254, 0.15)"
+        }}
+      >
+        <h3 style={{ margin: "0 0 10px 0", fontSize: "1.1rem", color: "var(--color-cyan)" }}>🏆 Sustainability Milestones</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "var(--space-sm)" }}>
+          <div>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Text Generated Equivalent</span>
+            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+              {stats.totalTokens >= 70000 ? `${(stats.totalTokens / 70000).toFixed(1)} novels` : `${Math.round((stats.totalTokens / 70000) * 250)} pages`}
+            </strong>
+            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              Based on standard 70k-token novels
+            </span>
+          </div>
+          <div>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Direct Cooling Saved</span>
+            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+              {stats.totalWater >= 240 ? `${(stats.totalWater / 240).toFixed(1)} cups` : `${(stats.totalWater / 5).toFixed(1)} teaspoons`}
+            </strong>
+            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              Datacenter cooling volumes
+            </span>
+          </div>
+          <div>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Phone Charge Equivalent</span>
+            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+              {Math.round(stats.totalEnergy * 0.1)} hours
+            </strong>
+            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              Running on smartphone battery cycles
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="bento-card" style={{ marginBottom: "var(--space-md)", padding: "var(--space-sm)" }}>
         <div
           style={{

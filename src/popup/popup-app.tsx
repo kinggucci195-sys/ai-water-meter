@@ -14,6 +14,34 @@ type PopupUsage = {
   monthly: MonthlyUsageRecord;
 };
 
+const PIP_QUIPS = [
+  "Every token costs a drop.",
+  "That last prompt? Thirsty.",
+  "AI doesn't sweat. Data centers do.",
+  "Your keyboard is a faucet.",
+  "Pip sees everything. Every. Token.",
+  "That regex cost more water than you think.",
+  "Pip is judging your prompt efficiency.",
+  "Data centers are drinking so you can chat."
+];
+
+function getNovelEquivalent(tokens: number): string {
+  const novels = tokens / 70_000; // Average novel ≈ 70k tokens
+  if (novels >= 1) return `${novels.toFixed(1)} novels`;
+  const pages = Math.round(novels * 250);
+  return `${pages} pages`;
+}
+
+function getTeaspoonEquivalent(ml: number): string {
+  const tsp = ml / 5; // 1 teaspoon ≈ 5 mL
+  if (tsp < 1) return `${(tsp * 100).toFixed(0)}% of a teaspoon`;
+  if (tsp < 10) return `${tsp.toFixed(1)} teaspoons`;
+  const cups = tsp / 48; // 1 cup ≈ 48 teaspoons
+  if (cups < 4) return `${cups.toFixed(1)} cups`;
+  const liters = ml / 1000;
+  return `${liters.toFixed(2)} liters`;
+}
+
 /**
  * Browser action popup summary for the user's local daily estimates.
  */
@@ -21,6 +49,7 @@ export function PopupApp() {
   const [usage, setUsage] = useState<PopupUsage | undefined>();
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [pipQuip] = useState(() => PIP_QUIPS[Math.floor(Math.random() * PIP_QUIPS.length)]);
 
   useEffect(() => {
     void Promise.all([getDailyUsage(), getMonthlyUsage()]).then(([daily, monthly]) => {
@@ -45,8 +74,10 @@ export function PopupApp() {
   }, []);
 
   const daily = usage?.daily;
+  const monthly = usage?.monthly;
   const phoneChargeSecs = daily ? Math.round(daily.energyWh * 360) : 0;
-  const boilMl = daily ? (daily.energyWh * 10.75).toFixed(1) : "0.0";
+  const totalTokens = daily ? daily.inputTokens + daily.outputTokens : 0;
+  const monthlyTokens = monthly ? monthly.inputTokens + monthly.outputTokens : 0;
 
   return (
     <main>
@@ -57,11 +88,16 @@ export function PopupApp() {
         </div>
         <DropletScene state={daily ? "updated" : "streaming_output"} />
       </header>
-      <p>Today, estimated locally from visible chat text. Not provider telemetry.</p>
+
+      {/* Pip sarcastic quip */}
+      <p style={{ fontStyle: "italic", fontSize: "11px", color: "oklch(0.72 0.08 205)", margin: "0 0 6px", textAlign: "center" }}>
+        💧 Pip says: "{pipQuip}"
+      </p>
+
       <dl className="summary">
         <div>
           <dt>This month</dt>
-          <dd>{usage ? formatMilliliters(usage.monthly.totalWaterMl) : "0 mL"}</dd>
+          <dd>{monthly ? formatMilliliters(monthly.totalWaterMl) : "0 mL"}</dd>
         </div>
         <div>
           <dt>Energy today</dt>
@@ -73,7 +109,7 @@ export function PopupApp() {
         </div>
         <div>
           <dt>Active days</dt>
-          <dd>{usage ? usage.monthly.days : 0}</dd>
+          <dd>{monthly ? monthly.days : 0}</dd>
         </div>
       </dl>
 
@@ -106,6 +142,8 @@ export function PopupApp() {
               <dd>{formatMilliliters(daily.directWaterMl + daily.indirectGridWaterMl)}</dd>
             </div>
           </dl>
+
+          {/* Expanded equivalencies */}
           {daily.energyWh > 0 && (
             <div
               style={{
@@ -117,12 +155,48 @@ export function PopupApp() {
                 color: "oklch(0.34 0.06 238)"
               }}
             >
-              <div style={{ fontWeight: "bold", marginBottom: "3px" }}>Equivalents:</div>
+              <div style={{ fontWeight: "bold", marginBottom: "3px" }}>Real-world Equivalents:</div>
               <div>
-                ⚡ Charging phone: <strong>{phoneChargeSecs} seconds</strong>
+                ⚡ Phone charging: <strong>{phoneChargeSecs} seconds</strong>
               </div>
               <div>
-                🔥 Boiling water: <strong>{boilMl} mL</strong>
+                💧 That's <strong>{getTeaspoonEquivalent(daily.totalWaterMl)}</strong> of cooling water
+              </div>
+              <div>
+                📖 You generated <strong>{getNovelEquivalent(totalTokens)}</strong> worth of text
+              </div>
+            </div>
+          )}
+
+          {/* Monthly milestone counter */}
+          {monthlyTokens > 0 && (
+            <div
+              style={{
+                marginTop: "8px",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "oklch(0.30 0.06 248)",
+                border: "1px solid oklch(0.44 0.06 248)",
+                fontSize: "11px",
+                lineHeight: "1.45",
+                color: "oklch(0.90 0.03 205)"
+              }}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "3px" }}>📊 Monthly Milestone:</div>
+              <div>
+                You've processed <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                  {monthlyTokens.toLocaleString()} tokens
+                </strong> this month
+              </div>
+              <div>
+                That's <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                  {getNovelEquivalent(monthlyTokens)}
+                </strong> of text through AI inference
+              </div>
+              <div>
+                Using <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                  {getTeaspoonEquivalent(monthly!.totalWaterMl)}
+                </strong> of cooling water
               </div>
             </div>
           )}
@@ -169,3 +243,4 @@ export function PopupApp() {
 function sendPopupRequest(message: StorageRequest): void {
   void chrome.runtime.sendMessage(message);
 }
+

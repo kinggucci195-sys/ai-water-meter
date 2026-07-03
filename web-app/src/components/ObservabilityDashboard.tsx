@@ -159,10 +159,55 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
   const energyDiffPct = benchmarkEnergy > 0 ? ((currentUsageWh - benchmarkEnergy) / benchmarkEnergy) * 100 : 0;
 
   return (
-    <div className="sustainability-widget bento-card" data-testid="sustainability-widget">
-      <h3 className="title" style={{ margin: "0 0 var(--space-sm)", fontSize: "var(--fs-h3)" }}>Sustainability Benchmark</h3>
-      <div className="selector-container" style={{ marginBottom: "var(--space-sm)", display: "flex", gap: "10px", alignItems: "center" }}>
-        <label htmlFor="model-select">Compare to:</label>
+    <div className="sustainability-widget bento-card" data-testid="sustainability-widget" style={{ marginTop: "var(--space-md)" }}>
+      <h3 className="title" style={{ margin: "0 0 var(--space-sm)", fontSize: "var(--fs-h3)", color: "var(--color-cyan)" }}>Sustainability Benchmark</h3>
+      
+      {/* 3-Column Side-by-Side Model Comparison Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "var(--space-sm)", marginBottom: "var(--space-md)" }}>
+        {comparisonModels.map((m) => {
+          const isSelected = m.name === selectedModel;
+          const stdWater = m.waterMlPerToken * 1000;
+          const stdEnergy = m.energyWhPerToken * 1000;
+          
+          return (
+            <div 
+              key={m.name} 
+              style={{
+                background: isSelected ? "rgba(0, 242, 254, 0.05)" : "rgba(255, 255, 255, 0.01)",
+                border: isSelected ? "1px solid var(--color-cyan)" : "1px solid var(--color-border-light)",
+                borderRadius: "8px",
+                padding: "var(--space-sm)",
+                transition: "all 0.3s ease",
+                boxShadow: isSelected ? "0 0 15px rgba(0, 242, 254, 0.15)" : "none"
+              }}
+            >
+              <h4 style={{ margin: "0 0 8px", fontSize: "1rem", color: isSelected ? "var(--color-cyan)" : "#fff" }}>
+                {m.name} {isSelected && "🎯"}
+              </h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                <li style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+                  <span>Direct Cooling:</span>
+                  <strong style={{ color: "#fff" }}>{stdWater} mL / 1k tok</strong>
+                </li>
+                <li style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+                  <span>Grid Electricity:</span>
+                  <strong style={{ color: "#fff" }}>{stdEnergy} Wh / 1k tok</strong>
+                </li>
+                <li style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>Carbon intensity:</span>
+                  <strong style={{ color: m.name.includes("Sonnet") ? "oklch(0.65 0.2 25)" : "var(--color-cyan)" }}>
+                    {m.name.includes("Sonnet") ? "High" : "Low"}
+                  </strong>
+                </li>
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Target Model Selector for comparisons */}
+      <div className="selector-container" style={{ marginBottom: "var(--space-sm)", display: "flex", gap: "10px", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "8px 12px", borderRadius: "6px" }}>
+        <label htmlFor="model-select" style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>Compare active usage to target baseline:</label>
         <select
           id="model-select"
           value={selectedModel}
@@ -173,7 +218,8 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
             border: "1px solid var(--color-border-light)",
             borderRadius: "6px",
             color: "#fff",
-            padding: "4px 8px"
+            padding: "4px 8px",
+            outline: "none"
           }}
         >
           {comparisonModels.map(m => (
@@ -182,18 +228,19 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
         </select>
       </div>
 
+      {/* Calculated percentage deltas (required by E2E tests) */}
       <div className="comparison-results" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--space-sm)" }}>
-        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px" }}>
-          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Water Comparison</span>
-          <span style={{ fontSize: "1.1rem" }}>{benchmarkWater} mL</span>
-          <span className="water-diff" style={{ display: "block", fontSize: "0.75rem", color: waterDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px" }}>
+        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px", border: "1px solid var(--color-border-light)" }}>
+          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Water Comparison Standard (1k tokens)</span>
+          <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{benchmarkWater} mL</span>
+          <span className="water-diff" style={{ display: "block", fontSize: "0.75rem", color: waterDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px", fontWeight: "bold" }}>
             Difference: {waterDiffPct >= 0 ? "+" : ""}{waterDiffPct.toFixed(1)}%
           </span>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px" }}>
-          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Energy Comparison</span>
-          <span style={{ fontSize: "1.1rem" }}>{benchmarkEnergy} Wh</span>
-          <span className="energy-diff" style={{ display: "block", fontSize: "0.75rem", color: energyDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px" }}>
+        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px", border: "1px solid var(--color-border-light)" }}>
+          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Energy Comparison Standard (1k tokens)</span>
+          <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{benchmarkEnergy} Wh</span>
+          <span className="energy-diff" style={{ display: "block", fontSize: "0.75rem", color: energyDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px", fontWeight: "bold" }}>
             Difference: {energyDiffPct >= 0 ? "+" : ""}{energyDiffPct.toFixed(1)}%
           </span>
         </div>
