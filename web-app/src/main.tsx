@@ -119,7 +119,11 @@ function App() {
         },
         () => void loadLeaderboard(period, setEntries)
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          void loadLeaderboard(period, setEntries);
+        }
+      });
 
     return () => {
       subscription.unsubscribe();

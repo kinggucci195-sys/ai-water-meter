@@ -112,7 +112,11 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               void fetchLatestData();
             }
           )
-          .subscribe();
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              void fetchLatestData();
+            }
+          });
 
         setLoading(false);
       } catch {
