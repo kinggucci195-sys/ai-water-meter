@@ -85,10 +85,15 @@ function App() {
       void client.auth.getUser().then(({ data }) => setEmail(data.user?.email));
     }
     const channel = client
-      .channel("leaderboard_entries")
+      .channel(`leaderboard_entries_${period}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "leaderboard_entries" },
+        {
+          event: "*",
+          schema: "public",
+          table: "leaderboard_entries",
+          filter: `period=eq.${period}`
+        },
         () => void loadLeaderboard(period, setEntries)
       )
       .subscribe();
