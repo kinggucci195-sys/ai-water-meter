@@ -359,10 +359,10 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-text-secondary);
   border-radius: 6px;
-  width: 32px;
-  height: 32px;
+  width: 2.2rem;
+  height: 2.2rem;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: var(--fs-caption);
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -405,10 +405,10 @@ button:disabled {
 
 .leaderboard-tabs {
   display: flex;
-  gap: 8px;
+  gap: var(--space-xs);
   margin-bottom: var(--space-md);
   border-bottom: 1px solid var(--color-border-light);
-  padding-bottom: 12px;
+  padding-bottom: var(--space-sm);
 }
 
 .leaderboard-tab-btn {
@@ -418,7 +418,7 @@ button:disabled {
   font-family: var(--font-display);
   font-size: var(--fs-caption);
   font-weight: 700;
-  padding: 8px 16px;
+  padding: var(--space-xs) var(--space-sm);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -472,7 +472,7 @@ button:disabled {
 }
 
 .history-table th {
-  padding: 8px var(--space-xs);
+  padding: var(--space-xs) var(--space-xs);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-secondary);
   font-family: var(--font-display);
@@ -482,7 +482,7 @@ button:disabled {
 }
 
 .history-table td {
-  padding: 10px var(--space-xs);
+  padding: var(--space-sm) var(--space-xs);
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
   color: var(--color-text-primary);
 }

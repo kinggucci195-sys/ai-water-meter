@@ -338,16 +338,16 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "48px 0", color: "#8cdbfd" }}>
+      <div style={{ textAlign: "center", padding: "var(--space-lg) 0", color: "var(--color-cyan)" }}>
         <div
           className="spinner"
           style={{
-            margin: "24px auto",
-            width: "40px",
-            height: "40px",
+            margin: "var(--space-md) auto",
+            width: "2.5rem",
+            height: "2.5rem",
             border: "4px solid rgba(255,255,255,0.1)",
             borderRadius: "50%",
-            borderTopColor: "#8cdbfd",
+            borderTopColor: "var(--color-cyan)",
             animation: "spin 1s linear infinite"
           }}
         ></div>
@@ -364,17 +364,17 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
       {isDemo && (
         <div
           style={{
-            padding: "10px 14px",
+            padding: "var(--space-xs) var(--space-sm)",
             background: "rgba(245, 159, 0, 0.08)",
             border: "1px solid rgba(245, 159, 0, 0.2)",
             borderRadius: "8px",
             color: "#ffe066",
-            fontSize: "0.85rem",
+            fontSize: "var(--fs-caption)",
             marginBottom: "var(--space-md)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: "8px"
+            gap: "var(--space-xs)"
           }}
         >
           <span>
@@ -387,9 +387,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               border: "none",
               color: "#030611",
               background: "var(--color-cyan)",
-              padding: "4px 10px",
+              padding: "var(--space-xxs) var(--space-xs)",
               borderRadius: "4px",
-              fontSize: "0.75rem",
+              fontSize: "var(--fs-caption)",
               cursor: "pointer",
               minHeight: "auto"
             }}
@@ -400,18 +400,18 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "var(--space-md)", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "var(--space-md)", flexWrap: "wrap" }}>
         <div
           style={{
-            width: "64px",
-            height: "64px",
+            width: "var(--space-xl)",
+            height: "var(--space-xl)",
             borderRadius: "50%",
             background: "linear-gradient(135deg, var(--color-blue), var(--color-cyan))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "#030611",
-            fontSize: "1.5rem",
+            fontSize: "var(--fs-h3)",
             fontWeight: "900",
             fontFamily: "var(--font-display)",
             boxShadow: "0 0 20px var(--color-cyan-glow)"
@@ -420,8 +420,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           {initials}
         </div>
         <div>
-          <h2 style={{ margin: 0, fontSize: "1.45rem" }}>{displayName}</h2>
-          <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+          <h2 style={{ margin: 0, fontSize: "var(--fs-h2)" }}>{displayName}</h2>
+          <p style={{ margin: "2px 0 0", fontSize: "var(--fs-caption)", color: "var(--color-text-secondary)" }}>
             {email} ·{" "}
             {isMockMode ? (
               <span style={{ color: "oklch(0.65 0.2 45)", fontWeight: "bold" }}>
@@ -673,8 +673,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "20px",
-          marginBottom: "28px"
+          gap: "var(--space-md)",
+          marginBottom: "var(--space-md)"
         }}
       >
         <div className="bento-card">
@@ -786,12 +786,12 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "20px"
+          gap: "var(--space-md)"
         }}
       >
         <div className="bento-card">
           <h3>Weekly Footprint Summaries</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
             {weeklyReports.map((week) => (
               <div
                 key={week.weekStart}
