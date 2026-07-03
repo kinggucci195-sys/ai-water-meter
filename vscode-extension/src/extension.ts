@@ -41,14 +41,48 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       await refreshStatus();
       vscode.window.showInformationMessage("AI Water Meter reset today's local estimate.");
     }),
+    vscode.commands.registerCommand("aiWaterMeter.signIn", () => {
+      void vscode.env.openExternal(
+        vscode.Uri.parse("https://web-app-woad-rho.vercel.app/account")
+      );
+    }),
     vscode.commands.registerCommand("aiWaterMeter.openMethodology", () => {
       void vscode.env.openExternal(
         vscode.Uri.parse("https://github.com/kinggucci195-sys/ai-water-meter/blob/main/DATASET.md")
       );
-    })
+    }),
+    vscode.window.registerUriHandler(new AIWaterMeterUriHandler(context, refreshStatus))
   );
 
   await refreshStatus();
+}
+
+class AIWaterMeterUriHandler implements vscode.UriHandler {
+  constructor(
+    private context: vscode.ExtensionContext,
+    private refreshStatus: () => Promise<void>
+  ) {}
+
+  async handleUri(uri: vscode.Uri): Promise<void> {
+    if (uri.path === "/auth") {
+      const params = new URLSearchParams(uri.query);
+      const token = params.get("token");
+      const userId = params.get("userId");
+
+      if (token && userId) {
+        const config = vscode.workspace.getConfiguration("aiWaterMeter");
+        await Promise.all([
+          config.update("supabaseToken", token, vscode.ConfigurationTarget.Global),
+          config.update("supabaseUserId", userId, vscode.ConfigurationTarget.Global)
+        ]);
+
+        vscode.window.showInformationMessage(
+          "🔌 AI Water Meter: Successfully connected to your Cloud Account!"
+        );
+        await this.refreshStatus();
+      }
+    }
+  }
 }
 
 export function deactivate(): void {

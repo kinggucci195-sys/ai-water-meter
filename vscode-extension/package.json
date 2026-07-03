@@ -34,6 +34,8 @@
     "onCommand:aiWaterMeter.estimateSelection",
     "onCommand:aiWaterMeter.estimateClipboard",
     "onCommand:aiWaterMeter.resetToday",
+    "onCommand:aiWaterMeter.signIn",
+    "onUri",
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
@@ -50,6 +52,10 @@
       {
         "command": "aiWaterMeter.resetToday",
         "title": "AI Water Meter: Reset Today"
+      },
+      {
+        "command": "aiWaterMeter.signIn",
+        "title": "AI Water Meter: Sign In"
       },
       {
         "command": "aiWaterMeter.openMethodology",

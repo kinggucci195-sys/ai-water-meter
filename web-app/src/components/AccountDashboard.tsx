@@ -435,7 +435,41 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             )}
           </p>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: "10px" }}>
+        <div style={{ ... (isMockMode ? {} : { display: "flex", gap: "10px", alignItems: "center" }) }}>
+          {!isMockMode && (
+            <button
+              type="button"
+              style={{
+                background: "linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(140, 219, 253, 0.2))",
+                border: "1px solid var(--color-cyan)",
+                borderRadius: "6px",
+                color: "var(--color-cyan)",
+                fontSize: "0.8rem",
+                padding: "6px 12px",
+                cursor: "pointer",
+                minHeight: "auto",
+                fontWeight: "bold",
+                boxShadow: "0 0 10px rgba(0, 242, 254, 0.1)"
+              }}
+              onClick={async () => {
+                if (!supabase) {
+                  alert("Supabase config is missing.");
+                  return;
+                }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                  const token = session.access_token;
+                  const userId = session.user.id;
+                  const redirectUrl = `vscode://ai-water-meter.ai-water-meter-vscode/auth?token=${encodeURIComponent(token)}&userId=${encodeURIComponent(userId)}`;
+                  window.location.href = redirectUrl;
+                } else {
+                  alert("Please sign in to the web app first.");
+                }
+              }}
+            >
+              🔌 Link to VS Code
+            </button>
+          )}
           <a
             className="text-link"
             href="/"
@@ -446,7 +480,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               color: "#fff",
               fontSize: "0.8rem",
               padding: "6px 12px",
-              minHeight: "auto"
+              minHeight: "auto",
+              textDecoration: "none",
+              display: "inline-block"
             }}
           >
             Leaderboard
