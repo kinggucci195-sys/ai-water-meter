@@ -9,6 +9,8 @@ export type SessionSnapshot = {
   lastEstimate?: UsageEstimate;
   totalEstimate: UsageEstimate;
   isStreaming: boolean;
+  latencyMs?: number;
+  throughputTps?: number;
 };
 
 export type SnapshotListener = (snapshot: SessionSnapshot) => void | Promise<void>;
@@ -21,6 +23,8 @@ export function createChatObserver(
   let throttleTimer: number | undefined;
   let debounceTimer: number | undefined;
   let isStreaming = false;
+  let startTime = 0;
+  let firstChunkTime = 0;
 
   const emit = (streaming: boolean) => {
     const chat = collectChat(profile);
@@ -36,34 +40,58 @@ export function createChatObserver(
 
     lastFingerprint = fingerprint;
     const estimates = chat.turns.map((turn) => estimateUsage(turn));
+    
+    const now = Date.now();
+    const latency = firstChunkTime > 0 ? (firstChunkTime - startTime) : undefined;
+    const lastEst = estimates.at(-1);
+    
+    // Calculate running throughput (tokens/sec) based on elapsed generation time
+    const activeTimeSec = startTime > 0 ? (now - startTime) / 1000 : 0;
+    const outputTokens = lastEst ? lastEst.outputTokens : 0;
+    const throughput = activeTimeSec > 0.2 ? (outputTokens / activeTimeSec) : undefined;
+
     listener({
       promptCount: chat.promptCount,
       provider: profile.provider,
       responseCharCount: chat.responseCharCount,
       turnCount: chat.turns.length,
-      lastEstimate: estimates.at(-1),
+      lastEstimate: lastEst,
       totalEstimate: sumEstimates(estimates),
-      isStreaming: streaming
+      isStreaming: streaming,
+      latencyMs: latency,
+      throughputTps: throughput ? Math.round(throughput * 10) / 10 : undefined
     });
   };
 
   const handleMutation = () => {
     isStreaming = true;
     
-    // Throttle UI updates to 150ms interval during active streaming
+    if (startTime === 0) {
+      startTime = Date.now() - 50; // Offset for typing latency
+    }
+    
+    // Detect first chunk arrival to calculate TTFT (Time To First Token)
+    const chat = collectChat(profile);
+    if (firstChunkTime === 0 && chat.responseCharCount > 0) {
+      firstChunkTime = Date.now();
+    }
+    
     if (!throttleTimer) {
       throttleTimer = window.setInterval(() => {
         emit(true);
       }, 150);
     }
 
-    // Debounce database synchronization until 1000ms after last stream mutation
     window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => {
       isStreaming = false;
       window.clearInterval(throttleTimer);
       throttleTimer = undefined;
       emit(false);
+      
+      // Reset timers for the next chat turn
+      startTime = 0;
+      firstChunkTime = 0;
     }, 1000);
   };
 

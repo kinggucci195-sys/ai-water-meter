@@ -10,6 +10,7 @@ import {
 } from "../utils/formatters";
 import { generateDemoUsage } from "../utils/demoData";
 import { LeaderboardSettings } from "./LeaderboardSettings";
+import { ObservabilityDashboard } from "./ObservabilityDashboard";
 
 interface AccountDashboardProps {
   email?: string;
@@ -848,6 +849,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           </div>
         </div>
       </div>
+      
+      <ObservabilityDashboard />
     </section>
   );
 }
