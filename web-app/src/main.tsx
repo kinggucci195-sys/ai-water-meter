@@ -80,10 +80,33 @@ function App() {
     }
 
     const client = supabase;
-    const mockEmail = localStorage.getItem("sb-mock-email");
-    if (!mockEmail) {
-      void client.auth.getUser().then(({ data }) => setEmail(data.user?.email));
-    }
+
+    // Check real session first
+    void client.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        localStorage.removeItem("sb-mock-email");
+        setEmail(session.user.email);
+      } else {
+        const mock = localStorage.getItem("sb-mock-email");
+        if (mock) {
+          setEmail(mock);
+        } else {
+          setEmail(undefined);
+        }
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        localStorage.removeItem("sb-mock-email");
+        setEmail(session.user.email);
+      } else {
+        const mock = localStorage.getItem("sb-mock-email");
+        setEmail(mock || undefined);
+      }
+    });
+
     const channel = client
       .channel(`leaderboard_entries_${period}`)
       .on(
@@ -99,6 +122,7 @@ function App() {
       .subscribe();
 
     return () => {
+      subscription.unsubscribe();
       void client.removeChannel(channel);
     };
   }, [period]);

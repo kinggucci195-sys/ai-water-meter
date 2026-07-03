@@ -418,7 +418,16 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         <div>
           <h2 style={{ margin: 0, fontSize: "1.45rem" }}>{displayName}</h2>
           <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-            {email} · <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>Synced Account</span>
+            {email} ·{" "}
+            {isMockMode ? (
+              <span style={{ color: "oklch(0.65 0.2 45)", fontWeight: "bold" }}>
+                Mock Mode (Not Synced)
+              </span>
+            ) : (
+              <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
+                Synced Account
+              </span>
+            )}
           </p>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: "10px" }}>

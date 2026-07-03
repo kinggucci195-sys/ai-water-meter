@@ -17,20 +17,24 @@ if (isWebApp) {
     let supabaseToken = "";
     let supabaseUserId = "";
 
-    const mockEmail = localStorage.getItem("sb-mock-email");
-    if (mockEmail) {
-      email = mockEmail;
-    } else {
-      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-      if (tokenStr) {
-        try {
-          const parsed = JSON.parse(tokenStr);
-          email = parsed?.user?.email || null;
-          supabaseToken = parsed?.access_token || "";
-          supabaseUserId = parsed?.user?.id || "";
-        } catch {
-          // Ignore parsing errors
-        }
+    const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+    if (tokenStr) {
+      try {
+        const parsed = JSON.parse(tokenStr);
+        email = parsed?.user?.email || null;
+        supabaseToken = parsed?.access_token || "";
+        supabaseUserId = parsed?.user?.id || "";
+        // Clear mock email to avoid conflict
+        localStorage.removeItem("sb-mock-email");
+      } catch {
+        // Ignore parsing errors
+      }
+    }
+
+    if (!email) {
+      const mockEmail = localStorage.getItem("sb-mock-email");
+      if (mockEmail) {
+        email = mockEmail;
       }
     }
 

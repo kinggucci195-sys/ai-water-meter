@@ -25,6 +25,9 @@ export function AuthCallback() {
     const code = params.get("code");
     if (code) {
       void supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        if (!error && data.session) {
+          localStorage.removeItem("sb-mock-email");
+        }
         setStatus(
           error
             ? `Sign-in error: ${error.message}`
@@ -35,6 +38,9 @@ export function AuthCallback() {
       });
     } else {
       void supabase.auth.getSession().then(({ data, error }) => {
+        if (!error && data.session) {
+          localStorage.removeItem("sb-mock-email");
+        }
         setStatus(
           error
             ? error.message
