@@ -28,6 +28,10 @@ const pgPool = new Pool({
   connectionTimeoutMillis: 2000
 });
 
+pgPool.on("error", (err) => {
+  fastify.log.error("Idle PG client error: " + err.message);
+});
+
 // 2. Initialize Redis Client (Graceful Fallback if offline)
 let redis: Redis | null = null;
 if (process.env.REDIS_URL) {
@@ -57,7 +61,7 @@ function verifySupabaseToken(authHeader?: string): string {
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as SupabaseJwtPayload;
+    const decoded = jwt.verify(token, jwtSecret, { algorithms: ["HS256"] }) as SupabaseJwtPayload;
     return decoded.sub; // Returns the user's UUID
   } catch (error: any) {
     throw new Error("Token verification failed: " + error.message);

@@ -8,7 +8,7 @@ import { mountSidebar, type SidebarReaction } from "./sidebar";
 
 const host = window.location.hostname;
 const isWebApp =
-  host.includes("vercel.app") || host.includes("127.0.0.1") || host.includes("localhost");
+  host === "web-app-woad-rho.vercel.app" || host === "localhost" || host === "127.0.0.1";
 
 if (isWebApp) {
   // Sync Web App Session -> Extension Storage (whenever Web App is open and logged in)
