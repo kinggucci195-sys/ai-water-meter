@@ -114,7 +114,7 @@ function App() {
         {
           event: "*",
           schema: "public",
-          table: "leaderboard_entries",
+          table: "leaderboard_entries_raw",
           filter: `period=eq.${period}`
         },
         () => void loadLeaderboard(period, setEntries)
