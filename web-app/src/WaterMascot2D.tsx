@@ -26,6 +26,11 @@ export function WaterMascot2D() {
 
   return (
     <div className="mascot-stage-2d" aria-label="Animated AI Water Meter droplet mascot">
+      {/* Telemetric HUD Rings */}
+      <div className="hud-ring hud-ring-outer"></div>
+      <div className="hud-ring hud-ring-inner"></div>
+      <div className="hud-ring hud-ring-center"></div>
+
       <div className="mascot-ripple-container">
         <div className="mascot-ripple animate-ripple-1"></div>
         <div className="mascot-ripple animate-ripple-2"></div>

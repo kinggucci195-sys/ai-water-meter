@@ -13,25 +13,15 @@ export function LeaderboardSettings({
   handleSaveLeaderboardName
 }: LeaderboardSettingsProps) {
   return (
-    <div
-      style={{
-        background: "rgba(255, 255, 255, 0.02)",
-        border: "1px solid rgba(255, 255, 255, 0.06)",
-        borderRadius: "12px",
-        padding: "20px",
-        marginBottom: "28px"
-      }}
-    >
-      <h3 style={{ margin: "0 0 10px", fontSize: "1rem", color: "#fff" }}>
-        🏆 Global Leaderboard Nickname
-      </h3>
-      <p style={{ margin: "0 0 16px", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+    <div className="bento-card" style={{ marginBottom: "var(--space-md)" }}>
+      <h3>🏆 Global Leaderboard Nickname</h3>
+      <p style={{ marginBottom: "var(--space-sm)", fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
         Set a custom nickname to display on the public leaderboard. Defaults to your email username.
       </p>
 
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <label style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.7)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <label style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", fontWeight: "bold" }}>
             Display Name:
           </label>
           <input
@@ -40,13 +30,23 @@ export function LeaderboardSettings({
             onChange={(e) => setOptedInName(e.target.value)}
             disabled={isMockMode}
             style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "rgba(0, 240, 255, 0.03)",
+              border: "1px solid rgba(0, 240, 255, 0.15)",
               borderRadius: "6px",
               color: "#fff",
-              fontSize: "0.8125rem",
-              padding: "6px 12px",
-              outline: "none"
+              fontSize: "0.85rem",
+              padding: "8px 16px",
+              outline: "none",
+              fontFamily: "var(--font-body)",
+              transition: "border-color 0.2s ease, box-shadow 0.2s ease"
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "var(--color-cyan)";
+              e.target.style.boxShadow = "0 0 10px rgba(0, 240, 255, 0.2)";
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = "rgba(0, 240, 255, 0.15)";
+              e.target.style.boxShadow = "none";
             }}
           />
           <button
@@ -54,13 +54,8 @@ export function LeaderboardSettings({
             onClick={handleSaveLeaderboardName}
             disabled={isMockMode}
             style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              borderRadius: "6px",
-              color: "#fff",
-              fontSize: "0.75rem",
-              padding: "6px 12px",
-              cursor: "pointer"
+              minHeight: "36px",
+              padding: "0 16px"
             }}
           >
             Save Name

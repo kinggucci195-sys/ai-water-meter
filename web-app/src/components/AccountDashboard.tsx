@@ -356,17 +356,17 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
   const displayName = email ? email.split("@")[0] : "AI Explorer";
 
   return (
-    <section className="panel" style={{ marginTop: "24px" }}>
+    <section className="panel" style={{ marginTop: "var(--space-md)" }}>
       {isDemo && (
         <div
           style={{
             padding: "10px 14px",
-            background: "oklch(0.3 0.05 25 / 0.5)",
-            border: "1px solid oklch(0.7 0.1 25 / 0.3)",
+            background: "rgba(245, 159, 0, 0.08)",
+            border: "1px solid rgba(245, 159, 0, 0.2)",
             borderRadius: "8px",
-            color: "oklch(0.75 0.1 25)",
-            fontSize: "0.8125rem",
-            marginBottom: "20px",
+            color: "#ffe066",
+            fontSize: "0.85rem",
+            marginBottom: "var(--space-md)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -379,15 +379,15 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           </span>
           <button
             type="button"
-            className="text-link-btn"
             style={{
               border: "none",
-              color: "#fff",
-              background: "oklch(0.55 0.11 185)",
+              color: "#030611",
+              background: "var(--color-cyan)",
               padding: "4px 10px",
               borderRadius: "4px",
               fontSize: "0.75rem",
-              cursor: "pointer"
+              cursor: "pointer",
+              minHeight: "auto"
             }}
             onClick={() => window.location.reload()}
           >
@@ -396,28 +396,29 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "var(--space-md)", flexWrap: "wrap" }}>
         <div
           style={{
-            width: "72px",
-            height: "72px",
+            width: "64px",
+            height: "64px",
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #0e3054, #8cdbfd)",
+            background: "linear-gradient(135deg, var(--color-blue), var(--color-cyan))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#ffffff",
-            fontSize: "1.75rem",
-            fontWeight: "bold",
-            boxShadow: "0 0 20px rgba(140, 219, 253, 0.2)"
+            color: "#030611",
+            fontSize: "1.5rem",
+            fontWeight: "900",
+            fontFamily: "var(--font-display)",
+            boxShadow: "0 0 20px var(--color-cyan-glow)"
           }}
         >
           {initials}
         </div>
         <div>
-          <h2 style={{ margin: 0, color: "#fff", fontSize: "1.625rem" }}>{displayName}</h2>
-          <p style={{ margin: "4px 0 0", color: "oklch(0.55 0.03 240)", fontSize: "0.875rem" }}>
-            {email} · <span style={{ color: "#8cdbfd", fontWeight: "bold" }}>Synced Account</span>
+          <h2 style={{ margin: 0, fontSize: "1.45rem" }}>{displayName}</h2>
+          <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+            {email} · <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>Synced Account</span>
           </p>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: "10px" }}>
@@ -425,11 +426,11 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             className="text-link"
             href="/"
             style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid var(--color-border-light)",
               borderRadius: "6px",
               color: "#fff",
-              fontSize: "0.8125rem",
+              fontSize: "0.8rem",
               padding: "6px 12px",
               minHeight: "auto"
             }}
@@ -440,10 +441,10 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             type="button"
             style={{
               background: "none",
-              border: "1px solid rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "6px",
-              color: "rgba(255,255,255,0.6)",
-              fontSize: "0.8125rem",
+              color: "var(--color-text-secondary)",
+              fontSize: "0.8rem",
               padding: "6px 12px",
               cursor: "pointer",
               minHeight: "auto"
@@ -464,32 +465,25 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "14px",
-          marginBottom: "28px"
-        }}
-      >
-        <div className="stats-card">
+      <div className="stats-grid">
+        <div className="bento-card">
           <span className="stats-label">Lifetime Tokens</span>
           <strong className="stats-value">{formatTokens(stats.totalTokens)}</strong>
           <span className="stats-subtext">Total inference count</span>
         </div>
-        <div className="stats-card">
+        <div className="bento-card">
           <span className="stats-label">Peak Daily Volume</span>
           <strong className="stats-value">{formatTokens(stats.peakTokens)}</strong>
           <span className="stats-subtext">Single day record</span>
         </div>
-        <div className="stats-card">
+        <div className="bento-card">
           <span className="stats-label">Current Streak</span>
           <strong className="stats-value">
             {stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}
           </strong>
           <span className="stats-subtext">Consecutive active days</span>
         </div>
-        <div className="stats-card">
+        <div className="bento-card">
           <span className="stats-label">Longest Streak</span>
           <strong className="stats-value">
             {stats.longestStreak} {stats.longestStreak === 1 ? "day" : "days"}
@@ -498,48 +492,42 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       </div>
 
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.02)",
-          border: "1px solid rgba(255, 255, 255, 0.06)",
-          borderRadius: "12px",
-          padding: "20px",
-          marginBottom: "28px"
-        }}
-      >
+      <div className="bento-card" style={{ marginBottom: "var(--space-md)", padding: "var(--space-sm)" }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "14px"
+            marginBottom: "var(--space-sm)",
+            flexWrap: "wrap",
+            gap: "8px"
           }}
         >
-          <h3 style={{ margin: 0, fontSize: "1rem", color: "#fff" }}>Water Footprint Grid</h3>
+          <h3 style={{ margin: 0 }}>Water Footprint Grid</h3>
           <div
             style={{
               display: "flex",
-              gap: "5px",
+              gap: "6px",
               alignItems: "center",
-              fontSize: "0.6875rem",
-              color: "rgba(255,255,255,0.4)"
+              fontSize: "0.75rem",
+              color: "var(--color-text-secondary)"
             }}
           >
             <span>Less</span>
             <div
-              style={{ width: "14px", height: "14px", background: "#161B22", borderRadius: "3px" }}
+              style={{ width: "12px", height: "12px", background: "#0e1327", borderRadius: "2.5px" }}
             ></div>
             <div
-              style={{ width: "14px", height: "14px", background: "#0E4377", borderRadius: "3px" }}
+              style={{ width: "12px", height: "12px", background: "#09345a", borderRadius: "2.5px" }}
             ></div>
             <div
-              style={{ width: "14px", height: "14px", background: "#1A6FC4", borderRadius: "3px" }}
+              style={{ width: "12px", height: "12px", background: "#005fa3", borderRadius: "2.5px" }}
             ></div>
             <div
-              style={{ width: "14px", height: "14px", background: "#2D8CFF", borderRadius: "3px" }}
+              style={{ width: "12px", height: "12px", background: "#00a2ff", borderRadius: "2.5px" }}
             ></div>
             <div
-              style={{ width: "14px", height: "14px", background: "#79C0FF", borderRadius: "3px" }}
+              style={{ width: "12px", height: "12px", background: "#00ffea", borderRadius: "2.5px" }}
             ></div>
             <span>More</span>
           </div>
@@ -567,30 +555,16 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                 gridTemplateRows: "repeat(7, 14px)",
                 gap: "3px",
                 alignItems: "center",
-                paddingRight: "4px"
+                paddingRight: "6px"
               }}
             >
-              <span
-                style={{ gridRow: 1, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
-              ></span>
-              <span style={{ gridRow: 2, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
-                Mon
-              </span>
-              <span
-                style={{ gridRow: 3, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
-              ></span>
-              <span style={{ gridRow: 4, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
-                Wed
-              </span>
-              <span
-                style={{ gridRow: 5, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
-              ></span>
-              <span style={{ gridRow: 6, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}>
-                Fri
-              </span>
-              <span
-                style={{ gridRow: 7, fontSize: "0.5625rem", color: "rgba(255,255,255,0.35)" }}
-              ></span>
+              <span style={{ gridRow: 1, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
+              <span style={{ gridRow: 2, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Mon</span>
+              <span style={{ gridRow: 3, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
+              <span style={{ gridRow: 4, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Wed</span>
+              <span style={{ gridRow: 5, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
+              <span style={{ gridRow: 6, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Fri</span>
+              <span style={{ gridRow: 7, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
             </div>
 
             {/* Main heatmap grid */}
@@ -607,11 +581,11 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               }}
             >
               {heatmapCells.map((cell, idx) => {
-                let color = "#161B22";
-                if (cell.water > 0 && cell.water <= 50) color = "#0E4377";
-                else if (cell.water > 50 && cell.water <= 200) color = "#1A6FC4";
-                else if (cell.water > 200 && cell.water <= 500) color = "#2D8CFF";
-                else if (cell.water > 500) color = "#79C0FF";
+                let color = "#0e1327";
+                if (cell.water > 0 && cell.water <= 50) color = "#09345a";
+                else if (cell.water > 50 && cell.water <= 200) color = "#005fa3";
+                else if (cell.water > 200 && cell.water <= 500) color = "#00a2ff";
+                else if (cell.water > 500) color = "#00ffea";
 
                 return (
                   <div
@@ -625,13 +599,13 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                       position: "relative" as const,
                       zIndex: cell.isToday ? 1 : 0,
                       boxShadow: cell.isToday
-                        ? "0 0 0 2px rgba(255,255,255,0.7), 0 0 8px rgba(45,140,255,0.5)"
+                        ? "0 0 0 2px #ffffff, 0 0 10px var(--color-cyan)"
                         : "none",
                       transition: "transform 0.15s ease, box-shadow 0.15s ease",
                       cursor: "pointer"
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.3)";
+                      e.currentTarget.style.transform = "scale(1.25)";
                       e.currentTarget.style.zIndex = "2";
                     }}
                     onMouseLeave={(e) => {
@@ -662,7 +636,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                     position: "absolute",
                     left: `${m.column * 17}px`,
                     fontSize: "0.625rem",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "var(--color-text-muted)",
                     whiteSpace: "nowrap"
                   }}
                 >
@@ -690,17 +664,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           marginBottom: "28px"
         }}
       >
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            borderRadius: "12px",
-            padding: "20px"
-          }}
-        >
-          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
-            Cost & Token Analytics
-          </h3>
+        <div className="bento-card">
+          <h3>Cost & Token Analytics</h3>
           <div
             style={{
               display: "grid",
@@ -710,22 +675,18 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             }}
           >
             <div>
-              <span
-                style={{ display: "block", fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}
-              >
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
                 Estimated AI Cost
               </span>
-              <strong style={{ fontSize: "1.5rem", color: "#4ea1f1" }}>
+              <strong style={{ fontSize: "1.5rem", color: "var(--color-blue)" }}>
                 ${stats.costEstimate.toFixed(4)}
               </strong>
             </div>
             <div>
-              <span
-                style={{ display: "block", fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}
-              >
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
                 Prompt Efficiency
               </span>
-              <strong style={{ fontSize: "1.5rem", color: "#8cdbfd" }}>
+              <strong style={{ fontSize: "1.5rem", color: "var(--color-cyan)" }}>
                 {stats.promptEfficiency.toFixed(1)}%
               </strong>
             </div>
@@ -738,11 +699,11 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                   display: "flex",
                   justifyContent: "space-between",
                   fontSize: "0.75rem",
-                  marginBottom: "4px"
+                  marginBottom: "6px"
                 }}
               >
                 <span>Cost Analysis (Conciseness)</span>
-                <span>
+                <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
                   {stats.promptEfficiency > 100 ? "Highly concise answers" : "Verbose answers"}
                 </span>
               </div>
@@ -759,7 +720,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                   style={{
                     width: `${Math.min(stats.promptEfficiency, 100)}%`,
                     height: "100%",
-                    background: "linear-gradient(90deg, #0e3054, #8cdbfd)",
+                    background: "linear-gradient(90deg, var(--color-blue), var(--color-cyan))",
                     borderRadius: "3px"
                   }}
                 />
@@ -768,90 +729,39 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           </div>
         </div>
 
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            borderRadius: "12px",
-            padding: "20px"
-          }}
-        >
-          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
-            Resource footprint
-          </h3>
+        <div className="bento-card">
+          <h3>Resource Footprint</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
             <div>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.4)",
-                  marginBottom: "4px"
-                }}
-              >
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
                 Water Footprint
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatMilliliters(stats.totalWater)}
               </strong>
-              <small
-                style={{
-                  display: "block",
-                  fontSize: "0.6875rem",
-                  color: "rgba(255,255,255,0.3)",
-                  marginTop: "2px"
-                }}
-              >
+              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
                 boil ~{(stats.totalEnergy * 10.75).toFixed(0)} mL equivalent
               </small>
             </div>
             <div>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.4)",
-                  marginBottom: "4px"
-                }}
-              >
-                Energy footprint
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
+                Energy Footprint
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatWh(stats.totalEnergy)}
               </strong>
-              <small
-                style={{
-                  display: "block",
-                  fontSize: "0.6875rem",
-                  color: "rgba(255,255,255,0.3)",
-                  marginTop: "2px"
-                }}
-              >
+              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
                 charge phone {Math.round(stats.totalEnergy * 360).toLocaleString()}s
               </small>
             </div>
             <div>
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.4)",
-                  marginBottom: "4px"
-                }}
-              >
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
                 Carbon Emissions
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatCarbon(stats.totalCarbon)}
               </strong>
-              <small
-                style={{
-                  display: "block",
-                  fontSize: "0.6875rem",
-                  color: "rgba(255,255,255,0.3)",
-                  marginTop: "2px"
-                }}
-              >
+              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
                 location-based CO2e
               </small>
             </div>
@@ -866,17 +776,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           gap: "20px"
         }}
       >
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            borderRadius: "12px",
-            padding: "20px"
-          }}
-        >
-          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>
-            Weekly footprint summaries
-          </h3>
+        <div className="bento-card">
+          <h3>Weekly Footprint Summaries</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {weeklyReports.map((week) => (
               <div
@@ -885,9 +786,10 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  padding: "8px 10px",
+                  padding: "8px 12px",
                   background: "rgba(255,255,255,0.02)",
-                  borderRadius: "6px"
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-border-light)"
                 }}
               >
                 <span style={{ fontSize: "0.75rem", fontWeight: "bold" }}>
@@ -901,48 +803,29 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           </div>
         </div>
 
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            borderRadius: "12px",
-            padding: "20px"
-          }}
-        >
-          <h3 style={{ margin: "0 0 14px", fontSize: "1rem", color: "#fff" }}>History logs</h3>
+        <div className="bento-card">
+          <h3>History Logs</h3>
           <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "0.75rem",
-                textAlign: "left"
-              }}
-            >
+            <table className="history-table">
               <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.4)"
-                  }}
-                >
-                  <th style={{ padding: "6px 4px" }}>Date</th>
-                  <th style={{ padding: "6px 4px" }}>Site</th>
-                  <th style={{ padding: "6px 4px" }}>Tokens</th>
-                  <th style={{ padding: "6px 4px" }}>Water</th>
+                <tr>
+                  <th>Date</th>
+                  <th>Site</th>
+                  <th>Tokens</th>
+                  <th>Water</th>
                 </tr>
               </thead>
               <tbody>
                 {usageData.slice(0, 5).map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    <td style={{ padding: "8px 4px", color: "rgba(255,255,255,0.7)" }}>
+                  <tr key={idx}>
+                    <td style={{ color: "var(--color-text-secondary)" }}>
                       {row.usage_date}
                     </td>
-                    <td style={{ padding: "8px 4px", color: "#fff" }}>{row.site}</td>
-                    <td style={{ padding: "8px 4px" }}>
+                    <td>{row.site}</td>
+                    <td>
                       {(row.input_tokens_est + row.output_tokens_est).toLocaleString()}
                     </td>
-                    <td style={{ padding: "8px 4px", color: "#4ea1f1", fontWeight: "bold" }}>
+                    <td style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
                       {formatMilliliters(row.water_ml_mid)}
                     </td>
                   </tr>
