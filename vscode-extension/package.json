@@ -59,6 +59,16 @@
     "configuration": {
       "title": "AI Water Meter",
       "properties": {
+        "aiWaterMeter.supabaseToken": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase Access Token (JWT) from your Web Account page to enable cloud sync."
+        },
+        "aiWaterMeter.supabaseUserId": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase User ID (UUID) from your Web Account page to enable cloud sync."
+        },
         "aiWaterMeter.monitorKnownAiTerminals": {
           "type": "boolean",
           "default": false,
