@@ -8,6 +8,7 @@ export type SessionSnapshot = {
   turnCount: number;
   lastEstimate?: UsageEstimate;
   totalEstimate: UsageEstimate;
+  isStreaming: boolean;
 };
 
 export type SnapshotListener = (snapshot: SessionSnapshot) => void | Promise<void>;
@@ -17,16 +18,19 @@ export function createChatObserver(
   listener: SnapshotListener
 ): MutationObserver {
   let lastFingerprint = "";
-  let timer: number | undefined;
+  let throttleTimer: number | undefined;
+  let debounceTimer: number | undefined;
+  let isStreaming = false;
 
-  const emit = () => {
+  const emit = (streaming: boolean) => {
     const chat = collectChat(profile);
     const fingerprint = [
       chat.promptCount,
       chat.responseCharCount,
       ...chat.turns.map((turn) => `${turn.promptText.length}:${turn.responseText.length}`)
     ].join("|");
-    if (fingerprint === lastFingerprint) {
+    
+    if (fingerprint === lastFingerprint && !streaming) {
       return;
     }
 
@@ -38,18 +42,35 @@ export function createChatObserver(
       responseCharCount: chat.responseCharCount,
       turnCount: chat.turns.length,
       lastEstimate: estimates.at(-1),
-      totalEstimate: sumEstimates(estimates)
+      totalEstimate: sumEstimates(estimates),
+      isStreaming: streaming
     });
   };
 
-  const schedule = () => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(emit, 700);
+  const handleMutation = () => {
+    isStreaming = true;
+    
+    // Throttle UI updates to 150ms interval during active streaming
+    if (!throttleTimer) {
+      throttleTimer = window.setInterval(() => {
+        emit(true);
+      }, 150);
+    }
+
+    // Debounce database synchronization until 1000ms after last stream mutation
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(() => {
+      isStreaming = false;
+      window.clearInterval(throttleTimer);
+      throttleTimer = undefined;
+      emit(false);
+    }, 1000);
   };
 
-  const observer = new MutationObserver(schedule);
+  const observer = new MutationObserver(handleMutation);
   observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-  schedule();
+  
+  emit(false);
   return observer;
 }
 

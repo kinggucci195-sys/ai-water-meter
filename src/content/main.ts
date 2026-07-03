@@ -165,6 +165,11 @@ if (isWebApp) {
       return;
     }
 
+    if (snapshot.isStreaming) {
+      sidebar.update(snapshot, daily, monthly, reaction);
+      return;
+    }
+
     if (snapshot.totalEstimate.outputTokens > 0) {
       const totalMovedBackward =
         lastPersistedTotal &&
