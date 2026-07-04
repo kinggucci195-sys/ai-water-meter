@@ -138,6 +138,28 @@ if (isWebApp) {
   let hasBaseline = false;
   let persistenceQueue = Promise.resolve();
 
+  // URL polling to reset baseline on SPA navigations (when user switches chats)
+  let currentPath = window.location.pathname;
+  window.setInterval(() => {
+    if (window.location.pathname !== currentPath) {
+      currentPath = window.location.pathname;
+      hasBaseline = false;
+      lastPersistedTotal = undefined;
+      sidebar.setStatus("Switched chat session. Resetting local baseline.");
+    }
+  }, 1000);
+
+  function isExistingChatRoute(url: { pathname: string }): boolean {
+    const path = url.pathname;
+    // ChatGPT: /c/uuid
+    if (path.includes("/c/")) return true;
+    // Claude: /chat/uuid (ignoring /chat/ or /new)
+    if (path.includes("/chat/") && !path.endsWith("/chat") && !path.endsWith("/chat/")) return true;
+    // Gemini: /app/uuid
+    if (path.includes("/app/") && path.split("/app/")[1]?.length > 5) return true;
+    return false;
+  }
+
   createChatObserver(profile, (snapshot) => {
     persistenceQueue = persistenceQueue
       .then(() => persistSnapshot(snapshot))
@@ -158,6 +180,16 @@ if (isWebApp) {
     };
 
     if (!hasBaseline) {
+      const isExistingRoute = isExistingChatRoute(window.location);
+      const hasMessages = snapshot.turnCount > 0;
+
+      if (isExistingRoute && !hasMessages) {
+        // Delay baseline until historical messages are loaded from the database/API
+        sidebar.update(snapshot, daily, monthly, { state: "baseline" });
+        sidebar.setStatus("Waiting for chat history to load...");
+        return;
+      }
+
       hasBaseline = true;
       lastPersistedTotal = snapshot.totalEstimate;
       sidebar.update(snapshot, daily, monthly, { state: "baseline" });
