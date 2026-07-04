@@ -417,11 +417,19 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
     setTotalWaterMl(prev => prev + 1.5);
     setTotalEnergyWh(prev => prev + 0.1);
     setLatency(prev => {
-      const next = prev + (Math.random() * 20 - 10);
+      let delta = Math.random() * 20 - 10;
+      if (Math.round(delta) === 0) {
+        delta = Math.random() > 0.5 ? 5 : -5;
+      }
+      const next = prev + delta;
       return next < 0 ? 0 : Math.round(next);
     });
     setThroughput(prev => {
-      const next = prev + (Math.random() * 4 - 2);
+      let delta = Math.random() * 4 - 2;
+      if (Math.round(delta * 10) === 0) {
+        delta = Math.random() > 0.5 ? 1 : -1;
+      }
+      const next = prev + delta;
       return next < 0 ? 0 : Math.round(next * 10) / 10;
     });
   };
