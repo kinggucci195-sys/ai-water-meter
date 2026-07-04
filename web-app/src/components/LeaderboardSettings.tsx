@@ -15,13 +15,25 @@ export function LeaderboardSettings({
   return (
     <div className="bento-card" style={{ marginBottom: "var(--space-md)" }}>
       <h3>🏆 Global Leaderboard Nickname</h3>
-      <p style={{ marginBottom: "var(--space-sm)", fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
+      <p
+        style={{
+          marginBottom: "var(--space-sm)",
+          fontSize: "0.8rem",
+          color: "var(--color-text-secondary)"
+        }}
+      >
         Set a custom nickname to display on the public leaderboard. Defaults to your email username.
       </p>
 
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-          <label style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", fontWeight: "bold" }}>
+          <label
+            style={{
+              fontSize: "0.85rem",
+              color: "var(--color-text-secondary)",
+              fontWeight: "bold"
+            }}
+          >
             Display Name:
           </label>
           <input

@@ -42,9 +42,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       vscode.window.showInformationMessage("AI Water Meter reset today's local estimate.");
     }),
     vscode.commands.registerCommand("aiWaterMeter.signIn", () => {
-      void vscode.env.openExternal(
-        vscode.Uri.parse("https://web-app-woad-rho.vercel.app/account")
-      );
+      void vscode.env.openExternal(vscode.Uri.parse("https://web-app-woad-rho.vercel.app/account"));
     }),
     vscode.commands.registerCommand("aiWaterMeter.openMethodology", () => {
       void vscode.env.openExternal(
@@ -116,13 +114,15 @@ async function recordText(
   const supabaseUserId = config.get<string>("supabaseUserId");
 
   if (supabaseToken && supabaseUserId) {
-    void syncUsageToSupabase(context, next).then(() => {
-      vscode.window.showInformationMessage(
-        `Estimated ${formatMilliliters(estimate.totalWaterMl)}: Synced to Cloud Leaderboard!`
-      );
-    }).catch((err) => {
-      console.error("VS Code telemetry sync failed:", err);
-    });
+    void syncUsageToSupabase(context, next)
+      .then(() => {
+        vscode.window.showInformationMessage(
+          `Estimated ${formatMilliliters(estimate.totalWaterMl)}: Synced to Cloud Leaderboard!`
+        );
+      })
+      .catch((err) => {
+        console.error("VS Code telemetry sync failed:", err);
+      });
   } else {
     vscode.window.showInformationMessage(
       `Estimated ${formatMilliliters(estimate.totalWaterMl)} for this text. Local only.`
@@ -130,7 +130,10 @@ async function recordText(
   }
 }
 
-async function syncUsageToSupabase(context: vscode.ExtensionContext, daily: StoredUsage): Promise<void> {
+async function syncUsageToSupabase(
+  context: vscode.ExtensionContext,
+  daily: StoredUsage
+): Promise<void> {
   const config = vscode.workspace.getConfiguration("aiWaterMeter");
   const token = config.get<string>("supabaseToken");
   const userId = config.get<string>("supabaseUserId");
@@ -148,7 +151,11 @@ async function syncUsageToSupabase(context: vscode.ExtensionContext, daily: Stor
   const anonKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmZ3lud3hwamtya3d2a3J1Y296Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5ODc4ODQsImV4cCI6MjA5ODU2Mzg4NH0.iijDhvQMy4AdlBVu3KvOmXAHb6MaSUK09568It-tUWk";
   const supabaseUrl = "https://ffgynwxpjkrkwvkrucoz.supabase.co";
-  const todayDate = new Date().toISOString().split("T")[0];
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const todayDate = `${year}-${month}-${day}`;
 
   // 1. Register VS Code client device
   try {
@@ -173,32 +180,35 @@ async function syncUsageToSupabase(context: vscode.ExtensionContext, daily: Stor
 
   // 2. Upsert cumulative daily telemetry record
   const idempotencyKey = `${deviceId}:${todayDate}`;
-  const response = await fetch(`${supabaseUrl}/rest/v1/usage_daily`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: anonKey,
-      Authorization: `Bearer ${token}`,
-      Prefer: "resolution=merge-duplicates"
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      device_id: deviceId,
-      usage_date: todayDate,
-      method_id: daily.profileId || "mixed",
-      sequence: 1,
-      prompt_count: 0,
-      input_tokens_est: daily.inputTokens,
-      output_tokens_est: daily.outputTokens,
-      energy_wh: daily.energyWh,
-      water_ml_low: daily.lowTotalWaterMl,
-      water_ml_mid: daily.totalWaterMl,
-      water_ml_high: daily.highTotalWaterMl,
-      carbon_g: daily.carbonGrams,
-      confidence: "medium",
-      idempotency_key: idempotencyKey
-    })
-  });
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/usage_daily?on_conflict=user_id,device_id,usage_date,idempotency_key`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+        Prefer: "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        device_id: deviceId,
+        usage_date: todayDate,
+        method_id: daily.profileId || "mixed",
+        sequence: 1,
+        prompt_count: 0,
+        input_tokens_est: daily.inputTokens,
+        output_tokens_est: daily.outputTokens,
+        energy_wh: daily.energyWh,
+        water_ml_low: daily.lowTotalWaterMl,
+        water_ml_mid: daily.totalWaterMl,
+        water_ml_high: daily.highTotalWaterMl,
+        carbon_g: daily.carbonGrams,
+        confidence: "medium",
+        idempotency_key: idempotencyKey
+      })
+    }
+  );
 
   if (!response.ok) {
     const errText = await response.text();

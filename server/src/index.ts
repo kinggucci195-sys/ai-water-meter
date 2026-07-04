@@ -63,8 +63,9 @@ function verifySupabaseToken(authHeader?: string): string {
   try {
     const decoded = jwt.verify(token, jwtSecret, { algorithms: ["HS256"] }) as SupabaseJwtPayload;
     return decoded.sub; // Returns the user's UUID
-  } catch (error: any) {
-    throw new Error("Token verification failed: " + error.message);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    throw new Error("Token verification failed: " + errMsg, { cause: error });
   }
 }
 
@@ -113,15 +114,16 @@ fastify.post("/api/usage", async (request, reply) => {
     if (redis) {
       const scoreKey = `leaderboard:all-time`;
       await redis.zincrby(scoreKey, body.water_ml, userId);
-      
+
       // Also cache daily/weekly metrics
       const dailyKey = `leaderboard:daily:${body.usage_date}`;
       await redis.zincrby(dailyKey, body.water_ml, userId);
     }
 
     return reply.code(200).send({ status: "success", synced: true });
-  } catch (error: any) {
-    return reply.code(401).send({ error: error.message });
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return reply.code(401).send({ error: errMsg });
   }
 });
 
@@ -130,7 +132,7 @@ fastify.get("/api/leaderboard", async (request, reply) => {
   try {
     const queryParams = request.query as { period?: string };
     const period = queryParams.period || "all_time"; // all_time, daily, weekly
-    
+
     const cacheKey = `cache:leaderboard:${period}`;
 
     // Try serving directly from Redis Cache
@@ -154,7 +156,7 @@ fastify.get("/api/leaderboard", async (request, reply) => {
       ORDER BY l.rank ASC
       LIMIT 50
     `;
-    
+
     const { rows } = await pgPool.query(query, [period]);
 
     // Save to Redis Cache with a 30-second TTL (Time-To-Live)
@@ -163,8 +165,9 @@ fastify.get("/api/leaderboard", async (request, reply) => {
     }
 
     return reply.code(200).send(rows);
-  } catch (error: any) {
-    return reply.code(500).send({ error: "Failed to fetch leaderboard: " + error.message });
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return reply.code(500).send({ error: "Failed to fetch leaderboard: " + errMsg });
   }
 });
 

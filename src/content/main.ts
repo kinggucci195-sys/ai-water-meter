@@ -1,4 +1,5 @@
 import { subtractEstimate, type UsageEstimate } from "../estimator/estimate";
+import { formatMilliliters } from "../estimator/format";
 import type { StorageRequest, StorageResponse } from "../storage-messages";
 import { getDailyUsage, getMonthlyUsage } from "../storage";
 import { createChatObserver } from "./chat-observer";
@@ -146,17 +147,15 @@ if (isWebApp) {
       const newPath = window.location.pathname;
       currentPath = newPath;
 
-      const isFromNewChat = 
-        oldPath === "/" || 
-        oldPath === "/chat" || 
-        oldPath === "/chat/" || 
-        oldPath === "/new" || 
-        oldPath === "/app" || 
+      const isFromNewChat =
+        oldPath === "/" ||
+        oldPath === "/chat" ||
+        oldPath === "/chat/" ||
+        oldPath === "/new" ||
+        oldPath === "/app" ||
         oldPath === "/app/";
-      const isToExistingChat = 
-        newPath.includes("/c/") || 
-        newPath.includes("/chat/") || 
-        newPath.includes("/app/");
+      const isToExistingChat =
+        newPath.includes("/c/") || newPath.includes("/chat/") || newPath.includes("/app/");
       const isTransitionFromNewToCreated = isFromNewChat && isToExistingChat;
 
       if (!isTransitionFromNewToCreated) {
@@ -240,7 +239,9 @@ if (isWebApp) {
           deltaWaterMl: delta.totalWaterMl,
           state: delta.outputTokens >= HEAVY_OUTPUT_TOKEN_THRESHOLD ? "long_or_heavy" : "updated"
         };
-        sidebar.setStatus(`Added ${formatMilliliters(delta.totalWaterMl)} to today's cloud telemetry.`);
+        sidebar.setStatus(
+          `Added ${formatMilliliters(delta.totalWaterMl)} to today's cloud telemetry.`
+        );
       }
     }
 

@@ -339,7 +339,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "var(--space-lg) 0", color: "var(--color-cyan)" }}>
+      <div
+        style={{ textAlign: "center", padding: "var(--space-lg) 0", color: "var(--color-cyan)" }}
+      >
         <div
           className="spinner"
           style={{
@@ -401,7 +403,15 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "var(--space-md)", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-sm)",
+          marginBottom: "var(--space-md)",
+          flexWrap: "wrap"
+        }}
+      >
         <div
           style={{
             width: "var(--space-xl)",
@@ -422,25 +432,32 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         </div>
         <div>
           <h2 style={{ margin: 0, fontSize: "var(--fs-h2)" }}>{displayName}</h2>
-          <p style={{ margin: "2px 0 0", fontSize: "var(--fs-caption)", color: "var(--color-text-secondary)" }}>
+          <p
+            style={{
+              margin: "2px 0 0",
+              fontSize: "var(--fs-caption)",
+              color: "var(--color-text-secondary)"
+            }}
+          >
             {email} ·{" "}
             {isMockMode ? (
               <span style={{ color: "oklch(0.65 0.2 45)", fontWeight: "bold" }}>
                 Mock Mode (Not Synced)
               </span>
             ) : (
-              <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
-                Synced Account
-              </span>
+              <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>Synced Account</span>
             )}
           </p>
         </div>
-        <div style={{ ... (isMockMode ? {} : { display: "flex", gap: "10px", alignItems: "center" }) }}>
+        <div
+          style={{ ...(isMockMode ? {} : { display: "flex", gap: "10px", alignItems: "center" }) }}
+        >
           {!isMockMode && (
             <button
               type="button"
               style={{
-                background: "linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(140, 219, 253, 0.2))",
+                background:
+                  "linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(140, 219, 253, 0.2))",
                 border: "1px solid var(--color-cyan)",
                 borderRadius: "6px",
                 color: "var(--color-cyan)",
@@ -456,7 +473,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                   alert("Supabase config is missing.");
                   return;
                 }
-                const { data: { session } } = await supabase.auth.getSession();
+                const {
+                  data: { session }
+                } = await supabase.auth.getSession();
                 if (session) {
                   const token = session.access_token;
                   const userId = session.user.id;
@@ -543,47 +562,107 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
       </div>
 
       {/* Dopamine Milestones Banner */}
-      <div 
-        className="bento-card" 
-        style={{ 
-          marginBottom: "var(--space-md)", 
+      <div
+        className="bento-card"
+        style={{
+          marginBottom: "var(--space-md)",
           background: "linear-gradient(135deg, rgba(0, 242, 254, 0.03), rgba(140, 219, 253, 0.05))",
           border: "1px solid rgba(0, 242, 254, 0.15)"
         }}
       >
-        <h3 style={{ margin: "0 0 10px 0", fontSize: "1.1rem", color: "var(--color-cyan)" }}>🏆 Sustainability Milestones</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "var(--space-sm)" }}>
+        <h3 style={{ margin: "0 0 10px 0", fontSize: "1.1rem", color: "var(--color-cyan)" }}>
+          🏆 Sustainability Milestones
+        </h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "var(--space-sm)"
+          }}
+        >
           <div>
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Text Generated Equivalent</span>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.75rem",
+                color: "var(--color-text-secondary)"
+              }}
+            >
+              Text Generated Equivalent
+            </span>
             <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
-              {stats.totalTokens >= 70000 ? `${(stats.totalTokens / 70000).toFixed(1)} novels` : `${Math.round((stats.totalTokens / 70000) * 250)} pages`}
+              {stats.totalTokens >= 70000
+                ? `${(stats.totalTokens / 70000).toFixed(1)} novels`
+                : `${Math.round((stats.totalTokens / 70000) * 250)} pages`}
             </strong>
-            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.7rem",
+                color: "var(--color-text-muted)",
+                marginTop: "2px"
+              }}
+            >
               Based on standard 70k-token novels
             </span>
           </div>
           <div>
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Direct Cooling Saved</span>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.75rem",
+                color: "var(--color-text-secondary)"
+              }}
+            >
+              Direct Cooling Saved
+            </span>
             <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
-              {stats.totalWater >= 240 ? `${(stats.totalWater / 240).toFixed(1)} cups` : `${(stats.totalWater / 5).toFixed(1)} teaspoons`}
+              {stats.totalWater >= 240
+                ? `${(stats.totalWater / 240).toFixed(1)} cups`
+                : `${(stats.totalWater / 5).toFixed(1)} teaspoons`}
             </strong>
-            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.7rem",
+                color: "var(--color-text-muted)",
+                marginTop: "2px"
+              }}
+            >
               Datacenter cooling volumes
             </span>
           </div>
           <div>
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Phone Charge Equivalent</span>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.75rem",
+                color: "var(--color-text-secondary)"
+              }}
+            >
+              Phone Charge Equivalent
+            </span>
             <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
               {Math.round(stats.totalEnergy * 0.1)} hours
             </strong>
-            <span style={{ display: "block", fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.7rem",
+                color: "var(--color-text-muted)",
+                marginTop: "2px"
+              }}
+            >
               Running on smartphone battery cycles
             </span>
           </div>
         </div>
       </div>
 
-      <div className="bento-card" style={{ marginBottom: "var(--space-md)", padding: "var(--space-sm)" }}>
+      <div
+        className="bento-card"
+        style={{ marginBottom: "var(--space-md)", padding: "var(--space-sm)" }}
+      >
         <div
           style={{
             display: "flex",
@@ -606,19 +685,44 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           >
             <span>Less</span>
             <div
-              style={{ width: "12px", height: "12px", background: "#0e1327", borderRadius: "2.5px" }}
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#0e1327",
+                borderRadius: "2.5px"
+              }}
             ></div>
             <div
-              style={{ width: "12px", height: "12px", background: "#09345a", borderRadius: "2.5px" }}
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#09345a",
+                borderRadius: "2.5px"
+              }}
             ></div>
             <div
-              style={{ width: "12px", height: "12px", background: "#005fa3", borderRadius: "2.5px" }}
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#005fa3",
+                borderRadius: "2.5px"
+              }}
             ></div>
             <div
-              style={{ width: "12px", height: "12px", background: "#00a2ff", borderRadius: "2.5px" }}
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#00a2ff",
+                borderRadius: "2.5px"
+              }}
             ></div>
             <div
-              style={{ width: "12px", height: "12px", background: "#00ffea", borderRadius: "2.5px" }}
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#00ffea",
+                borderRadius: "2.5px"
+              }}
             ></div>
             <span>More</span>
           </div>
@@ -649,13 +753,27 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
                 paddingRight: "6px"
               }}
             >
-              <span style={{ gridRow: 1, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
-              <span style={{ gridRow: 2, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Mon</span>
-              <span style={{ gridRow: 3, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
-              <span style={{ gridRow: 4, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Wed</span>
-              <span style={{ gridRow: 5, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
-              <span style={{ gridRow: 6, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>Fri</span>
-              <span style={{ gridRow: 7, fontSize: "0.625rem", color: "var(--color-text-muted)" }}></span>
+              <span
+                style={{ gridRow: 1, fontSize: "0.625rem", color: "var(--color-text-muted)" }}
+              ></span>
+              <span style={{ gridRow: 2, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>
+                Mon
+              </span>
+              <span
+                style={{ gridRow: 3, fontSize: "0.625rem", color: "var(--color-text-muted)" }}
+              ></span>
+              <span style={{ gridRow: 4, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>
+                Wed
+              </span>
+              <span
+                style={{ gridRow: 5, fontSize: "0.625rem", color: "var(--color-text-muted)" }}
+              ></span>
+              <span style={{ gridRow: 6, fontSize: "0.625rem", color: "var(--color-text-muted)" }}>
+                Fri
+              </span>
+              <span
+                style={{ gridRow: 7, fontSize: "0.625rem", color: "var(--color-text-muted)" }}
+              ></span>
             </div>
 
             {/* Main heatmap grid */}
@@ -766,7 +884,13 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             }}
           >
             <div>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-secondary)"
+                }}
+              >
                 Estimated AI Cost
               </span>
               <strong style={{ fontSize: "1.5rem", color: "var(--color-blue)" }}>
@@ -774,7 +898,13 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               </strong>
             </div>
             <div>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-secondary)"
+                }}
+              >
                 Prompt Efficiency
               </span>
               <strong style={{ fontSize: "1.5rem", color: "var(--color-cyan)" }}>
@@ -824,35 +954,77 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           <h3>Resource Footprint</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
             <div>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "4px"
+                }}
+              >
                 Water Footprint
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatMilliliters(stats.totalWater)}
               </strong>
-              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "var(--color-text-muted)",
+                  marginTop: "2px"
+                }}
+              >
                 boil ~{(stats.totalEnergy * 10.75).toFixed(0)} mL equivalent
               </small>
             </div>
             <div>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "4px"
+                }}
+              >
                 Energy Footprint
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatWh(stats.totalEnergy)}
               </strong>
-              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "var(--color-text-muted)",
+                  marginTop: "2px"
+                }}
+              >
                 charge phone {Math.round(stats.totalEnergy * 360).toLocaleString()}s
               </small>
             </div>
             <div>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)", marginBottom: "4px" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "4px"
+                }}
+              >
                 Carbon Emissions
               </span>
               <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
                 {formatCarbon(stats.totalCarbon)}
               </strong>
-              <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+              <small
+                style={{
+                  display: "block",
+                  fontSize: "0.6875rem",
+                  color: "var(--color-text-muted)",
+                  marginTop: "2px"
+                }}
+              >
                 location-based CO2e
               </small>
             </div>
@@ -909,13 +1081,9 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
               <tbody>
                 {usageData.slice(0, 5).map((row, idx) => (
                   <tr key={idx}>
-                    <td style={{ color: "var(--color-text-secondary)" }}>
-                      {row.usage_date}
-                    </td>
+                    <td style={{ color: "var(--color-text-secondary)" }}>{row.usage_date}</td>
                     <td>{row.site}</td>
-                    <td>
-                      {(row.input_tokens_est + row.output_tokens_est).toLocaleString()}
-                    </td>
+                    <td>{(row.input_tokens_est + row.output_tokens_est).toLocaleString()}</td>
                     <td style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
                       {formatMilliliters(row.water_ml_mid)}
                     </td>
@@ -926,7 +1094,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
           </div>
         </div>
       </div>
-      
+
       <ObservabilityDashboard />
     </section>
   );

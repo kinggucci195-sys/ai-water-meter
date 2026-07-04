@@ -19,10 +19,12 @@ export function createChatObserver(
   profile: ChatPageProfile,
   listener: SnapshotListener
 ): MutationObserver {
+  const initialChat = collectChat(profile);
+  let lastPromptCount = initialChat.promptCount;
+  let lastResponseCharCount = initialChat.responseCharCount;
   let lastFingerprint = "";
   let throttleTimer: number | undefined;
   let debounceTimer: number | undefined;
-  let isStreaming = false;
   let startTime = 0;
   let firstChunkTime = 0;
 
@@ -33,22 +35,22 @@ export function createChatObserver(
       chat.responseCharCount,
       ...chat.turns.map((turn) => `${turn.promptText.length}:${turn.responseText.length}`)
     ].join("|");
-    
+
     if (fingerprint === lastFingerprint && !streaming) {
       return;
     }
 
     lastFingerprint = fingerprint;
     const estimates = chat.turns.map((turn) => estimateUsage(turn));
-    
+
     const now = Date.now();
-    const latency = firstChunkTime > 0 ? (firstChunkTime - startTime) : undefined;
+    const latency = firstChunkTime > 0 ? firstChunkTime - startTime : undefined;
     const lastEst = estimates.at(-1);
-    
+
     // Calculate running throughput (tokens/sec) based on elapsed generation time
     const activeTimeSec = startTime > 0 ? (now - startTime) / 1000 : 0;
     const outputTokens = lastEst ? lastEst.outputTokens : 0;
-    const throughput = activeTimeSec > 0.2 ? (outputTokens / activeTimeSec) : undefined;
+    const throughput = activeTimeSec > 0.2 ? outputTokens / activeTimeSec : undefined;
 
     listener({
       promptCount: chat.promptCount,
@@ -64,18 +66,21 @@ export function createChatObserver(
   };
 
   const handleMutation = () => {
-    isStreaming = true;
-    
-    if (startTime === 0) {
-      startTime = Date.now() - 50; // Offset for typing latency
-    }
-    
-    // Detect first chunk arrival to calculate TTFT (Time To First Token)
     const chat = collectChat(profile);
-    if (firstChunkTime === 0 && chat.responseCharCount > 0) {
-      firstChunkTime = Date.now();
+
+    if (chat.promptCount > lastPromptCount) {
+      startTime = Date.now();
+      firstChunkTime = 0;
+      lastPromptCount = chat.promptCount;
     }
-    
+
+    if (chat.responseCharCount > lastResponseCharCount) {
+      if (firstChunkTime === 0) {
+        firstChunkTime = Date.now();
+      }
+      lastResponseCharCount = chat.responseCharCount;
+    }
+
     if (!throttleTimer) {
       throttleTimer = window.setInterval(() => {
         emit(true);
@@ -84,20 +89,22 @@ export function createChatObserver(
 
     window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => {
-      isStreaming = false;
       window.clearInterval(throttleTimer);
       throttleTimer = undefined;
       emit(false);
-      
+
       // Reset timers for the next chat turn
       startTime = 0;
       firstChunkTime = 0;
+      const endChat = collectChat(profile);
+      lastPromptCount = endChat.promptCount;
+      lastResponseCharCount = endChat.responseCharCount;
     }, 1000);
   };
 
   const observer = new MutationObserver(handleMutation);
   observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-  
+
   emit(false);
   return observer;
 }

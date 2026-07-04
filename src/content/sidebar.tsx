@@ -353,9 +353,7 @@ function getReactionCopy(reaction: SidebarReaction, snapshot?: SessionSnapshot):
     return `Existing chat scanned. Pip is locked in on ${provider}.`;
   }
 
-  return snapshot
-    ? `Pip is watching ${provider}. Every token counts.`
-    : "Waking up the meter...";
+  return snapshot ? `Pip is watching ${provider}. Every token counts.` : "Waking up the meter...";
 }
 
 function getConfidenceLabel(estimate: { totalWaterMl: number; highTotalWaterMl: number }): string {
@@ -366,13 +364,10 @@ function getConfidenceLabel(estimate: { totalWaterMl: number; highTotalWaterMl: 
   return "Low";
 }
 
-function getBurnRate(
-  estimate: { totalWaterMl: number },
-  snapshot: SessionSnapshot
-): string {
+function getBurnRate(estimate: { totalWaterMl: number }, snapshot: SessionSnapshot): string {
   if (!snapshot.throughputTps || snapshot.throughputTps <= 0) return "—";
   // Approximate mL per token * tokens per second
-  const mlPerToken = estimate.totalWaterMl / Math.max(1, (snapshot.lastEstimate?.outputTokens ?? 1));
+  const mlPerToken = estimate.totalWaterMl / Math.max(1, snapshot.lastEstimate?.outputTokens ?? 1);
   const rate = mlPerToken * snapshot.throughputTps;
   return rate > 0 ? rate.toFixed(2) : "—";
 }

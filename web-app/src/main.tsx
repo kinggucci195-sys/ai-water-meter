@@ -54,7 +54,9 @@ async function loadLeaderboard(
     .select("rank,badge,confidence,display_name,score,water_saved_ml_estimate")
     .eq("period", period)
     .order("rank", { ascending: true })
-    .limit(25);
+    .limit(25)
+    // @ts-expect-error - PostgrestBuilder headers is a method at runtime but type definitions have it as protected
+    .headers({ "Cache-Control": "no-cache" });
 
   setEntries((data ?? []) as LeaderboardEntry[]);
 }
@@ -97,7 +99,9 @@ function App() {
     });
 
     // Listen for auth state changes
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription }
+    } = client.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         localStorage.removeItem("sb-mock-email");
         setEmail(session.user.email);
@@ -114,8 +118,7 @@ function App() {
         {
           event: "*",
           schema: "public",
-          table: "leaderboard_entries_raw",
-          filter: `period=eq.${period}`
+          table: "leaderboard_entries_raw"
         },
         () => void loadLeaderboard(period, setEntries)
       )
@@ -164,8 +167,8 @@ function App() {
             <span>AI Water Meter</span>
             <h1>{title}</h1>
             <p>
-              Every AI prompt leaves a footprint. We estimate the hidden water, electricity,
-              and CO₂ behind every conversation — in real time. Watch it stream.
+              Every AI prompt leaves a footprint. We estimate the hidden water, electricity, and CO₂
+              behind every conversation — in real time. Watch it stream.
             </p>
           </div>
           <WaterMascot2D />

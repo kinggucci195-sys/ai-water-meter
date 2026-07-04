@@ -48,8 +48,9 @@ async function handleStorageRequest(message: StorageRequest): Promise<StorageRes
     try {
       await syncUsageToSupabase(daily);
       return { daily, monthly, ok: true };
-    } catch (error: any) {
-      return { ok: false, error: error?.message || "Supabase cloud sync failed." };
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      return { ok: false, error: errMsg || "Supabase cloud sync failed." };
     }
   }
 
@@ -128,32 +129,35 @@ async function syncUsageToSupabase(daily: DailyUsageRecord): Promise<void> {
 
   // 2. Upsert daily usage records
   const idempotencyKey = `${deviceId}:${daily.date}`;
-  const usageResponse = await fetch(`${supabaseUrl}/rest/v1/usage_daily`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: anonKey,
-      Authorization: `Bearer ${token}`,
-      Prefer: "resolution=merge-duplicates"
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      device_id: deviceId,
-      usage_date: daily.date,
-      method_id: daily.profileId || "modern-text-2026",
-      sequence: 1,
-      prompt_count: 0,
-      input_tokens_est: daily.inputTokens,
-      output_tokens_est: daily.outputTokens,
-      energy_wh: daily.energyWh,
-      water_ml_low: daily.lowTotalWaterMl,
-      water_ml_mid: daily.totalWaterMl,
-      water_ml_high: daily.highTotalWaterMl,
-      carbon_g: daily.carbonGrams,
-      confidence: "medium",
-      idempotency_key: idempotencyKey
-    })
-  });
+  const usageResponse = await fetch(
+    `${supabaseUrl}/rest/v1/usage_daily?on_conflict=user_id,device_id,usage_date,idempotency_key`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+        Prefer: "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        device_id: deviceId,
+        usage_date: daily.date,
+        method_id: daily.profileId || "modern-text-2026",
+        sequence: 1,
+        prompt_count: 0,
+        input_tokens_est: daily.inputTokens,
+        output_tokens_est: daily.outputTokens,
+        energy_wh: daily.energyWh,
+        water_ml_low: daily.lowTotalWaterMl,
+        water_ml_mid: daily.totalWaterMl,
+        water_ml_high: daily.highTotalWaterMl,
+        carbon_g: daily.carbonGrams,
+        confidence: "medium",
+        idempotency_key: idempotencyKey
+      })
+    }
+  );
 
   if (!usageResponse.ok) {
     const txt = await usageResponse.text();

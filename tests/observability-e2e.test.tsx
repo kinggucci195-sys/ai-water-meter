@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -213,7 +214,7 @@ describe("Observability E2E Test Suite", () => {
           </StreamAnimator>
         );
       });
-      let animator = container!.querySelector("[data-testid='stream-animator']");
+      const animator = container!.querySelector("[data-testid='stream-animator']");
       expect(animator?.className).toContain("is-animating");
     });
 
@@ -317,7 +318,9 @@ describe("Observability E2E Test Suite", () => {
         const root = createRoot(container!);
         root.render(<ObservabilityDashboard initialStreaming={true} />);
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Analyzing stream... I see tokens flowing!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Analyzing stream... I see tokens flowing!"
+      );
     });
 
     it("T2_C23_Mascot_WarningTrigger: triggers mascot warning speech when warning metrics are active", async () => {
@@ -325,7 +328,9 @@ describe("Observability E2E Test Suite", () => {
         const root = createRoot(container!);
         root.render(<ObservabilityDashboard initialLatency={600} initialStreaming={false} />);
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Watch out! We are consuming a lot of resources!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Watch out! We are consuming a lot of resources!"
+      );
     });
 
     it("T2_C24_SustainabilityWidget_SelectModel: model selector updates active model value", async () => {
@@ -372,10 +377,16 @@ describe("Observability E2E Test Suite", () => {
     it("T2_C26_Dashboard_Sync_Gauges: dashboard sync updates metrics values together on simulated steps", async () => {
       await act(async () => {
         const root = createRoot(container!);
-        root.render(<ObservabilityDashboard initialLatency={100} initialThroughput={20} initialBurnRate={100} />);
+        root.render(
+          <ObservabilityDashboard
+            initialLatency={100}
+            initialThroughput={20}
+            initialBurnRate={100}
+          />
+        );
       });
       const btnStep = container!.querySelector(".btn-step") as HTMLButtonElement;
-      
+
       const valLatencyPre = container!.querySelector(".latency-gauge .value")?.textContent;
       const valThroughputPre = container!.querySelector(".throughput-gauge .value")?.textContent;
 
@@ -396,19 +407,29 @@ describe("Observability E2E Test Suite", () => {
         root = createRoot(container!);
         root.render(<ObservabilityDashboard initialStreaming={false} />);
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("I'm Pip! Let's monitor some AI resource usage.");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "I'm Pip! Let's monitor some AI resource usage."
+      );
 
       await act(async () => {
         const btnToggle = container!.querySelector(".btn-toggle-stream") as HTMLButtonElement;
         btnToggle.click();
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Analyzing stream... I see tokens flowing!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Analyzing stream... I see tokens flowing!"
+      );
     });
 
     it("T2_C28_Dashboard_Sync_Widget: dashboard sync updates comparison widget numbers on changes", async () => {
       await act(async () => {
         const root = createRoot(container!);
-        root.render(<ObservabilityDashboard initialWater={50} initialEnergy={3} initialSelectedModel="GPT-4o" />);
+        root.render(
+          <ObservabilityDashboard
+            initialWater={50}
+            initialEnergy={3}
+            initialSelectedModel="GPT-4o"
+          />
+        );
       });
       // 50 ml is exactly GPT-4o 1k token limit (50 ml), difference is 0%
       expect(container!.querySelector(".water-diff")?.textContent).toContain("0.0%");
@@ -528,7 +549,9 @@ describe("Observability E2E Test Suite", () => {
           />
         );
       });
-      expect(container!.querySelector(".sustainability-widget-empty")?.textContent).toBe("No comparison data available");
+      expect(container!.querySelector(".sustainability-widget-empty")?.textContent).toBe(
+        "No comparison data available"
+      );
     });
 
     it("T3_C39_SustainabilityWidget_MissingSelectedModel: falls back to first model if selected model is missing", async () => {
@@ -552,7 +575,9 @@ describe("Observability E2E Test Suite", () => {
         const root = createRoot(container!);
         root.render(<Mascot state="happy" customMessage="" />);
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Great job! Keeping resource footprint low!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Great job! Keeping resource footprint low!"
+      );
     });
 
     it("T3_C41_Mascot_InvalidState: falls back to idle message on unsupported state string", async () => {
@@ -560,7 +585,9 @@ describe("Observability E2E Test Suite", () => {
         const root = createRoot(container!);
         root.render(<Mascot state="invalid-state-xyz" />);
       });
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("I'm Pip! Let's monitor some AI resource usage.");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "I'm Pip! Let's monitor some AI resource usage."
+      );
     });
 
     it("T3_C42_StreamAnimator_NegativeSpeed: stream animator defaults to 100ms on speed <= 0", async () => {
@@ -625,9 +652,9 @@ describe("Observability E2E Test Suite", () => {
         const root = createRoot(container!);
         root.render(<ObservabilityDashboard initialWater={100} initialStreaming={true} />);
       });
-      
+
       const initialText = container!.querySelector(".total-water")?.textContent;
-      
+
       act(() => {
         jest.advanceTimersByTime(200);
       });
@@ -643,7 +670,9 @@ describe("Observability E2E Test Suite", () => {
         root.render(<ObservabilityDashboard initialLatency={650} initialStreaming={false} />);
       });
       expect(container!.querySelector(".latency-gauge")?.className).toContain("warning-active");
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Watch out! We are consuming a lot of resources!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Watch out! We are consuming a lot of resources!"
+      );
     });
 
     it("T4_C48_E2E_Simulation_LowThroughput: verifies low throughput warning propagation", async () => {
@@ -652,7 +681,9 @@ describe("Observability E2E Test Suite", () => {
         root.render(<ObservabilityDashboard initialThroughput={4} initialStreaming={false} />);
       });
       expect(container!.querySelector(".throughput-gauge")?.className).toContain("warning-active");
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Watch out! We are consuming a lot of resources!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Watch out! We are consuming a lot of resources!"
+      );
     });
 
     it("T4_C49_E2E_Simulation_HighBurnRate: verifies high burn rate warning propagation", async () => {
@@ -661,7 +692,9 @@ describe("Observability E2E Test Suite", () => {
         root.render(<ObservabilityDashboard initialBurnRate={1200} initialStreaming={false} />);
       });
       expect(container!.querySelector(".burn-rate-gauge")?.className).toContain("warning-active");
-      expect(container!.querySelector(".speech-text")?.textContent).toBe("Watch out! We are consuming a lot of resources!");
+      expect(container!.querySelector(".speech-text")?.textContent).toBe(
+        "Watch out! We are consuming a lot of resources!"
+      );
     });
 
     it("T4_C50_E2E_Comparison_ModelToggle: cycles through target models and verifies selection changes", async () => {
@@ -716,7 +749,7 @@ describe("Observability E2E Test Suite", () => {
       });
       const mascot = container!.querySelector("[data-testid='mascot']") as HTMLDivElement;
       const tipText = container!.querySelector(".tip-text");
-      
+
       expect(tipText?.textContent).toBe(PIP_TIPS[0]);
       await act(async () => {
         mascot.click();
@@ -773,7 +806,7 @@ describe("Observability E2E Test Suite", () => {
       const animator = container!.querySelector("[data-testid='stream-animator']");
 
       expect(animator?.className).toContain("is-paused");
-      
+
       await act(async () => {
         btnToggle.click();
       });
@@ -788,7 +821,9 @@ describe("Observability E2E Test Suite", () => {
     it("T4_C57_E2E_Telemetry_StepForward: clicking step increments metric totals manually", async () => {
       await act(async () => {
         const root = createRoot(container!);
-        root.render(<ObservabilityDashboard initialWater={100} initialEnergy={10} initialStreaming={false} />);
+        root.render(
+          <ObservabilityDashboard initialWater={100} initialEnergy={10} initialStreaming={false} />
+        );
       });
       const btnStep = container!.querySelector(".btn-step") as HTMLButtonElement;
       expect(container!.querySelector(".total-water")?.textContent).toBe("100.0 ml");
@@ -826,7 +861,9 @@ describe("Observability E2E Test Suite", () => {
         root.render(<ObservabilityDashboard />);
       });
       const dashboard = container!.querySelector("[data-testid='dashboard']");
-      expect(dashboard?.textContent).toContain("Loaded historical data for 2026-07-02: 450ml / 18Wh");
+      expect(dashboard?.textContent).toContain(
+        "Loaded historical data for 2026-07-02: 450ml / 18Wh"
+      );
     });
 
     it("T4_C60_E2E_Dashboard_ExportData: clicking export triggers and shows completion notification", async () => {
@@ -841,7 +878,9 @@ describe("Observability E2E Test Suite", () => {
         btnExport.click();
       });
       expect(container!.querySelector("[data-testid='export-success']")).not.toBeNull();
-      expect(container!.querySelector("[data-testid='export-success']")?.textContent).toBe("Telemetry data exported successfully!");
+      expect(container!.querySelector("[data-testid='export-success']")?.textContent).toBe(
+        "Telemetry data exported successfully!"
+      );
     });
   });
 });

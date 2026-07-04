@@ -18,18 +18,15 @@ interface LatencyGaugeProps {
   warningThreshold?: number;
 }
 
-export const LatencyGauge: React.FC<LatencyGaugeProps> = ({
-  value,
-  warningThreshold = 500
-}) => {
+export const LatencyGauge: React.FC<LatencyGaugeProps> = ({ value, warningThreshold = 500 }) => {
   const displayValue = value < 0 ? 0 : value;
   const isWarning = displayValue > warningThreshold;
-  
+
   return (
-    <div 
+    <div
       className={`latency-gauge p-4 rounded border ${
-        isWarning 
-          ? "bg-red-500 font-bold border-red-700 text-red-600 warning-active" 
+        isWarning
+          ? "bg-red-500 font-bold border-red-700 text-red-600 warning-active"
           : "bg-green-500 text-green-600 warning-inactive"
       }`}
       data-testid="latency-gauge"
@@ -56,10 +53,10 @@ export const ThroughputGauge: React.FC<ThroughputGaugeProps> = ({
   const isWarning = displayValue < performanceThreshold;
 
   return (
-    <div 
+    <div
       className={`throughput-gauge p-4 rounded border ${
-        isWarning 
-          ? "bg-yellow-500 border-yellow-700 text-yellow-800 warning-active" 
+        isWarning
+          ? "bg-yellow-500 border-yellow-700 text-yellow-800 warning-active"
           : "bg-blue-500 text-blue-800 warning-inactive"
       }`}
       data-testid="throughput-gauge"
@@ -90,7 +87,7 @@ export const BurnRateGauge: React.FC<BurnRateGaugeProps> = ({
   const isWarning = displayWh > 1000;
 
   return (
-    <div 
+    <div
       className={`burn-rate-gauge p-4 rounded border ${
         isWarning ? "warning-active bg-red-600 text-white" : "warning-inactive bg-gray-200"
       }`}
@@ -125,21 +122,30 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
   onModelChange
 }) => {
   if (comparisonModels.length === 0) {
-    return <div className="sustainability-widget-empty" data-testid="sustainability-widget-empty">No comparison data available</div>;
+    return (
+      <div className="sustainability-widget-empty" data-testid="sustainability-widget-empty">
+        No comparison data available
+      </div>
+    );
   }
 
-  const activeModel = comparisonModels.find(m => m.name === selectedModel) || comparisonModels[0];
-  
+  const activeModel = comparisonModels.find((m) => m.name === selectedModel) || comparisonModels[0];
+
   // Standard benchmark is based on 1000 tokens
   const benchmarkWater = activeModel ? activeModel.waterMlPerToken * 1000 : 0;
   const benchmarkEnergy = activeModel ? activeModel.energyWhPerToken * 1000 : 0;
 
   // Real calculations
-  const waterDiffPct = benchmarkWater > 0 ? ((currentUsageWaterMl - benchmarkWater) / benchmarkWater) * 100 : 0;
-  const energyDiffPct = benchmarkEnergy > 0 ? ((currentUsageWh - benchmarkEnergy) / benchmarkEnergy) * 100 : 0;
+  const waterDiffPct =
+    benchmarkWater > 0 ? ((currentUsageWaterMl - benchmarkWater) / benchmarkWater) * 100 : 0;
+  const energyDiffPct =
+    benchmarkEnergy > 0 ? ((currentUsageWh - benchmarkEnergy) / benchmarkEnergy) * 100 : 0;
 
   return (
-    <div className="sustainability-widget p-4 rounded border bg-white" data-testid="sustainability-widget">
+    <div
+      className="sustainability-widget p-4 rounded border bg-white"
+      data-testid="sustainability-widget"
+    >
       <h3 className="title text-lg font-bold">Sustainability Benchmark</h3>
       <div className="selector-container my-2">
         <label htmlFor="model-select">Compare to:</label>
@@ -149,8 +155,10 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
           onChange={(e) => onModelChange?.(e.target.value)}
           className="model-select border p-1 rounded ml-2"
         >
-          {comparisonModels.map(m => (
-            <option key={m.name} value={m.name}>{m.name}</option>
+          {comparisonModels.map((m) => (
+            <option key={m.name} value={m.name}>
+              {m.name}
+            </option>
           ))}
         </select>
       </div>
@@ -159,13 +167,15 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
         <div className="water-comparison">
           <span>Active Model standard (1k tok): {benchmarkWater} ml</span>
           <span className="water-diff ml-2">
-            Difference: {waterDiffPct >= 0 ? "+" : ""}{waterDiffPct.toFixed(1)}%
+            Difference: {waterDiffPct >= 0 ? "+" : ""}
+            {waterDiffPct.toFixed(1)}%
           </span>
         </div>
         <div className="energy-comparison">
           <span>Active Model standard (1k tok): {benchmarkEnergy} Wh</span>
           <span className="energy-diff ml-2">
-            Difference: {energyDiffPct >= 0 ? "+" : ""}{energyDiffPct.toFixed(1)}%
+            Difference: {energyDiffPct >= 0 ? "+" : ""}
+            {energyDiffPct.toFixed(1)}%
           </span>
         </div>
       </div>
@@ -205,7 +215,7 @@ export const StreamAnimator: React.FC<StreamAnimatorProps> = ({
   }, [isStreaming, speed]);
 
   return (
-    <div 
+    <div
       className={`stream-animator ${isStreaming ? "is-animating font-medium text-indigo-600" : "is-paused"}`}
       data-testid="stream-animator"
     >
@@ -227,19 +237,18 @@ export const PIP_TIPS = [
   "Tip 3: Avoid redundant generations"
 ];
 
-export const Mascot: React.FC<MascotProps> = ({
-  state,
-  customMessage,
-  onTipsCycle
-}) => {
+export const Mascot: React.FC<MascotProps> = ({ state, customMessage, onTipsCycle }) => {
   const [tipIndex, setTipIndex] = useState(0);
 
   const getSpeechBubbleMessage = () => {
     if (customMessage) return customMessage;
     switch (state) {
-      case "thinking": return "Analyzing stream... I see tokens flowing!";
-      case "warning": return "Watch out! We are consuming a lot of resources!";
-      case "happy": return "Great job! Keeping resource footprint low!";
+      case "thinking":
+        return "Analyzing stream... I see tokens flowing!";
+      case "warning":
+        return "Watch out! We are consuming a lot of resources!";
+      case "happy":
+        return "Great job! Keeping resource footprint low!";
       case "idle":
       default:
         return "I'm Pip! Let's monitor some AI resource usage.";
@@ -253,7 +262,7 @@ export const Mascot: React.FC<MascotProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`mascot-container mascot-${state} p-4 flex items-center cursor-pointer`}
       onClick={handleMascotClick}
       data-testid="mascot"
@@ -306,20 +315,20 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
   const [isMockMode, setIsMockMode] = useState(initialMockMode);
   const [gpuProfile, setGpuProfile] = useState(initialGpuProfile);
   const [isMascotMuted, setIsMascotMuted] = useState(false);
-  const [historyData, setHistoryData] = useState<Array<{ date: string; water: number; energy: number }>>([
+  const [historyData] = useState<Array<{ date: string; water: number; energy: number }>>([
     { date: "2026-07-02", water: 450, energy: 18 }
   ]);
   const [exportTriggered, setExportTriggered] = useState(false);
 
   const handleTick = () => {
-    setTotalWaterMl(prev => prev + 1.5);
-    setTotalEnergyWh(prev => prev + 0.1);
+    setTotalWaterMl((prev) => prev + 1.5);
+    setTotalEnergyWh((prev) => prev + 0.1);
     // Add realistic variance
-    setLatency(prev => {
+    setLatency((prev) => {
       const next = prev + (Math.random() * 20 - 10);
       return next < 0 ? 0 : Math.round(next);
     });
-    setThroughput(prev => {
+    setThroughput((prev) => {
       const next = prev + (Math.random() * 4 - 2);
       return next < 0 ? 0 : Math.round(next * 10) / 10;
     });
@@ -356,9 +365,12 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
 
   return (
     <StreamAnimator isStreaming={isStreaming} speed={speed} onTick={handleTick}>
-      <div className="observability-dashboard p-6 bg-slate-50 border rounded shadow max-w-[min(90rem,90vw)] mx-auto" data-testid="dashboard">
+      <div
+        className="observability-dashboard p-6 bg-slate-50 border rounded shadow max-w-[min(90rem,90vw)] mx-auto"
+        data-testid="dashboard"
+      >
         <h2 className="text-xl font-bold mb-4">AI Water Meter - Developer Observability</h2>
-        
+
         {/* Mock Mode Control Panel */}
         <div className="control-panel p-4 bg-white border rounded mb-4">
           <div className="flex items-center gap-4 mb-2 flex-wrap">
@@ -452,17 +464,32 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <LatencyGauge value={latency} />
           <ThroughputGauge value={throughput} />
-          <BurnRateGauge burnRateWh={burnRate} gpuModel={gpuProfile} gpuEquivalencyFactor={gpuFactor} />
+          <BurnRateGauge
+            burnRateWh={burnRate}
+            gpuModel={gpuProfile}
+            gpuEquivalencyFactor={gpuFactor}
+          />
         </div>
 
         {/* Totals */}
         <div className="totals p-4 bg-gray-100 rounded border mb-4">
           <h3 className="font-semibold text-lg mb-2">Session Totals</h3>
-          <p>Total Water Used: <span className="total-water text-indigo-700 font-bold">{totalWaterMl.toFixed(1)} ml</span></p>
-          <p>Total Energy Used: <span className="total-energy text-indigo-700 font-bold">{totalEnergyWh.toFixed(1)} Wh</span></p>
+          <p>
+            Total Water Used:{" "}
+            <span className="total-water text-indigo-700 font-bold">
+              {totalWaterMl.toFixed(1)} ml
+            </span>
+          </p>
+          <p>
+            Total Energy Used:{" "}
+            <span className="total-energy text-indigo-700 font-bold">
+              {totalEnergyWh.toFixed(1)} Wh
+            </span>
+          </p>
           {historyData.length > 0 && (
             <p className="text-xs text-gray-500 italic mt-2">
-              Loaded historical data for {historyData[0].date}: {historyData[0].water}ml / {historyData[0].energy}Wh
+              Loaded historical data for {historyData[0].date}: {historyData[0].water}ml /{" "}
+              {historyData[0].energy}Wh
             </p>
           )}
         </div>
@@ -477,7 +504,10 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
         />
 
         {exportTriggered && (
-          <div className="export-success text-green-700 font-semibold mt-2 text-center" data-testid="export-success">
+          <div
+            className="export-success text-green-700 font-semibold mt-2 text-center"
+            data-testid="export-success"
+          >
             Telemetry data exported successfully!
           </div>
         )}

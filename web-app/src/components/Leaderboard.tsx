@@ -42,7 +42,10 @@ export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardPr
         })}
       </div>
 
-      <div className="leaderboard" style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
+      <div
+        className="leaderboard"
+        style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}
+      >
         {entries.length > 0 ? (
           entries.map((entry, idx) => {
             let rankColor = "rgba(255,255,255,0.08)";
@@ -93,26 +96,58 @@ export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardPr
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: 0, fontSize: "1.05rem" }}>
-                    {entry.display_name}
-                  </h3>
-                  <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                    Badge: <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>{entry.badge}</span> · Confidence: {entry.confidence}
+                  <h3 style={{ margin: 0, fontSize: "1.05rem" }}>{entry.display_name}</h3>
+                  <p
+                    style={{
+                      margin: "2px 0 0",
+                      fontSize: "0.75rem",
+                      color: "var(--color-text-muted)"
+                    }}
+                  >
+                    Badge:{" "}
+                    <span style={{ color: "var(--color-cyan)", fontWeight: "bold" }}>
+                      {entry.badge}
+                    </span>{" "}
+                    · Confidence: {entry.confidence}
                   </p>
                 </div>
 
                 <div style={{ textAlign: "right" }}>
-                  <span style={{ display: "block", fontSize: "0.95rem", fontWeight: "bold", color: "var(--color-blue)" }}>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "0.95rem",
+                      fontWeight: "bold",
+                      color: "var(--color-blue)"
+                    }}
+                  >
                     {formatMilliliters(entry.water_saved_ml_estimate)}
                   </span>
-                  <small style={{ fontSize: "0.6875rem", color: "var(--color-text-muted)" }}>saved</small>
+                  <small style={{ fontSize: "0.6875rem", color: "var(--color-text-muted)" }}>
+                    saved
+                  </small>
                 </div>
 
                 <div style={{ textAlign: "right", minWidth: "64px" }}>
-                  <span style={{ fontSize: "1.125rem", fontWeight: "900", color: "var(--color-cyan)", fontFamily: "var(--font-display)" }}>
+                  <span
+                    style={{
+                      fontSize: "1.125rem",
+                      fontWeight: "900",
+                      color: "var(--color-cyan)",
+                      fontFamily: "var(--font-display)"
+                    }}
+                  >
                     {entry.score}
                   </span>
-                  <small style={{ display: "block", fontSize: "0.6875rem", color: "var(--color-text-muted)" }}>points</small>
+                  <small
+                    style={{
+                      display: "block",
+                      fontSize: "0.6875rem",
+                      color: "var(--color-text-muted)"
+                    }}
+                  >
+                    points
+                  </small>
                 </div>
               </article>
             );
@@ -126,4 +161,3 @@ export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardPr
     </section>
   );
 }
-

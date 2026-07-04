@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;850;900&family=Space+Grotesk:wght@400;500;600;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;850;900&family=Space+Grotesk:wght@400;500;600;700;900&display=swap");
 
 :root {
   /* Color System */
@@ -15,10 +15,10 @@
   --color-text-muted: #6b7280;
   --color-border: rgba(0, 240, 255, 0.08);
   --color-border-light: rgba(255, 255, 255, 0.04);
-  
+
   /* Fonts */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Outfit', sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Outfit", sans-serif;
 
   /* Fluid Spacing Scale (clamp-based) */
   --space-xs: clamp(0.5rem, 1.2vw, 0.75rem);
@@ -42,7 +42,7 @@
 body {
   margin: 0;
   background: var(--color-bg);
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.05) 0%, transparent 40%);
   color: var(--color-text-primary);
@@ -98,7 +98,9 @@ p {
   border-radius: clamp(12px, 2vw, 20px);
   background: var(--color-panel);
   backdrop-filter: blur(24px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   margin-top: var(--space-md);
 }
 
@@ -190,7 +192,7 @@ button:disabled {
 }
 
 .bento-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -243,7 +245,7 @@ button:disabled {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: clamp(16px, 3vw, 24px);
-  background: 
+  background:
     radial-gradient(circle at center, rgba(13, 242, 167, 0.05) 0%, transparent 60%),
     linear-gradient(150deg, #091223, #040812);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
@@ -289,13 +291,21 @@ button:disabled {
 }
 
 @keyframes hud-rotate-cw {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 @keyframes hud-rotate-ccw {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(-360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
 }
 
 .mascot-image-wrapper {
@@ -440,27 +450,55 @@ button:disabled {
 
 /* Mascot Animation Loops */
 @keyframes mascot-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes mascot-breathe {
-  0%, 100% { transform: scale(1, 1) rotate(0deg); }
-  25% { transform: scale(1.03, 0.97) rotate(0.5deg); }
-  50% { transform: scale(0.97, 1.03) rotate(0deg); }
-  75% { transform: scale(1.01, 0.99) rotate(-0.5deg); }
+  0%,
+  100% {
+    transform: scale(1, 1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.03, 0.97) rotate(0.5deg);
+  }
+  50% {
+    transform: scale(0.97, 1.03) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.01, 0.99) rotate(-0.5deg);
+  }
 }
 
 @keyframes mascot-hover-dance {
-  0%, 100% { transform: translateY(0) scale(1); }
-  25% { transform: translateY(-8px) scale(1.05, 0.95) rotate(-3deg); }
-  75% { transform: translateY(2px) scale(0.95, 1.05) rotate(3deg); }
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.05, 0.95) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(2px) scale(0.95, 1.05) rotate(3deg);
+  }
 }
 
 @keyframes mascot-wiggle {
-  0%, 100% { transform: rotate(0) scale(1); }
-  25% { transform: rotate(-10deg) scale(1.15, 0.85); }
-  75% { transform: rotate(10deg) scale(0.85, 1.15); }
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.15, 0.85);
+  }
+  75% {
+    transform: rotate(10deg) scale(0.85, 1.15);
+  }
 }
 
 /* History logs list */

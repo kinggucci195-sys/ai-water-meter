@@ -26,7 +26,17 @@ export function DropletScene({ state }: { state: MascotState }) {
   const mascotSrc = getMascotSrc(baseUrl, state);
 
   return (
-    <div className="droplet-scene" aria-hidden="true" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+    <div
+      className="droplet-scene"
+      aria-hidden="true"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%"
+      }}
+    >
       <img
         src={mascotSrc}
         alt="Animated Water Droplet Mascot"
@@ -39,4 +49,3 @@ export function DropletScene({ state }: { state: MascotState }) {
     </div>
   );
 }
-

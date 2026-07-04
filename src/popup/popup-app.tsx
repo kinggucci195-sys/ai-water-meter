@@ -90,7 +90,15 @@ export function PopupApp() {
       </header>
 
       {/* Pip sarcastic quip */}
-      <p style={{ fontStyle: "italic", fontSize: "11px", color: "oklch(0.72 0.08 205)", margin: "0 0 6px", textAlign: "center" }}>
+      <p
+        style={{
+          fontStyle: "italic",
+          fontSize: "11px",
+          color: "oklch(0.72 0.08 205)",
+          margin: "0 0 6px",
+          textAlign: "center"
+        }}
+      >
         💧 Pip says: "{pipQuip}"
       </p>
 
@@ -160,7 +168,8 @@ export function PopupApp() {
                 ⚡ Phone charging: <strong>{phoneChargeSecs} seconds</strong>
               </div>
               <div>
-                💧 That's <strong>{getTeaspoonEquivalent(daily.totalWaterMl)}</strong> of cooling water
+                💧 That's <strong>{getTeaspoonEquivalent(daily.totalWaterMl)}</strong> of cooling
+                water
               </div>
               <div>
                 📖 You generated <strong>{getNovelEquivalent(totalTokens)}</strong> worth of text
@@ -184,19 +193,25 @@ export function PopupApp() {
             >
               <div style={{ fontWeight: "bold", marginBottom: "3px" }}>📊 Monthly Milestone:</div>
               <div>
-                You've processed <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                You've processed{" "}
+                <strong style={{ color: "oklch(0.82 0.11 185)" }}>
                   {monthlyTokens.toLocaleString()} tokens
-                </strong> this month
+                </strong>{" "}
+                this month
               </div>
               <div>
-                That's <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                That's{" "}
+                <strong style={{ color: "oklch(0.82 0.11 185)" }}>
                   {getNovelEquivalent(monthlyTokens)}
-                </strong> of text through AI inference
+                </strong>{" "}
+                of text through AI inference
               </div>
               <div>
-                Using <strong style={{ color: "oklch(0.82 0.11 185)" }}>
+                Using{" "}
+                <strong style={{ color: "oklch(0.82 0.11 185)" }}>
                   {getTeaspoonEquivalent(monthly!.totalWaterMl)}
-                </strong> of cooling water
+                </strong>{" "}
+                of cooling water
               </div>
             </div>
           )}
@@ -243,4 +258,3 @@ export function PopupApp() {
 function sendPopupRequest(message: StorageRequest): void {
   void chrome.runtime.sendMessage(message);
 }
-

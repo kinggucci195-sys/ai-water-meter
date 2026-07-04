@@ -18,18 +18,15 @@ interface LatencyGaugeProps {
   warningThreshold?: number;
 }
 
-export const LatencyGauge: React.FC<LatencyGaugeProps> = ({
-  value,
-  warningThreshold = 500
-}) => {
+export const LatencyGauge: React.FC<LatencyGaugeProps> = ({ value, warningThreshold = 500 }) => {
   const displayValue = value < 0 ? 0 : value;
   const isWarning = displayValue > warningThreshold;
-  
+
   return (
-    <div 
+    <div
       className={`latency-gauge p-4 rounded border ${
-        isWarning 
-          ? "bg-red-950/40 border-red-500/50 text-red-400 warning-active" 
+        isWarning
+          ? "bg-red-950/40 border-red-500/50 text-red-400 warning-active"
           : "bg-emerald-950/20 border-emerald-500/30 text-emerald-400 warning-inactive"
       }`}
       style={{
@@ -41,10 +38,45 @@ export const LatencyGauge: React.FC<LatencyGaugeProps> = ({
       }}
       data-testid="latency-gauge"
     >
-      <span className="label" style={{ display: "block", fontSize: "var(--fs-caption)", color: "var(--color-text-secondary)" }}>Latency:</span>
-      <strong className="value" style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}>{displayValue}</strong>
-      <span className="unit" style={{ fontSize: "var(--fs-caption)", marginLeft: "4px", color: "var(--color-text-muted)" }}>ms</span>
-      {isWarning && <span className="warning-msg" style={{ display: "block", fontSize: "0.7rem", color: "oklch(0.65 0.2 25)", marginTop: "4px" }}>High Latency Alert!</span>}
+      <span
+        className="label"
+        style={{
+          display: "block",
+          fontSize: "var(--fs-caption)",
+          color: "var(--color-text-secondary)"
+        }}
+      >
+        Latency:
+      </span>
+      <strong
+        className="value"
+        style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}
+      >
+        {displayValue}
+      </strong>
+      <span
+        className="unit"
+        style={{
+          fontSize: "var(--fs-caption)",
+          marginLeft: "4px",
+          color: "var(--color-text-muted)"
+        }}
+      >
+        ms
+      </span>
+      {isWarning && (
+        <span
+          className="warning-msg"
+          style={{
+            display: "block",
+            fontSize: "0.7rem",
+            color: "oklch(0.65 0.2 25)",
+            marginTop: "4px"
+          }}
+        >
+          High Latency Alert!
+        </span>
+      )}
     </div>
   );
 };
@@ -63,10 +95,10 @@ export const ThroughputGauge: React.FC<ThroughputGaugeProps> = ({
   const isWarning = displayValue < performanceThreshold;
 
   return (
-    <div 
+    <div
       className={`throughput-gauge p-4 rounded border ${
-        isWarning 
-          ? "bg-amber-950/40 border-amber-500/50 text-amber-400 warning-active" 
+        isWarning
+          ? "bg-amber-950/40 border-amber-500/50 text-amber-400 warning-active"
           : "bg-cyan-950/20 border-cyan-500/30 text-cyan-400 warning-inactive"
       }`}
       style={{
@@ -78,10 +110,45 @@ export const ThroughputGauge: React.FC<ThroughputGaugeProps> = ({
       }}
       data-testid="throughput-gauge"
     >
-      <span className="label" style={{ display: "block", fontSize: "var(--fs-caption)", color: "var(--color-text-secondary)" }}>Throughput:</span>
-      <strong className="value" style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}>{displayValue}</strong>
-      <span className="unit" style={{ fontSize: "var(--fs-caption)", marginLeft: "4px", color: "var(--color-text-muted)" }}>tok/s</span>
-      {isWarning && <span className="warning-msg" style={{ display: "block", fontSize: "0.7rem", color: "oklch(0.65 0.2 45)", marginTop: "4px" }}>Low Throughput Warning!</span>}
+      <span
+        className="label"
+        style={{
+          display: "block",
+          fontSize: "var(--fs-caption)",
+          color: "var(--color-text-secondary)"
+        }}
+      >
+        Throughput:
+      </span>
+      <strong
+        className="value"
+        style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}
+      >
+        {displayValue}
+      </strong>
+      <span
+        className="unit"
+        style={{
+          fontSize: "var(--fs-caption)",
+          marginLeft: "4px",
+          color: "var(--color-text-muted)"
+        }}
+      >
+        tok/s
+      </span>
+      {isWarning && (
+        <span
+          className="warning-msg"
+          style={{
+            display: "block",
+            fontSize: "0.7rem",
+            color: "oklch(0.65 0.2 45)",
+            marginTop: "4px"
+          }}
+        >
+          Low Throughput Warning!
+        </span>
+      )}
     </div>
   );
 };
@@ -104,10 +171,10 @@ export const BurnRateGauge: React.FC<BurnRateGaugeProps> = ({
   const isWarning = displayWh > 1000;
 
   return (
-    <div 
+    <div
       className={`burn-rate-gauge p-4 rounded border ${
-        isWarning 
-          ? "bg-red-950/40 border-red-500/50 text-red-400 warning-active" 
+        isWarning
+          ? "bg-red-950/40 border-red-500/50 text-red-400 warning-active"
           : "bg-purple-950/20 border-purple-500/30 text-purple-400 warning-inactive"
       }`}
       style={{
@@ -119,14 +186,52 @@ export const BurnRateGauge: React.FC<BurnRateGaugeProps> = ({
       }}
       data-testid="burn-rate-gauge"
     >
-      <span className="label" style={{ display: "block", fontSize: "var(--fs-caption)", color: "var(--color-text-secondary)" }}>Burn Rate:</span>
-      <strong className="value" style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}>{displayWh}</strong>
-      <span className="unit" style={{ fontSize: "var(--fs-caption)", marginLeft: "4px", color: "var(--color-text-muted)" }}>Wh</span>
-      <div className="gpu-equivalents" style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", marginTop: "4px" }}>
+      <span
+        className="label"
+        style={{
+          display: "block",
+          fontSize: "var(--fs-caption)",
+          color: "var(--color-text-secondary)"
+        }}
+      >
+        Burn Rate:
+      </span>
+      <strong
+        className="value"
+        style={{ fontSize: "var(--fs-h2)", fontFamily: "var(--font-display)" }}
+      >
+        {displayWh}
+      </strong>
+      <span
+        className="unit"
+        style={{
+          fontSize: "var(--fs-caption)",
+          marginLeft: "4px",
+          color: "var(--color-text-muted)"
+        }}
+      >
+        Wh
+      </span>
+      <div
+        className="gpu-equivalents"
+        style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", marginTop: "4px" }}
+      >
         <span className="gpu-model">{gpuModel}</span> Equivalents:{" "}
         <strong className="gpu-hours">{gpuHours.toFixed(4)}</strong> hrs
       </div>
-      {isWarning && <span className="warning-msg" style={{ display: "block", fontSize: "0.7rem", color: "oklch(0.65 0.2 25)", marginTop: "4px" }}>Critical Energy Consumption!</span>}
+      {isWarning && (
+        <span
+          className="warning-msg"
+          style={{
+            display: "block",
+            fontSize: "0.7rem",
+            color: "oklch(0.65 0.2 25)",
+            marginTop: "4px"
+          }}
+        >
+          Critical Energy Consumption!
+        </span>
+      )}
     </div>
   );
 };
@@ -148,54 +253,108 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
   onModelChange
 }) => {
   if (comparisonModels.length === 0) {
-    return <div className="sustainability-widget-empty" data-testid="sustainability-widget-empty" style={{ padding: "var(--space-md)", color: "var(--color-text-muted)" }}>No comparison data available</div>;
+    return (
+      <div
+        className="sustainability-widget-empty"
+        data-testid="sustainability-widget-empty"
+        style={{ padding: "var(--space-md)", color: "var(--color-text-muted)" }}
+      >
+        No comparison data available
+      </div>
+    );
   }
 
-  const activeModel = comparisonModels.find(m => m.name === selectedModel) || comparisonModels[0];
+  const activeModel = comparisonModels.find((m) => m.name === selectedModel) || comparisonModels[0];
   const benchmarkWater = activeModel ? activeModel.waterMlPerToken * 1000 : 0;
   const benchmarkEnergy = activeModel ? activeModel.energyWhPerToken * 1000 : 0;
 
-  const waterDiffPct = benchmarkWater > 0 ? ((currentUsageWaterMl - benchmarkWater) / benchmarkWater) * 100 : 0;
-  const energyDiffPct = benchmarkEnergy > 0 ? ((currentUsageWh - benchmarkEnergy) / benchmarkEnergy) * 100 : 0;
+  const waterDiffPct =
+    benchmarkWater > 0 ? ((currentUsageWaterMl - benchmarkWater) / benchmarkWater) * 100 : 0;
+  const energyDiffPct =
+    benchmarkEnergy > 0 ? ((currentUsageWh - benchmarkEnergy) / benchmarkEnergy) * 100 : 0;
 
   return (
-    <div className="sustainability-widget bento-card" data-testid="sustainability-widget" style={{ marginTop: "var(--space-md)" }}>
-      <h3 className="title" style={{ margin: "0 0 var(--space-sm)", fontSize: "var(--fs-h3)", color: "var(--color-cyan)" }}>Sustainability Benchmark</h3>
-      
+    <div
+      className="sustainability-widget bento-card"
+      data-testid="sustainability-widget"
+      style={{ marginTop: "var(--space-md)" }}
+    >
+      <h3
+        className="title"
+        style={{
+          margin: "0 0 var(--space-sm)",
+          fontSize: "var(--fs-h3)",
+          color: "var(--color-cyan)"
+        }}
+      >
+        Sustainability Benchmark
+      </h3>
+
       {/* 3-Column Side-by-Side Model Comparison Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "var(--space-sm)", marginBottom: "var(--space-md)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: "var(--space-sm)",
+          marginBottom: "var(--space-md)"
+        }}
+      >
         {comparisonModels.map((m) => {
           const isSelected = m.name === selectedModel;
           const stdWater = m.waterMlPerToken * 1000;
           const stdEnergy = m.energyWhPerToken * 1000;
-          
+
           return (
-            <div 
-              key={m.name} 
+            <div
+              key={m.name}
               style={{
                 background: isSelected ? "rgba(0, 242, 254, 0.05)" : "rgba(255, 255, 255, 0.01)",
-                border: isSelected ? "1px solid var(--color-cyan)" : "1px solid var(--color-border-light)",
+                border: isSelected
+                  ? "1px solid var(--color-cyan)"
+                  : "1px solid var(--color-border-light)",
                 borderRadius: "8px",
                 padding: "var(--space-sm)",
                 transition: "all 0.3s ease",
                 boxShadow: isSelected ? "0 0 15px rgba(0, 242, 254, 0.15)" : "none"
               }}
             >
-              <h4 style={{ margin: "0 0 8px", fontSize: "1rem", color: isSelected ? "var(--color-cyan)" : "#fff" }}>
+              <h4
+                style={{
+                  margin: "0 0 8px",
+                  fontSize: "1rem",
+                  color: isSelected ? "var(--color-cyan)" : "#fff"
+                }}
+              >
                 {m.name} {isSelected && "🎯"}
               </h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                <li style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  fontSize: "0.85rem",
+                  color: "var(--color-text-secondary)"
+                }}
+              >
+                <li
+                  style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}
+                >
                   <span>Direct Cooling:</span>
                   <strong style={{ color: "#fff" }}>{stdWater} mL / 1k tok</strong>
                 </li>
-                <li style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+                <li
+                  style={{ marginBottom: "6px", display: "flex", justifyContent: "space-between" }}
+                >
                   <span>Grid Electricity:</span>
                   <strong style={{ color: "#fff" }}>{stdEnergy} Wh / 1k tok</strong>
                 </li>
                 <li style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>Carbon intensity:</span>
-                  <strong style={{ color: m.name.includes("Sonnet") ? "oklch(0.65 0.2 25)" : "var(--color-cyan)" }}>
+                  <strong
+                    style={{
+                      color: m.name.includes("Sonnet") ? "oklch(0.65 0.2 25)" : "var(--color-cyan)"
+                    }}
+                  >
                     {m.name.includes("Sonnet") ? "High" : "Low"}
                   </strong>
                 </li>
@@ -206,8 +365,24 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
       </div>
 
       {/* Target Model Selector for comparisons */}
-      <div className="selector-container" style={{ marginBottom: "var(--space-sm)", display: "flex", gap: "10px", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "8px 12px", borderRadius: "6px" }}>
-        <label htmlFor="model-select" style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>Compare active usage to target baseline:</label>
+      <div
+        className="selector-container"
+        style={{
+          marginBottom: "var(--space-sm)",
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+          background: "rgba(255,255,255,0.02)",
+          padding: "8px 12px",
+          borderRadius: "6px"
+        }}
+      >
+        <label
+          htmlFor="model-select"
+          style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}
+        >
+          Compare active usage to target baseline:
+        </label>
         <select
           id="model-select"
           value={selectedModel}
@@ -222,26 +397,77 @@ export const SustainabilityComparisonWidget: React.FC<SustainabilityComparisonWi
             outline: "none"
           }}
         >
-          {comparisonModels.map(m => (
-            <option key={m.name} value={m.name}>{m.name}</option>
+          {comparisonModels.map((m) => (
+            <option key={m.name} value={m.name}>
+              {m.name}
+            </option>
           ))}
         </select>
       </div>
 
       {/* Calculated percentage deltas (required by E2E tests) */}
-      <div className="comparison-results" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--space-sm)" }}>
-        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px", border: "1px solid var(--color-border-light)" }}>
-          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Water Comparison Standard (1k tokens)</span>
+      <div
+        className="comparison-results"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "var(--space-sm)"
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            padding: "var(--space-sm)",
+            borderRadius: "6px",
+            border: "1px solid var(--color-border-light)"
+          }}
+        >
+          <span
+            style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}
+          >
+            Water Comparison Standard (1k tokens)
+          </span>
           <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{benchmarkWater} mL</span>
-          <span className="water-diff" style={{ display: "block", fontSize: "0.75rem", color: waterDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px", fontWeight: "bold" }}>
-            Difference: {waterDiffPct >= 0 ? "+" : ""}{waterDiffPct.toFixed(1)}%
+          <span
+            className="water-diff"
+            style={{
+              display: "block",
+              fontSize: "0.75rem",
+              color: waterDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)",
+              marginTop: "2px",
+              fontWeight: "bold"
+            }}
+          >
+            Difference: {waterDiffPct >= 0 ? "+" : ""}
+            {waterDiffPct.toFixed(1)}%
           </span>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "6px", border: "1px solid var(--color-border-light)" }}>
-          <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Energy Comparison Standard (1k tokens)</span>
+        <div
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            padding: "var(--space-sm)",
+            borderRadius: "6px",
+            border: "1px solid var(--color-border-light)"
+          }}
+        >
+          <span
+            style={{ display: "block", fontSize: "0.75rem", color: "var(--color-text-secondary)" }}
+          >
+            Energy Comparison Standard (1k tokens)
+          </span>
           <span style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{benchmarkEnergy} Wh</span>
-          <span className="energy-diff" style={{ display: "block", fontSize: "0.75rem", color: energyDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)", marginTop: "2px", fontWeight: "bold" }}>
-            Difference: {energyDiffPct >= 0 ? "+" : ""}{energyDiffPct.toFixed(1)}%
+          <span
+            className="energy-diff"
+            style={{
+              display: "block",
+              fontSize: "0.75rem",
+              color: energyDiffPct >= 0 ? "oklch(0.65 0.2 25)" : "var(--color-cyan)",
+              marginTop: "2px",
+              fontWeight: "bold"
+            }}
+          >
+            Difference: {energyDiffPct >= 0 ? "+" : ""}
+            {energyDiffPct.toFixed(1)}%
           </span>
         </div>
       </div>
@@ -281,7 +507,7 @@ export const StreamAnimator: React.FC<StreamAnimatorProps> = ({
   }, [isStreaming, speed]);
 
   return (
-    <div 
+    <div
       className={`stream-animator ${isStreaming ? "is-animating" : "is-paused"}`}
       data-testid="stream-animator"
     >
@@ -303,19 +529,18 @@ export const PIP_TIPS = [
   "Tip 3: Avoid redundant generations"
 ];
 
-export const Mascot: React.FC<MascotProps> = ({
-  state,
-  customMessage,
-  onTipsCycle
-}) => {
+export const Mascot: React.FC<MascotProps> = ({ state, customMessage, onTipsCycle }) => {
   const [tipIndex, setTipIndex] = useState(0);
 
   const getSpeechBubbleMessage = () => {
     if (customMessage) return customMessage;
     switch (state) {
-      case "thinking": return "Analyzing stream... I see tokens flowing!";
-      case "warning": return "Watch out! We are consuming a lot of resources!";
-      case "happy": return "Great job! Keeping resource footprint low!";
+      case "thinking":
+        return "Analyzing stream... I see tokens flowing!";
+      case "warning":
+        return "Watch out! We are consuming a lot of resources!";
+      case "happy":
+        return "Great job! Keeping resource footprint low!";
       case "idle":
       default:
         return "I'm Pip! Let's monitor some AI resource usage.";
@@ -329,7 +554,7 @@ export const Mascot: React.FC<MascotProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`mascot-container mascot-${state} p-4 flex items-center cursor-pointer`}
       onClick={handleMascotClick}
       data-testid="mascot"
@@ -340,7 +565,7 @@ export const Mascot: React.FC<MascotProps> = ({
         cursor: "pointer"
       }}
     >
-      <div 
+      <div
         className="mascot-avatar"
         style={{
           width: "48px",
@@ -357,7 +582,7 @@ export const Mascot: React.FC<MascotProps> = ({
       >
         {state === "thinking" ? "🤔" : state === "warning" ? "⚠️" : state === "happy" ? "😊" : "💧"}
       </div>
-      <div 
+      <div
         className="speech-bubble"
         style={{
           background: "rgba(255,255,255,0.03)",
@@ -367,8 +592,23 @@ export const Mascot: React.FC<MascotProps> = ({
           maxWidth: "320px"
         }}
       >
-        <span className="speech-text text-sm" style={{ display: "block", fontSize: "0.85rem", color: "#fff" }}>{getSpeechBubbleMessage()}</span>
-        <div className="tip-text" style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "4px", fontStyle: "italic" }}>{PIP_TIPS[tipIndex]}</div>
+        <span
+          className="speech-text text-sm"
+          style={{ display: "block", fontSize: "0.85rem", color: "#fff" }}
+        >
+          {getSpeechBubbleMessage()}
+        </span>
+        <div
+          className="tip-text"
+          style={{
+            fontSize: "0.75rem",
+            color: "var(--color-text-muted)",
+            marginTop: "4px",
+            fontStyle: "italic"
+          }}
+        >
+          {PIP_TIPS[tipIndex]}
+        </div>
       </div>
     </div>
   );
@@ -397,8 +637,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
   initialStreaming = false,
   initialMockMode = true,
   initialSelectedModel = "GPT-4o",
-  initialGpuProfile = "H100",
-  comparisonModels = DEFAULT_COMPARISON_MODELS
+  initialGpuProfile = "H100"
 }) => {
   const [isStreaming, setIsStreaming] = useState(initialStreaming);
   const [speed, setSpeed] = useState(100);
@@ -414,9 +653,9 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
   const [exportTriggered, setExportTriggered] = useState(false);
 
   const handleTick = () => {
-    setTotalWaterMl(prev => prev + 1.5);
-    setTotalEnergyWh(prev => prev + 0.1);
-    setLatency(prev => {
+    setTotalWaterMl((prev) => prev + 1.5);
+    setTotalEnergyWh((prev) => prev + 0.1);
+    setLatency((prev) => {
       let delta = Math.random() * 20 - 10;
       if (Math.round(delta) === 0) {
         delta = Math.random() > 0.5 ? 5 : -5;
@@ -424,7 +663,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
       const next = prev + delta;
       return next < 0 ? 0 : Math.round(next);
     });
-    setThroughput(prev => {
+    setThroughput((prev) => {
       let delta = Math.random() * 4 - 2;
       if (Math.round(delta * 10) === 0) {
         delta = Math.random() > 0.5 ? 1 : -1;
@@ -464,11 +703,34 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
 
   return (
     <StreamAnimator isStreaming={isStreaming} speed={speed} onTick={handleTick}>
-      <div className="observability-dashboard bento-card" data-testid="dashboard" style={{ marginTop: "var(--space-md)", background: "rgba(255,255,255,0.01)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-sm)", flexWrap: "wrap", gap: "10px" }}>
-          <h2 style={{ margin: 0, fontSize: "var(--fs-h2)", color: "var(--color-cyan)" }}>Telemetry telemetry</h2>
+      <div
+        className="observability-dashboard bento-card"
+        data-testid="dashboard"
+        style={{ marginTop: "var(--space-md)", background: "rgba(255,255,255,0.01)" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "var(--space-sm)",
+            flexWrap: "wrap",
+            gap: "10px"
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: "var(--fs-h2)", color: "var(--color-cyan)" }}>
+            Telemetry telemetry
+          </h2>
           <div style={{ display: "flex", gap: "var(--space-xs)", flexWrap: "wrap" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.8rem",
+                color: "var(--color-text-secondary)"
+              }}
+            >
               <input
                 type="checkbox"
                 checked={isMockMode}
@@ -481,7 +743,12 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
               onClick={() => setIsStreaming(!isStreaming)}
               disabled={!isMockMode}
               className="btn-toggle-stream text-link"
-              style={{ padding: "4px 10px", minHeight: "auto", fontSize: "0.8rem", display: "inline-flex" }}
+              style={{
+                padding: "4px 10px",
+                minHeight: "auto",
+                fontSize: "0.8rem",
+                display: "inline-flex"
+              }}
             >
               {isStreaming ? "Pause" : "Start"}
             </button>
@@ -489,7 +756,12 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
               onClick={handleStep}
               disabled={!isMockMode || isStreaming}
               className="btn-step text-link"
-              style={{ padding: "4px 10px", minHeight: "auto", fontSize: "0.8rem", display: "inline-flex" }}
+              style={{
+                padding: "4px 10px",
+                minHeight: "auto",
+                fontSize: "0.8rem",
+                display: "inline-flex"
+              }}
             >
               Step
             </button>
@@ -497,14 +769,26 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
               onClick={handleReset}
               disabled={!isMockMode}
               className="btn-reset text-link"
-              style={{ padding: "4px 10px", minHeight: "auto", fontSize: "0.8rem", display: "inline-flex", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}
+              style={{
+                padding: "4px 10px",
+                minHeight: "auto",
+                fontSize: "0.8rem",
+                display: "inline-flex",
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.3)"
+              }}
             >
               Reset
             </button>
             <button
               onClick={handleExport}
               className="btn-export text-link"
-              style={{ padding: "4px 10px", minHeight: "auto", fontSize: "0.8rem", display: "inline-flex" }}
+              style={{
+                padding: "4px 10px",
+                minHeight: "auto",
+                fontSize: "0.8rem",
+                display: "inline-flex"
+              }}
             >
               Export
             </button>
@@ -512,8 +796,20 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
         </div>
 
         {isMockMode && (
-          <div style={{ display: "flex", gap: "var(--space-md)", flexWrap: "wrap", marginBottom: "var(--space-sm)", background: "rgba(255,255,255,0.02)", padding: "10px", borderRadius: "6px" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "var(--space-md)",
+              flexWrap: "wrap",
+              marginBottom: "var(--space-sm)",
+              background: "rgba(255,255,255,0.02)",
+              padding: "10px",
+              borderRadius: "6px"
+            }}
+          >
+            <label
+              style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem" }}
+            >
               Speed:
               <input
                 type="range"
@@ -526,14 +822,22 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
               />
               <span>{speed}ms</span>
             </label>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem" }}>
+            <label
+              style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem" }}
+            >
               GPU Target:
               <select
                 value={gpuProfile}
                 onChange={(e) => setGpuProfile(e.target.value)}
                 disabled={!isMockMode}
                 className="gpu-profile-select"
-                style={{ background: "#0d111d", border: "1px solid var(--color-border-light)", color: "#fff", borderRadius: "4px", padding: "2px 6px" }}
+                style={{
+                  background: "#0d111d",
+                  border: "1px solid var(--color-border-light)",
+                  color: "#fff",
+                  borderRadius: "4px",
+                  padding: "2px 6px"
+                }}
               >
                 <option value="H100">NVIDIA H100 (700W)</option>
                 <option value="A100">NVIDIA A100 (400W)</option>
@@ -543,12 +847,28 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
         )}
 
         {!isMascotMuted && (
-          <div className="mascot-wrapper" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,242,254,0.03)", padding: "8px", borderRadius: "8px", marginBottom: "var(--space-sm)" }}>
+          <div
+            className="mascot-wrapper"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              background: "rgba(0,242,254,0.03)",
+              padding: "8px",
+              borderRadius: "8px",
+              marginBottom: "var(--space-sm)"
+            }}
+          >
             <Mascot state={mascotState} />
             <button
               onClick={() => setIsMascotMuted(true)}
               className="btn-mute"
-              style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--color-text-muted)",
+                cursor: "pointer"
+              }}
               title="Mute Pip"
             >
               ✕
@@ -556,16 +876,45 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--space-sm)", marginBottom: "var(--space-md)" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "var(--space-sm)",
+            marginBottom: "var(--space-md)"
+          }}
+        >
           <LatencyGauge value={latency} />
           <ThroughputGauge value={throughput} />
-          <BurnRateGauge burnRateWh={burnRate} gpuModel={gpuProfile} gpuEquivalencyFactor={gpuFactor} />
+          <BurnRateGauge
+            burnRateWh={burnRate}
+            gpuModel={gpuProfile}
+            gpuEquivalencyFactor={gpuFactor}
+          />
         </div>
 
-        <div className="totals" style={{ background: "rgba(255,255,255,0.02)", padding: "var(--space-sm)", borderRadius: "8px", marginBottom: "var(--space-md)" }}>
+        <div
+          className="totals"
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            padding: "var(--space-sm)",
+            borderRadius: "8px",
+            marginBottom: "var(--space-md)"
+          }}
+        >
           <h3 style={{ margin: "0 0 8px", fontSize: "1rem" }}>Telemetry Metrics</h3>
-          <p style={{ margin: "4px 0" }}>Total Water: <strong className="total-water" style={{ color: "var(--color-cyan)" }}>{totalWaterMl.toFixed(1)} ml</strong></p>
-          <p style={{ margin: "4px 0" }}>Total Energy: <strong className="total-energy" style={{ color: "var(--color-blue)" }}>{totalEnergyWh.toFixed(1)} Wh</strong></p>
+          <p style={{ margin: "4px 0" }}>
+            Total Water:{" "}
+            <strong className="total-water" style={{ color: "var(--color-cyan)" }}>
+              {totalWaterMl.toFixed(1)} ml
+            </strong>
+          </p>
+          <p style={{ margin: "4px 0" }}>
+            Total Energy:{" "}
+            <strong className="total-energy" style={{ color: "var(--color-blue)" }}>
+              {totalEnergyWh.toFixed(1)} Wh
+            </strong>
+          </p>
         </div>
 
         <SustainabilityComparisonWidget
@@ -576,7 +925,17 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({
         />
 
         {exportTriggered && (
-          <div className="export-success" data-testid="export-success" style={{ color: "var(--color-cyan)", fontSize: "0.85rem", textAlign: "center", marginTop: "var(--space-sm)", fontWeight: "bold" }}>
+          <div
+            className="export-success"
+            data-testid="export-success"
+            style={{
+              color: "var(--color-cyan)",
+              fontSize: "0.85rem",
+              textAlign: "center",
+              marginTop: "var(--space-sm)",
+              fontWeight: "bold"
+            }}
+          >
             Telemetry data exported successfully!
           </div>
         )}
