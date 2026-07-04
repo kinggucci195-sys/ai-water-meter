@@ -199,6 +199,7 @@ if (isWebApp) {
 
     if (snapshot.isStreaming) {
       sidebar.update(snapshot, daily, monthly, reaction);
+      sidebar.setStatus("Streaming real-time telemetry...");
       return;
     }
 
@@ -221,6 +222,7 @@ if (isWebApp) {
           deltaWaterMl: delta.totalWaterMl,
           state: delta.outputTokens >= HEAVY_OUTPUT_TOKEN_THRESHOLD ? "long_or_heavy" : "updated"
         };
+        sidebar.setStatus(`Added ${formatMilliliters(delta.totalWaterMl)} to today's cloud telemetry.`);
       }
     }
 
