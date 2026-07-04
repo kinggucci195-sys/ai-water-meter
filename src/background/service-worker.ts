@@ -45,8 +45,12 @@ async function handleStorageRequest(message: StorageRequest): Promise<StorageRes
   if (message.type === "usage:add-delta") {
     const daily = await addToDailyUsage(message.estimate);
     const monthly = await getMonthlyUsage();
-    void syncUsageToSupabase(daily); // Sync asynchronously in background
-    return { daily, monthly, ok: true };
+    try {
+      await syncUsageToSupabase(daily);
+      return { daily, monthly, ok: true };
+    } catch (error: any) {
+      return { ok: false, error: error?.message || "Supabase cloud sync failed." };
+    }
   }
 
   if (message.type === "app:open") {
@@ -101,57 +105,59 @@ async function syncUsageToSupabase(daily: DailyUsageRecord): Promise<void> {
   }
 
   // 1. Register device with Supabase if it isn't registered yet
-  try {
-    await fetch(`${supabaseUrl}/rest/v1/devices`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: anonKey,
-        Authorization: `Bearer ${token}`,
-        Prefer: "resolution=ignore-duplicates"
-      },
-      body: JSON.stringify({
-        id: deviceId,
-        user_id: userId,
-        client_kind: "chrome_extension",
-        client_version: "0.1.0"
-      })
-    });
-  } catch (error) {
-    console.error("Supabase device registration failed:", error);
+  const deviceResponse = await fetch(`${supabaseUrl}/rest/v1/devices`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+      Prefer: "resolution=ignore-duplicates"
+    },
+    body: JSON.stringify({
+      id: deviceId,
+      user_id: userId,
+      client_kind: "chrome_extension",
+      client_version: "0.1.0"
+    })
+  });
+
+  if (!deviceResponse.ok) {
+    const txt = await deviceResponse.text();
+    throw new Error(`Device registration failed: ${txt}`);
   }
 
   // 2. Upsert daily usage records
-  try {
-    const idempotencyKey = `${deviceId}:${daily.date}`;
-    await fetch(`${supabaseUrl}/rest/v1/usage_daily`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: anonKey,
-        Authorization: `Bearer ${token}`,
-        Prefer: "resolution=merge-duplicates"
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        device_id: deviceId,
-        usage_date: daily.date,
-        method_id: daily.profileId || "modern-text-2026",
-        sequence: 1,
-        prompt_count: 0,
-        input_tokens_est: daily.inputTokens,
-        output_tokens_est: daily.outputTokens,
-        energy_wh: daily.energyWh,
-        water_ml_low: daily.lowTotalWaterMl,
-        water_ml_mid: daily.totalWaterMl,
-        water_ml_high: daily.highTotalWaterMl,
-        carbon_g: daily.carbonGrams,
-        confidence: "medium",
-        idempotency_key: idempotencyKey
-      })
-    });
-  } catch (error) {
-    console.error("Supabase daily usage sync failed:", error);
+  const idempotencyKey = `${deviceId}:${daily.date}`;
+  const usageResponse = await fetch(`${supabaseUrl}/rest/v1/usage_daily`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+      Prefer: "resolution=merge-duplicates"
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      device_id: deviceId,
+      usage_date: daily.date,
+      method_id: daily.profileId || "modern-text-2026",
+      sequence: 1,
+      prompt_count: 0,
+      input_tokens_est: daily.inputTokens,
+      output_tokens_est: daily.outputTokens,
+      energy_wh: daily.energyWh,
+      water_ml_low: daily.lowTotalWaterMl,
+      water_ml_mid: daily.totalWaterMl,
+      water_ml_high: daily.highTotalWaterMl,
+      carbon_g: daily.carbonGrams,
+      confidence: "medium",
+      idempotency_key: idempotencyKey
+    })
+  });
+
+  if (!usageResponse.ok) {
+    const txt = await usageResponse.text();
+    throw new Error(`Daily usage sync failed: ${txt}`);
   }
 }
 
