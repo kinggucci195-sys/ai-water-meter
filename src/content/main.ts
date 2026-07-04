@@ -142,10 +142,28 @@ if (isWebApp) {
   let currentPath = window.location.pathname;
   window.setInterval(() => {
     if (window.location.pathname !== currentPath) {
-      currentPath = window.location.pathname;
-      hasBaseline = false;
-      lastPersistedTotal = undefined;
-      sidebar.setStatus("Switched chat session. Resetting local baseline.");
+      const oldPath = currentPath;
+      const newPath = window.location.pathname;
+      currentPath = newPath;
+
+      const isFromNewChat = 
+        oldPath === "/" || 
+        oldPath === "/chat" || 
+        oldPath === "/chat/" || 
+        oldPath === "/new" || 
+        oldPath === "/app" || 
+        oldPath === "/app/";
+      const isToExistingChat = 
+        newPath.includes("/c/") || 
+        newPath.includes("/chat/") || 
+        newPath.includes("/app/");
+      const isTransitionFromNewToCreated = isFromNewChat && isToExistingChat;
+
+      if (!isTransitionFromNewToCreated) {
+        hasBaseline = false;
+        lastPersistedTotal = undefined;
+        sidebar.setStatus("Switched chat session. Resetting local baseline.");
+      }
     }
   }, 1000);
 
