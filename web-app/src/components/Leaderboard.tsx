@@ -65,7 +65,7 @@ export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardPr
 
             return (
               <article
-                key={entry.rank}
+                key={`${entry.rank}-${entry.display_name}`}
                 style={{
                   border: borderGlow,
                   animation: `slideInRow 0.35s ease-out both`,
