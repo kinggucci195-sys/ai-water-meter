@@ -19,6 +19,8 @@ export type StorageResponse =
       daily?: DailyUsageRecord;
       monthly?: MonthlyUsageRecord;
       ok: true;
+      syncSkipped?: boolean;
+      reason?: string;
     }
   | {
       error: string;

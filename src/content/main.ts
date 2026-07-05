@@ -233,16 +233,27 @@ if (isWebApp) {
       lastPersistedTotal = snapshot.totalEstimate;
 
       if (delta.weightedTokens > 0) {
-        const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
-        daily = response.daily;
-        monthly = response.monthly ?? monthly;
-        reaction = {
-          deltaWaterMl: delta.totalWaterMl,
-          state: delta.outputTokens >= HEAVY_OUTPUT_TOKEN_THRESHOLD ? "long_or_heavy" : "updated"
-        };
-        sidebar.setStatus(
-          `Added ${formatMilliliters(delta.totalWaterMl)} to today's cloud telemetry.`
-        );
+        try {
+          const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
+          daily = response.daily;
+          monthly = response.monthly ?? monthly;
+          reaction = {
+            deltaWaterMl: delta.totalWaterMl,
+            state: delta.outputTokens >= HEAVY_OUTPUT_TOKEN_THRESHOLD ? "long_or_heavy" : "updated"
+          };
+          if (response.syncSkipped) {
+            sidebar.setStatus("Estimates saved locally. Sign in to sync with leaderboard.");
+          } else {
+            sidebar.setStatus(
+              `Added ${formatMilliliters(delta.totalWaterMl)} to today's cloud telemetry.`
+            );
+          }
+        } catch (error: unknown) {
+          sidebar.update(snapshot, daily, monthly, { state: "error" });
+          sidebar.setStatus(
+            error instanceof Error ? error.message : "Unable to sync cloud telemetry."
+          );
+        }
       }
     }
 
@@ -279,11 +290,30 @@ if (isWebApp) {
   async function sendStorageRequest(
     message: StorageRequest
   ): Promise<Extract<StorageResponse, { ok: true }>> {
-    const response = (await chrome.runtime.sendMessage(message)) as StorageResponse | undefined;
-    if (!response?.ok) {
-      throw new Error(response?.error ?? "Unable to update local usage totals.");
+    // 1. Check if the extension context is invalidated
+    const isContextValid = typeof chrome !== "undefined" && !!chrome.runtime && !!chrome.runtime.id;
+    if (!isContextValid) {
+      sidebar.setStatus("Extension updated. Please refresh the page to sync.");
+      throw new Error("Extension updated. Please refresh the page to sync.");
     }
 
-    return response;
+    try {
+      const response = (await chrome.runtime.sendMessage(message)) as StorageResponse | undefined;
+      if (!response?.ok) {
+        throw new Error(response?.error ?? "Unable to update local usage totals.");
+      }
+      return response;
+    } catch (err: unknown) {
+      const isConnectionError =
+        err instanceof Error &&
+        (err.message.includes("Extension context invalidated") ||
+          err.message.includes("Could not establish connection"));
+      
+      if (isConnectionError) {
+        sidebar.setStatus("Extension updated. Please refresh the page to sync.");
+        throw new Error("Extension updated. Please refresh the page to sync.");
+      }
+      throw err;
+    }
   }
 }

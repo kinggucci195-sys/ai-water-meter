@@ -46,8 +46,8 @@ async function handleStorageRequest(message: StorageRequest): Promise<StorageRes
     const daily = await addToDailyUsage(message.estimate);
     const monthly = await getMonthlyUsage();
     try {
-      await syncUsageToSupabase(daily);
-      return { daily, monthly, ok: true };
+      const syncStatus = await syncUsageToSupabase(daily);
+      return { daily, monthly, ok: true, ...syncStatus };
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
       return { ok: false, error: errMsg || "Supabase cloud sync failed." };
@@ -84,12 +84,27 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
   return false;
 });
 
+// Alarm-based Keepalive: MV3 service workers shut down when idle.
+// Setting up a periodic alarm keeps the background thread registered.
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.alarms.create("keepalive", { periodInMinutes: 1 });
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "keepalive") {
+    // Touch storage briefly to trigger background event loop activation
+    void chrome.storage.local.get(["supabaseUserId"]);
+  }
+});
+
 // Synchronizes the locally recorded daily usage aggregate back to Supabase usage_daily table
-async function syncUsageToSupabase(daily: DailyUsageRecord): Promise<void> {
+async function syncUsageToSupabase(
+  daily: DailyUsageRecord
+): Promise<{ syncSkipped: boolean; reason?: string }> {
   const keys = await chrome.storage.local.get(["supabaseToken", "supabaseUserId", "deviceId"]);
 
   if (!keys.supabaseToken || !keys.supabaseUserId) {
-    return; // User not signed in
+    return { syncSkipped: true, reason: "not_signed_in" };
   }
 
   const token = keys.supabaseToken as string;
@@ -163,6 +178,8 @@ async function syncUsageToSupabase(daily: DailyUsageRecord): Promise<void> {
     const txt = await usageResponse.text();
     throw new Error(`Daily usage sync failed: ${txt}`);
   }
+
+  return { syncSkipped: false };
 }
 
 function generateUUID(): string {
