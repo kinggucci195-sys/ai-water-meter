@@ -67,6 +67,14 @@ export function createChatObserver(
   };
 
   const handleMutation = () => {
+    // Disconnect observer immediately if the extension context was invalidated
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+      observer.disconnect();
+      window.clearInterval(throttleTimer);
+      window.clearTimeout(debounceTimer);
+      return;
+    }
+
     const chat = collectChat(profile);
     const currentPath = window.location.pathname;
 

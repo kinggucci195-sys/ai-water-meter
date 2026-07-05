@@ -12,8 +12,16 @@ const isWebApp =
   host === "web-app-woad-rho.vercel.app" || host === "localhost" || host === "127.0.0.1";
 
 if (isWebApp) {
+  let syncSessionInterval: any = null;
+  let syncSignOutInterval: any = null;
+
   // Sync Web App Session -> Extension Storage (whenever Web App is open and logged in)
   const syncSessionFromWebApp = () => {
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+      if (syncSessionInterval) clearInterval(syncSessionInterval);
+      return;
+    }
+
     let email: string | null = null;
     let supabaseToken = "";
     let supabaseUserId = "";
@@ -41,6 +49,11 @@ if (isWebApp) {
 
     if (email) {
       chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId"], (data) => {
+        // Double check context validity before writing
+        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+          if (syncSessionInterval) clearInterval(syncSessionInterval);
+          return;
+        }
         const storedEmail = (data as { userEmail?: string }).userEmail;
         const storedToken = (data as { supabaseToken?: string }).supabaseToken;
         const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
@@ -62,11 +75,15 @@ if (isWebApp) {
 
   // Run session sync immediately and keep in sync every second
   syncSessionFromWebApp();
-  setInterval(syncSessionFromWebApp, 1000);
+  syncSessionInterval = setInterval(syncSessionFromWebApp, 1000);
 
   // Close callback redirection tabs specifically
   if (window.location.pathname.startsWith("/auth/callback")) {
     const checkSession = setInterval(async () => {
+      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+        clearInterval(checkSession);
+        return;
+      }
       const mockEmail = localStorage.getItem("sb-mock-email");
       const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
       if (mockEmail || tokenStr) {
@@ -80,16 +97,24 @@ if (isWebApp) {
 
   // 1. Web App -> Extension Sign-Out Sync
   const syncSignOutFromWebApp = () => {
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+      if (syncSignOutInterval) clearInterval(syncSignOutInterval);
+      return;
+    }
     const token = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
     const mockEmail = localStorage.getItem("sb-mock-email");
     chrome.storage.local.get("userEmail", (data) => {
+      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+        if (syncSignOutInterval) clearInterval(syncSignOutInterval);
+        return;
+      }
       const localEmail = (data as { userEmail?: string }).userEmail;
       if (!token && !mockEmail && localEmail) {
         void chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
       }
     });
   };
-  setInterval(syncSignOutFromWebApp, 1000);
+  syncSignOutInterval = setInterval(syncSignOutFromWebApp, 1000);
 
   // 2. Extension -> Web App Sign-Out Sync
   chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -141,7 +166,11 @@ if (isWebApp) {
 
   // URL polling to reset baseline on SPA navigations (when user switches chats)
   let currentPath = window.location.pathname;
-  window.setInterval(() => {
+  const pathInterval = window.setInterval(() => {
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+      window.clearInterval(pathInterval);
+      return;
+    }
     if (window.location.pathname !== currentPath) {
       const oldPath = currentPath;
       const newPath = window.location.pathname;
