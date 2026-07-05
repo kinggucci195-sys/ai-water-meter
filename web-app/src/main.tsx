@@ -55,9 +55,7 @@ async function loadLeaderboard(
     .select("rank,badge,confidence,display_name,score,water_saved_ml_estimate")
     .eq("period", period)
     .order("rank", { ascending: true })
-    .limit(25)
-    // @ts-expect-error - PostgrestBuilder headers is a method at runtime but type definitions have it as protected
-    .headers({ "Cache-Control": "no-cache" });
+    .limit(25);
 
   if (error) {
     console.error("loadLeaderboard error:", error);
