@@ -161,6 +161,7 @@ if (isWebApp) {
       if (!isTransitionFromNewToCreated) {
         hasBaseline = false;
         lastPersistedTotal = undefined;
+        lastSnapshot = undefined;
         sidebar.setStatus("Switched chat session. Resetting local baseline.");
       }
     }

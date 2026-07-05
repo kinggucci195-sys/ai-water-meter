@@ -22,6 +22,7 @@ export function createChatObserver(
   const initialChat = collectChat(profile);
   let lastPromptCount = initialChat.promptCount;
   let lastResponseCharCount = initialChat.responseCharCount;
+  let lastPathname = window.location.pathname;
   let lastFingerprint = "";
   let throttleTimer: number | undefined;
   let debounceTimer: number | undefined;
@@ -67,6 +68,20 @@ export function createChatObserver(
 
   const handleMutation = () => {
     const chat = collectChat(profile);
+    const currentPath = window.location.pathname;
+
+    // Reset observer state on session pathname transition
+    if (currentPath !== lastPathname) {
+      lastPathname = currentPath;
+      lastPromptCount = chat.promptCount;
+      lastResponseCharCount = chat.responseCharCount;
+      startTime = 0;
+      firstChunkTime = 0;
+      window.clearTimeout(debounceTimer);
+      window.clearInterval(throttleTimer);
+      throttleTimer = undefined;
+      return;
+    }
 
     if (chat.promptCount > lastPromptCount) {
       startTime = Date.now();
@@ -89,6 +104,12 @@ export function createChatObserver(
 
     window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => {
+      // Keep waiting if we submitted a prompt but response hasn't arrived, up to 15s
+      const elapsedSinceStart = startTime > 0 ? Date.now() - startTime : 0;
+      if (startTime > 0 && firstChunkTime === 0 && elapsedSinceStart < 15000) {
+        return;
+      }
+
       window.clearInterval(throttleTimer);
       throttleTimer = undefined;
       emit(false);
@@ -99,7 +120,7 @@ export function createChatObserver(
       const endChat = collectChat(profile);
       lastPromptCount = endChat.promptCount;
       lastResponseCharCount = endChat.responseCharCount;
-    }, 1000);
+    }, 1500);
   };
 
   const observer = new MutationObserver(handleMutation);
