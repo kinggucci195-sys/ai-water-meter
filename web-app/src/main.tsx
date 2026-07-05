@@ -43,13 +43,14 @@ async function loadAuthProviders(): Promise<AuthProviderAvailability> {
 
 async function loadLeaderboard(
   period: "daily" | "weekly" | "monthly" | "all_time",
-  setEntries: (entries: LeaderboardEntry[]) => void
+  setEntries: (entries: LeaderboardEntry[]) => void,
+  setError?: (err: string | null) => void
 ) {
   if (!supabase) {
     return;
   }
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("leaderboard_entries")
     .select("rank,badge,confidence,display_name,score,water_saved_ml_estimate")
     .eq("period", period)
@@ -57,6 +58,13 @@ async function loadLeaderboard(
     .limit(25)
     // @ts-expect-error - PostgrestBuilder headers is a method at runtime but type definitions have it as protected
     .headers({ "Cache-Control": "no-cache" });
+
+  if (error) {
+    console.error("loadLeaderboard error:", error);
+    if (setError) setError(error.message);
+  } else {
+    if (setError) setError(null);
+  }
 
   setEntries((data ?? []) as LeaderboardEntry[]);
 }
@@ -67,6 +75,7 @@ function App() {
     defaultAuthProviderAvailability
   );
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | undefined>(() => {
     return localStorage.getItem("sb-mock-email") || undefined;
   });
@@ -120,11 +129,11 @@ function App() {
           schema: "public",
           table: "leaderboard_entries_raw"
         },
-        () => void loadLeaderboard(period, setEntries)
+        () => void loadLeaderboard(period, setEntries, setError)
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          void loadLeaderboard(period, setEntries);
+          void loadLeaderboard(period, setEntries, setError);
         }
       });
 
@@ -135,7 +144,7 @@ function App() {
   }, [period]);
 
   useEffect(() => {
-    void loadLeaderboard(period, setEntries);
+    void loadLeaderboard(period, setEntries, setError);
   }, [period]);
 
   const routeView = useMemo(() => {
@@ -154,8 +163,16 @@ function App() {
       return <AccountDashboard email={email} />;
     }
 
-    return <Leaderboard entries={entries} email={email} period={period} setPeriod={setPeriod} />;
-  }, [authProviders, email, entries, path, period]);
+    return (
+      <Leaderboard
+        entries={entries}
+        email={email}
+        period={period}
+        setPeriod={setPeriod}
+        error={error}
+      />
+    );
+  }, [authProviders, email, entries, path, period, error]);
 
   const isAccountPage = path === "/account" || (path.startsWith("/auth/extension/start") && email);
 

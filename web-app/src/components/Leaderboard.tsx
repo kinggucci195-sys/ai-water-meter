@@ -6,9 +6,10 @@ interface LeaderboardProps {
   entries: LeaderboardEntry[];
   period: "daily" | "weekly" | "monthly" | "all_time";
   setPeriod: (period: "daily" | "weekly" | "monthly" | "all_time") => void;
+  error?: string | null;
 }
 
-export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardProps) {
+export function Leaderboard({ email, entries, period, setPeriod, error }: LeaderboardProps) {
   return (
     <section className="panel">
       <div className="section-heading" style={{ marginBottom: "var(--space-sm)" }}>
@@ -41,6 +42,22 @@ export function Leaderboard({ email, entries, period, setPeriod }: LeaderboardPr
           );
         })}
       </div>
+
+      {error && (
+        <div
+          style={{
+            padding: "12px",
+            background: "rgba(224, 49, 49, 0.15)",
+            border: "1px solid #ff8787",
+            borderRadius: "6px",
+            color: "#ffe3e3",
+            fontSize: "0.85rem",
+            marginBottom: "var(--space-sm)"
+          }}
+        >
+          <strong>Database Query Failed:</strong> {error}
+        </div>
+      )}
 
       <div
         className="leaderboard"
