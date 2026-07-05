@@ -22,54 +22,60 @@ if (isWebApp) {
       return;
     }
 
-    let email: string | null = null;
-    let supabaseToken = "";
-    let supabaseUserId = "";
+    try {
+      let email: string | null = null;
+      let supabaseToken = "";
+      let supabaseUserId = "";
 
-    const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-    if (tokenStr) {
-      try {
-        const parsed = JSON.parse(tokenStr);
-        email = parsed?.user?.email || null;
-        supabaseToken = parsed?.access_token || "";
-        supabaseUserId = parsed?.user?.id || "";
-        // Clear mock email to avoid conflict
-        localStorage.removeItem("sb-mock-email");
-      } catch {
-        // Ignore parsing errors
-      }
-    }
-
-    if (!email) {
-      const mockEmail = localStorage.getItem("sb-mock-email");
-      if (mockEmail) {
-        email = mockEmail;
-      }
-    }
-
-    if (email) {
-      chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId"], (data) => {
-        // Double check context validity before writing
-        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-          if (syncSessionInterval) clearInterval(syncSessionInterval);
-          return;
+      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+      if (tokenStr) {
+        try {
+          const parsed = JSON.parse(tokenStr);
+          email = parsed?.user?.email || null;
+          supabaseToken = parsed?.access_token || "";
+          supabaseUserId = parsed?.user?.id || "";
+          // Clear mock email to avoid conflict
+          localStorage.removeItem("sb-mock-email");
+        } catch {
+          // Ignore parsing errors
         }
-        const storedEmail = (data as { userEmail?: string }).userEmail;
-        const storedToken = (data as { supabaseToken?: string }).supabaseToken;
-        const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
+      }
 
-        if (
-          storedEmail !== email ||
-          storedToken !== supabaseToken ||
-          storedUserId !== supabaseUserId
-        ) {
-          void chrome.storage.local.set({
-            userEmail: email,
-            supabaseToken,
-            supabaseUserId
-          });
+      if (!email) {
+        const mockEmail = localStorage.getItem("sb-mock-email");
+        if (mockEmail) {
+          email = mockEmail;
         }
-      });
+      }
+
+      if (email) {
+        chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId"], (data) => {
+          // Double check context validity before writing
+          if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+            if (syncSessionInterval) clearInterval(syncSessionInterval);
+            return;
+          }
+          const storedEmail = (data as { userEmail?: string }).userEmail;
+          const storedToken = (data as { supabaseToken?: string }).supabaseToken;
+          const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
+
+          if (
+            storedEmail !== email ||
+            storedToken !== supabaseToken ||
+            storedUserId !== supabaseUserId
+          ) {
+            void chrome.storage.local.set({
+              userEmail: email,
+              supabaseToken,
+              supabaseUserId
+            });
+          }
+        });
+      }
+    } catch (err) {
+      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+        if (syncSessionInterval) clearInterval(syncSessionInterval);
+      }
     }
   };
 
@@ -84,13 +90,19 @@ if (isWebApp) {
         clearInterval(checkSession);
         return;
       }
-      const mockEmail = localStorage.getItem("sb-mock-email");
-      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-      if (mockEmail || tokenStr) {
-        clearInterval(checkSession);
-        setTimeout(() => {
-          chrome.runtime.sendMessage({ type: "tab:close" });
-        }, 300);
+      try {
+        const mockEmail = localStorage.getItem("sb-mock-email");
+        const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+        if (mockEmail || tokenStr) {
+          clearInterval(checkSession);
+          setTimeout(() => {
+            chrome.runtime.sendMessage({ type: "tab:close" });
+          }, 300);
+        }
+      } catch (err) {
+        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+          clearInterval(checkSession);
+        }
       }
     }, 500);
   }
@@ -101,23 +113,32 @@ if (isWebApp) {
       if (syncSignOutInterval) clearInterval(syncSignOutInterval);
       return;
     }
-    const token = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-    const mockEmail = localStorage.getItem("sb-mock-email");
-    chrome.storage.local.get("userEmail", (data) => {
+    try {
+      const token = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
+      const mockEmail = localStorage.getItem("sb-mock-email");
+      chrome.storage.local.get("userEmail", (data) => {
+        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+          if (syncSignOutInterval) clearInterval(syncSignOutInterval);
+          return;
+        }
+        const localEmail = (data as { userEmail?: string }).userEmail;
+        if (!token && !mockEmail && localEmail) {
+          void chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
+        }
+      });
+    } catch (err) {
       if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
         if (syncSignOutInterval) clearInterval(syncSignOutInterval);
-        return;
       }
-      const localEmail = (data as { userEmail?: string }).userEmail;
-      if (!token && !mockEmail && localEmail) {
-        void chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
-      }
-    });
+    }
   };
   syncSignOutInterval = setInterval(syncSignOutFromWebApp, 1000);
 
   // 2. Extension -> Web App Sign-Out Sync
   chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+      return;
+    }
     if (areaName === "local" && changes.userEmail && !changes.userEmail.newValue) {
       localStorage.removeItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
       localStorage.removeItem("sb-mock-email");
