@@ -602,12 +602,12 @@ export const Mascot: React.FC<MascotProps> = ({ state, customMessage, onTipsCycl
           className="tip-text"
           style={{
             fontSize: "0.75rem",
-            color: "var(--color-text-muted)",
-            marginTop: "4px",
-            fontStyle: "italic"
+            color: "var(--color-text-secondary)",
+            marginTop: "6px",
+            fontFamily: "var(--font-mono)"
           }}
         >
-          {PIP_TIPS[tipIndex]}
+          &gt; {PIP_TIPS[tipIndex]}
         </div>
       </div>
     </div>

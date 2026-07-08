@@ -572,7 +572,6 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
         className="bento-card"
         style={{
           marginBottom: "var(--space-md)",
-          background: "linear-gradient(135deg, rgba(0, 242, 254, 0.03), rgba(140, 219, 253, 0.05))",
           border: "1px solid rgba(0, 242, 254, 0.15)"
         }}
       >
@@ -596,7 +595,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             >
               Text Generated Equivalent
             </span>
-            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+            <strong style={{ fontSize: "1.25rem", color: "#fff", fontFamily: "var(--font-mono)" }}>
               {stats.totalTokens >= 70000
                 ? `${(stats.totalTokens / 70000).toFixed(1)} novels`
                 : `${Math.round((stats.totalTokens / 70000) * 250)} pages`}
@@ -622,7 +621,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             >
               Direct Cooling Saved
             </span>
-            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+            <strong style={{ fontSize: "1.25rem", color: "#fff", fontFamily: "var(--font-mono)" }}>
               {stats.totalWater >= 240
                 ? `${(stats.totalWater / 240).toFixed(1)} cups`
                 : `${(stats.totalWater / 5).toFixed(1)} teaspoons`}
@@ -648,7 +647,7 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             >
               Phone Charge Equivalent
             </span>
-            <strong style={{ fontSize: "1.25rem", color: "#fff" }}>
+            <strong style={{ fontSize: "1.25rem", color: "#fff", fontFamily: "var(--font-mono)" }}>
               {Math.round(stats.totalEnergy * 0.1)} hours
             </strong>
             <span

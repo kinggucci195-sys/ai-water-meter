@@ -83,6 +83,8 @@ export function Leaderboard({ email, entries, period, setPeriod, error }: Leader
               borderGlow = "1.5px solid #ffd8a8";
             }
 
+            const rankStr = String(entry.rank).padStart(2, "0");
+
             return (
               <article
                 key={`${entry.rank}-${entry.display_name}`}
@@ -102,14 +104,14 @@ export function Leaderboard({ email, entries, period, setPeriod, error }: Leader
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: "900",
-                    fontFamily: "var(--font-display)",
-                    fontSize: "0.9rem",
+                    fontWeight: "700",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.85rem",
                     color: rankTextColor,
                     boxShadow: entry.rank <= 3 ? "0 0 12px rgba(255,255,255,0.15)" : "none"
                   }}
                 >
-                  #{entry.rank}
+                  #{rankStr}
                 </div>
 
                 <div style={{ flex: 1 }}>
@@ -134,7 +136,8 @@ export function Leaderboard({ email, entries, period, setPeriod, error }: Leader
                     style={{
                       display: "block",
                       fontSize: "0.95rem",
-                      fontWeight: "bold",
+                      fontWeight: "700",
+                      fontFamily: "var(--font-mono)",
                       color: "var(--color-blue)"
                     }}
                   >
@@ -149,9 +152,9 @@ export function Leaderboard({ email, entries, period, setPeriod, error }: Leader
                   <span
                     style={{
                       fontSize: "1.125rem",
-                      fontWeight: "900",
+                      fontWeight: "700",
                       color: "var(--color-cyan)",
-                      fontFamily: "var(--font-display)"
+                      fontFamily: "var(--font-mono)"
                     }}
                   >
                     {entry.score}

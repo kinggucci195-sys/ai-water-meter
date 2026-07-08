@@ -25,6 +25,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   };
 
   context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(async (event) => {
+      for (const change of event.contentChanges) {
+        const text = change.text.trim();
+        if (text.length > 15) {
+          await recordText(context, text, refreshStatus);
+        }
+      }
+    }),
     vscode.commands.registerCommand("aiWaterMeter.estimateSelection", async () => {
       const editor = vscode.window.activeTextEditor;
       const text = editor
