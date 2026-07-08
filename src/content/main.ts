@@ -321,7 +321,7 @@ if (isWebApp) {
       
       if (isConnectionError) {
         sidebar.setStatus("Extension updated. Please refresh the page to sync.");
-        throw new Error("Extension updated. Please refresh the page to sync.");
+        throw new Error("Extension updated. Please refresh the page to sync.", { cause: err });
       }
       throw err;
     }

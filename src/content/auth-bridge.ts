@@ -14,7 +14,7 @@ function sendAuthToExtension() {
       },
       "*"
     );
-  } catch (err) {
+  } catch {
     // Ignore any security or access errors from sandboxed iframes
   }
 }
@@ -27,7 +27,7 @@ window.addEventListener("message", (event) => {
       localStorage.removeItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
       localStorage.removeItem("sb-mock-email");
       window.location.reload();
-    } catch (err) {
+    } catch {
       // Ignore
     }
   }
