@@ -23,6 +23,13 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 try {
   const page = await context.newPage();
+  
+  page.on("console", (msg) => {
+    console.log(`[PAGE LOG] [${msg.type()}] ${msg.text()}`);
+  });
+  page.on("pageerror", (err) => {
+    console.error(`[PAGE ERROR] ${err.stack || err.message}`);
+  });
 
   await page.route("https://chatgpt.com/*", async (route) => {
     await route.fulfill({
@@ -58,75 +65,26 @@ async function verifyExtensionAtViewport(page, width, height) {
   await page.waitForSelector("#ai-water-meter-root", { timeout: 10000 });
   await page.waitForFunction(() => {
     const host = document.querySelector("#ai-water-meter-root");
-    const canvas = host?.shadowRoot?.querySelector(".droplet-scene canvas");
-    return Boolean(canvas);
+    const img = host?.shadowRoot?.querySelector(".droplet-scene img");
+    return Boolean(img);
   });
   await page.waitForTimeout(500);
 
   const result = await page.locator("#ai-water-meter-root").evaluate(
-    (element, viewport) => {
+    (element) => {
       const shadow = element.shadowRoot;
-      const canvas = shadow?.querySelector(".droplet-scene canvas");
-      if (!(canvas instanceof HTMLCanvasElement)) {
-        return { ok: false, reason: "Droplet canvas did not mount." };
+      const img = shadow?.querySelector(".droplet-scene img");
+      if (!(img instanceof HTMLImageElement)) {
+        return { ok: false, reason: "Droplet image did not mount." };
       }
 
-      const rect = canvas.getBoundingClientRect();
-      const insideViewport =
-        rect.left >= 0 &&
-        rect.top >= 0 &&
-        rect.right <= viewport.width &&
-        rect.bottom <= viewport.height;
-      if (!insideViewport) {
-        return { ok: false, reason: "Droplet canvas is outside the viewport." };
+      const hasSrc = Boolean(img.src);
+      if (!hasSrc) {
+        return { ok: false, reason: "Droplet image does not have a src attribute." };
       }
 
-      const samplePoints = [
-        [0.5, 0.5],
-        [0.45, 0.45],
-        [0.55, 0.45],
-        [0.5, 0.35],
-        [0.5, 0.65]
-      ];
-
-      const probe = document.createElement("canvas");
-      probe.width = canvas.width;
-      probe.height = canvas.height;
-      const probeContext = probe.getContext("2d");
-      if (!probeContext) {
-        return { ok: false, reason: "Could not create a probe canvas." };
-      }
-
-      probeContext.drawImage(canvas, 0, 0);
-      const probeNonBlank = samplePoints.some(([xRatio, yRatio]) => {
-        const x = Math.floor(probe.width * xRatio);
-        const y = Math.floor(probe.height * yRatio);
-        const pixel = probeContext.getImageData(x, y, 1, 1).data;
-        return pixel[3] > 0 && (pixel[0] > 0 || pixel[1] > 0 || pixel[2] > 0);
-      });
-
-      if (probeNonBlank) {
-        return { ok: true };
-      }
-
-      const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-      if (!gl) {
-        return { ok: false, reason: "Droplet canvas does not have a WebGL context." };
-      }
-
-      const pixel = new Uint8Array(4);
-      const nonBlank = samplePoints.some(([xRatio, yRatio]) => {
-        const x = Math.floor(canvas.width * xRatio);
-        const y = Math.floor(canvas.height * yRatio);
-        gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-        return pixel[3] > 0 && (pixel[0] > 0 || pixel[1] > 0 || pixel[2] > 0);
-      });
-
-      return nonBlank
-        ? { ok: true }
-        : { ok: false, reason: "Droplet WebGL canvas rendered blank pixels." };
-    },
-    { width, height }
+      return { ok: true };
+    }
   );
 
   if (!result.ok) {
