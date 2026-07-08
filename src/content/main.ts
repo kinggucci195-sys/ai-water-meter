@@ -15,6 +15,7 @@ if (isWebApp) {
   // Listen for the auth message posted from the MAIN world auth-bridge script
   window.addEventListener("message", (event) => {
     if (event.source !== window) return;
+    if (event.origin !== window.location.origin) return;
     if (event.data?.type === "AI_WATER_METER_AUTH_TRANSFER") {
       const { token, mockEmail } = event.data;
       handleAuthUpdate(token, mockEmail);

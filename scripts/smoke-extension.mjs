@@ -1,4 +1,4 @@
-/* global HTMLCanvasElement, document */
+/* global HTMLImageElement, document */
 import { chromium } from "playwright";
 import { existsSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";

@@ -22,6 +22,7 @@ function sendAuthToExtension() {
 // Listen for sign-out messages from the extension (isolated world)
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
+  if (event.origin !== window.location.origin) return;
   if (event.data?.type === "AI_WATER_METER_SIGN_OUT") {
     try {
       localStorage.removeItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
