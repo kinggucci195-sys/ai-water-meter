@@ -74,9 +74,15 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             .order("usage_date", { ascending: false });
 
           if (!error && data) {
-            setUsageData(data as DailyUsageData[]);
-            setIsDemo(false);
-            setIsMockMode(false);
+            if (data.length === 0) {
+              setUsageData(generateDemoUsage());
+              setIsDemo(true);
+              setIsMockMode(false);
+            } else {
+              setUsageData(data as DailyUsageData[]);
+              setIsDemo(false);
+              setIsMockMode(false);
+            }
           }
         };
 

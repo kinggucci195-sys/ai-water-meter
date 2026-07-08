@@ -41,6 +41,33 @@ async function loadAuthProviders(): Promise<AuthProviderAvailability> {
   }
 }
 
+/**
+ * Compute the period_start date string that matches what the DB trigger writes.
+ * - daily:    today's date (YYYY-MM-DD)
+ * - weekly:   Monday of the current ISO week (date_trunc('week', ...) in Postgres = Monday)
+ * - monthly:  1st of the current month
+ * - all_time: fixed epoch '2000-01-01'
+ */
+function getPeriodStart(period: "daily" | "weekly" | "monthly" | "all_time"): string {
+  const now = new Date();
+  if (period === "all_time") return "2000-01-01";
+  if (period === "monthly") {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    return `${y}-${m}-01`;
+  }
+  if (period === "weekly") {
+    // ISO week starts on Monday. JS getDay(): 0=Sun, 1=Mon ... 6=Sat
+    const day = now.getDay();
+    const diffToMonday = day === 0 ? 6 : day - 1; // Sun→6, Mon→0, Tue→1 ...
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    return monday.toISOString().slice(0, 10);
+  }
+  // daily
+  return now.toISOString().slice(0, 10);
+}
+
 async function loadLeaderboard(
   period: "daily" | "weekly" | "monthly" | "all_time",
   setEntries: (entries: LeaderboardEntry[]) => void,
@@ -50,10 +77,13 @@ async function loadLeaderboard(
     return;
   }
 
+  const periodStart = getPeriodStart(period);
+
   const { data, error } = await supabase
     .from("leaderboard_entries")
     .select("rank,badge,confidence,display_name,score,water_saved_ml_estimate")
     .eq("period", period)
+    .eq("period_start", periodStart)
     .order("rank", { ascending: true })
     .limit(25);
 

@@ -97,21 +97,115 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// Synchronizes the locally recorded daily usage aggregate back to Supabase usage_daily table
+/**
+ * Decode a JWT payload and check if it has expired.
+ * Uses a 60-second safety buffer to refresh before actual expiry.
+ */
+function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    // Base64url decode the payload
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = atob(payload);
+    const parsed = JSON.parse(decoded) as { exp?: number };
+    if (!parsed.exp) return true;
+    // Expired if current time is within 60 seconds of expiry
+    return Date.now() >= (parsed.exp - 60) * 1000;
+  } catch {
+    return true; // If we can't decode, treat as expired
+  }
+}
+
+/**
+ * Returns a valid (non-expired) Supabase access token.
+ * If the current token is expired and a refresh token is available,
+ * calls Supabase's POST /auth/v1/token?grant_type=refresh_token
+ * to obtain a fresh access token and persists both tokens to storage.
+ */
+async function getValidToken(
+  accessToken: string | undefined,
+  refreshToken: string | undefined,
+  supabaseUrl: string,
+  anonKey: string
+): Promise<string | null> {
+  // If access token is still valid, use it directly
+  if (accessToken && !isTokenExpired(accessToken)) {
+    return accessToken;
+  }
+
+  // Access token missing or expired — try refreshing
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anonKey
+      },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+
+    if (!response.ok) {
+      console.error("[AI Water Meter] Token refresh failed:", response.status);
+      return null;
+    }
+
+    const data = (await response.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+    };
+
+    if (!data.access_token) {
+      return null;
+    }
+
+    // Persist the new tokens so future syncs don't need to refresh again
+    const updates: Record<string, string> = { supabaseToken: data.access_token };
+    if (data.refresh_token) {
+      updates.supabaseRefreshToken = data.refresh_token;
+    }
+    await chrome.storage.local.set(updates);
+
+    return data.access_token;
+  } catch (err) {
+    console.error("[AI Water Meter] Token refresh error:", err);
+    return null;
+  }
+}
+
 async function syncUsageToSupabase(
   daily: DailyUsageRecord
 ): Promise<{ syncSkipped: boolean; reason?: string }> {
-  const keys = await chrome.storage.local.get(["supabaseToken", "supabaseUserId", "deviceId"]);
+  const keys = await chrome.storage.local.get(["supabaseToken", "supabaseRefreshToken", "supabaseUserId", "deviceId"]);
 
-  if (!keys.supabaseToken || !keys.supabaseUserId) {
+  if (!keys.supabaseUserId) {
     return { syncSkipped: true, reason: "not_signed_in" };
   }
 
-  const token = keys.supabaseToken as string;
+  if (!keys.supabaseToken && !keys.supabaseRefreshToken) {
+    return { syncSkipped: true, reason: "not_signed_in" };
+  }
+
   const userId = keys.supabaseUserId as string;
   const anonKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmZ3lud3hwamtya3d2a3J1Y296Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5ODc4ODQsImV4cCI6MjA5ODU2Mzg4NH0.iijDhvQMy4AdlBVu3KvOmXAHb6MaSUK09568It-tUWk";
   const supabaseUrl = "https://ffgynwxpjkrkwvkrucoz.supabase.co";
+
+  // Get a valid (non-expired) access token, refreshing if needed
+  const token = await getValidToken(
+    keys.supabaseToken as string | undefined,
+    keys.supabaseRefreshToken as string | undefined,
+    supabaseUrl,
+    anonKey
+  );
+
+  if (!token) {
+    return { syncSkipped: true, reason: "token_refresh_failed" };
+  }
 
   // Ensure this extension installation has a unique device ID
   let deviceId = keys.deviceId as string | undefined;

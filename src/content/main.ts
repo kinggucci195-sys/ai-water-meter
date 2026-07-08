@@ -12,127 +12,89 @@ const isWebApp =
   host === "web-app-woad-rho.vercel.app" || host === "localhost" || host === "127.0.0.1";
 
 if (isWebApp) {
-  let syncSessionInterval: any = null;
-  let syncSignOutInterval: any = null;
+  // Listen for the auth message posted from the MAIN world auth-bridge script
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+    if (event.data?.type === "AI_WATER_METER_AUTH_TRANSFER") {
+      const { token, mockEmail } = event.data;
+      handleAuthUpdate(token, mockEmail);
+    }
+  });
 
-  // Sync Web App Session -> Extension Storage (whenever Web App is open and logged in)
-  const syncSessionFromWebApp = () => {
+  const handleAuthUpdate = (tokenStr: string | null, mockEmail: string | null) => {
     if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-      if (syncSessionInterval) clearInterval(syncSessionInterval);
       return;
     }
 
-    try {
-      let email: string | null = null;
-      let supabaseToken = "";
-      let supabaseUserId = "";
+    let email: string | null = null;
+    let supabaseToken = "";
+    let supabaseUserId = "";
+    let supabaseRefreshToken = "";
 
-      const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-      if (tokenStr) {
-        try {
-          const parsed = JSON.parse(tokenStr);
-          email = parsed?.user?.email || null;
-          supabaseToken = parsed?.access_token || "";
-          supabaseUserId = parsed?.user?.id || "";
-          // Clear mock email to avoid conflict
-          localStorage.removeItem("sb-mock-email");
-        } catch {
-          // Ignore parsing errors
-        }
-      }
-
-      if (!email) {
-        const mockEmail = localStorage.getItem("sb-mock-email");
-        if (mockEmail) {
-          email = mockEmail;
-        }
-      }
-
-      if (email) {
-        chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId"], (data) => {
-          // Double check context validity before writing
-          if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-            if (syncSessionInterval) clearInterval(syncSessionInterval);
-            return;
-          }
-          const storedEmail = (data as { userEmail?: string }).userEmail;
-          const storedToken = (data as { supabaseToken?: string }).supabaseToken;
-          const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
-
-          if (
-            storedEmail !== email ||
-            storedToken !== supabaseToken ||
-            storedUserId !== supabaseUserId
-          ) {
-            void chrome.storage.local.set({
-              userEmail: email,
-              supabaseToken,
-              supabaseUserId
-            });
-          }
-        });
-      }
-    } catch (err) {
-      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-        if (syncSessionInterval) clearInterval(syncSessionInterval);
+    if (tokenStr) {
+      try {
+        const parsed = JSON.parse(tokenStr);
+        email = parsed?.user?.email || null;
+        supabaseToken = parsed?.access_token || "";
+        supabaseUserId = parsed?.user?.id || "";
+        supabaseRefreshToken = parsed?.refresh_token || "";
+      } catch {
+        // Ignore parsing errors
       }
     }
-  };
 
-  // Run session sync immediately and keep in sync every second
-  syncSessionFromWebApp();
-  syncSessionInterval = setInterval(syncSessionFromWebApp, 1000);
+    if (!email && mockEmail) {
+      email = mockEmail;
+    }
 
-  // Close callback redirection tabs specifically
-  if (window.location.pathname.startsWith("/auth/callback")) {
-    const checkSession = setInterval(async () => {
+    chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId", "supabaseRefreshToken"], (data) => {
       if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-        clearInterval(checkSession);
         return;
       }
-      try {
-        const mockEmail = localStorage.getItem("sb-mock-email");
-        const tokenStr = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-        if (mockEmail || tokenStr) {
-          clearInterval(checkSession);
-          setTimeout(() => {
-            chrome.runtime.sendMessage({ type: "tab:close" });
-          }, 300);
-        }
-      } catch (err) {
-        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-          clearInterval(checkSession);
-        }
-      }
-    }, 500);
-  }
 
-  // 1. Web App -> Extension Sign-Out Sync
-  const syncSignOutFromWebApp = () => {
-    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-      if (syncSignOutInterval) clearInterval(syncSignOutInterval);
-      return;
-    }
-    try {
-      const token = localStorage.getItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-      const mockEmail = localStorage.getItem("sb-mock-email");
-      chrome.storage.local.get("userEmail", (data) => {
-        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-          if (syncSignOutInterval) clearInterval(syncSignOutInterval);
-          return;
+      const storedEmail = (data as { userEmail?: string }).userEmail;
+      const storedToken = (data as { supabaseToken?: string }).supabaseToken;
+      const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
+      const storedRefresh = (data as { supabaseRefreshToken?: string }).supabaseRefreshToken;
+
+      // Case A: User is logged out on the web app page, but extension still has credentials
+      if (!email) {
+        if (storedEmail || storedToken || storedUserId || storedRefresh) {
+          void chrome.storage.local.remove([
+            "userEmail",
+            "supabaseToken",
+            "supabaseUserId",
+            "supabaseRefreshToken"
+          ]);
         }
-        const localEmail = (data as { userEmail?: string }).userEmail;
-        if (!token && !mockEmail && localEmail) {
-          void chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
-        }
-      });
-    } catch (err) {
-      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-        if (syncSignOutInterval) clearInterval(syncSignOutInterval);
+        return;
       }
-    }
+
+      // Case B: User credentials changed or first-time sync
+      if (
+        storedEmail !== email ||
+        storedToken !== supabaseToken ||
+        storedUserId !== supabaseUserId ||
+        storedRefresh !== supabaseRefreshToken
+      ) {
+        void chrome.storage.local.set({
+          userEmail: email,
+          supabaseToken,
+          supabaseUserId,
+          supabaseRefreshToken
+        });
+      }
+
+      // Case C: If logged in and on the /auth/callback redirection tab, auto-close the tab
+      if (window.location.pathname.startsWith("/auth/callback")) {
+        setTimeout(() => {
+          if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
+            chrome.runtime.sendMessage({ type: "tab:close" });
+          }
+        }, 500);
+      }
+    });
   };
-  syncSignOutInterval = setInterval(syncSignOutFromWebApp, 1000);
 
   // 2. Extension -> Web App Sign-Out Sync
   chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -140,9 +102,7 @@ if (isWebApp) {
       return;
     }
     if (areaName === "local" && changes.userEmail && !changes.userEmail.newValue) {
-      localStorage.removeItem("sb-ffgynwxpjkrkwvkrucoz-auth-token");
-      localStorage.removeItem("sb-mock-email");
-      window.location.reload();
+      window.postMessage({ type: "AI_WATER_METER_SIGN_OUT" }, "*");
     }
   });
 } else {
@@ -162,7 +122,7 @@ if (isWebApp) {
       await sendStorageRequest({ path: "/leaderboard", type: "app:open" });
     },
     async () => {
-      await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId"]);
+      await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId", "supabaseRefreshToken"]);
       sidebar.setStatus("Signed out successfully.");
     }
   );

@@ -13,6 +13,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         content: resolve(__dirname, "src/content/main.ts"),
+        "auth-bridge": resolve(__dirname, "src/content/auth-bridge.ts"),
         "service-worker": resolve(__dirname, "src/background/service-worker.ts"),
         popup: resolve(__dirname, "src/popup/index.html"),
         options: resolve(__dirname, "src/options/index.html")
