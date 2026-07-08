@@ -171,6 +171,185 @@ fastify.get("/api/leaderboard", async (request, reply) => {
   }
 });
 
+// 6. API Endpoint: GET /api/badge/:displayName (Fetch GitHub README SVG stats badge)
+fastify.get("/api/badge/:displayName", async (request, reply) => {
+  const params = request.params as { displayName: string };
+  const displayNameInput = params.displayName;
+
+  try {
+    // 1. Find user by display name (case-insensitive)
+    let userRow: { user_id: string; display_name: string } | null = null;
+
+    const profileQuery = `
+      SELECT user_id, display_name 
+      FROM public.leaderboard_profiles 
+      WHERE LOWER(display_name) = LOWER($1) 
+      LIMIT 1
+    `;
+    const profileRes = await pgPool.query(profileQuery, [displayNameInput]);
+
+    if (profileRes.rows.length > 0) {
+      userRow = profileRes.rows[0];
+    } else {
+      const fallbackQuery = `
+        SELECT id as user_id, display_name 
+        FROM public.profiles 
+        WHERE LOWER(display_name) = LOWER($1) 
+        LIMIT 1
+      `;
+      const fallbackRes = await pgPool.query(fallbackQuery, [displayNameInput]);
+      if (fallbackRes.rows.length > 0) {
+        userRow = fallbackRes.rows[0];
+      }
+    }
+
+    // If user not found, render a beautiful "User Not Registered" SVG badge
+    if (!userRow) {
+      const notFoundSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="350" height="96" viewBox="0 0 350 96">
+          <defs>
+            <style>
+              .label { font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 10px; fill: #9ca3af; text-transform: uppercase; font-weight: 700; }
+              .value { font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 13px; fill: #ffffff; font-weight: 700; }
+              .title-text { font-family: 'Space Grotesk', sans-serif; font-size: 13px; fill: #ffe066; font-weight: 700; }
+            </style>
+          </defs>
+          <rect width="350" height="96" rx="6" fill="#030611" stroke="#ffe066" stroke-width="1" stroke-opacity="0.15"/>
+          <rect x="3" y="3" width="344" height="90" rx="4" fill="none" stroke="#ffe066" stroke-width="1" stroke-opacity="0.04"/>
+          
+          <g transform="translate(15, 30)">
+            <text x="0" y="0" class="title-text">⚡ AI WATER METER</text>
+            <text x="0" y="24" class="label">STATUS</text>
+            <text x="0" y="44" class="value" fill="#9ca3af">Explorer '${displayNameInput}' Not Found</text>
+          </g>
+        </svg>
+      `.trim();
+      reply.type("image/svg+xml");
+      reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
+      return reply.send(notFoundSvg);
+    }
+
+    const { user_id, display_name } = userRow;
+
+    // 2. Fetch Leaderboard Rank, Score, and Water Saved
+    let rank = "Unranked";
+    let score = 0;
+    let waterSavedMl = 0;
+
+    const rankQuery = `
+      SELECT rank, score, water_saved_ml_estimate
+      FROM public.leaderboard_entries
+      WHERE user_id = $1 AND period = 'all_time'
+      LIMIT 1
+    `;
+    const rankRes = await pgPool.query(rankQuery, [user_id]);
+
+    if (rankRes.rows.length > 0) {
+      rank = `#${String(rankRes.rows[0].rank).padStart(2, "0")}`;
+      score = Number(rankRes.rows[0].score);
+      waterSavedMl = Number(rankRes.rows[0].water_saved_ml_estimate);
+    } else {
+      // Fallback: sum water from usage_daily
+      const sumQuery = `
+        SELECT COALESCE(SUM(water_ml_mid), 0) as total_water
+        FROM public.usage_daily
+        WHERE user_id = $1
+      `;
+      const sumRes = await pgPool.query(sumQuery, [user_id]);
+      waterSavedMl = Number(sumRes.rows[0].total_water);
+      score = Math.floor(waterSavedMl);
+    }
+
+    // 3. Calculate Active Streak
+    let streak = 0;
+    const streakQuery = `
+      WITH dates AS (
+        SELECT DISTINCT usage_date
+        FROM public.usage_daily
+        WHERE user_id = $1
+        ORDER BY usage_date DESC
+      ),
+      numbered AS (
+        SELECT usage_date,
+               usage_date - (ROW_NUMBER() OVER (ORDER BY usage_date DESC))::integer * INTERVAL '1 day' as grp
+        FROM dates
+      ),
+      streaks AS (
+        SELECT grp, COUNT(*) as streak_length, MIN(usage_date) as start_date, MAX(usage_date) as end_date
+        FROM numbered
+        GROUP BY grp
+      )
+      SELECT streak_length
+      FROM streaks
+      WHERE end_date >= CURRENT_DATE - INTERVAL '1 day'
+      ORDER BY streak_length DESC
+      LIMIT 1
+    `;
+    const streakRes = await pgPool.query(streakQuery, [user_id]);
+    if (streakRes.rows.length > 0) {
+      streak = Number(streakRes.rows[0].streak_length);
+    }
+
+    // 4. Format outputs
+    const formattedWater =
+      waterSavedMl >= 1000
+        ? `${(waterSavedMl / 1000).toFixed(1)} L`
+        : `${Math.round(waterSavedMl)} mL`;
+
+    const streakText = streak > 0 ? `${streak} Day${streak === 1 ? "" : "s"} 🔥` : "0 Days";
+
+    // 5. Generate beautiful high-contrast SVGs
+    const rankTitleColor = rank === "Unranked" ? "#9ca3af" : "#00f0ff";
+    const rankValColor = rank === "Unranked" ? "#9ca3af" : "#00f0ff";
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="350" height="96" viewBox="0 0 350 96">
+        <defs>
+          <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#0df2a7" stop-opacity="0.03"/>
+          </linearGradient>
+          <style>
+            .label { font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 10px; fill: #9ca3af; text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+            .value { font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 13px; fill: #ffffff; font-weight: 700; }
+            .rank-title { font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 10px; fill: ${rankTitleColor}; font-weight: 700; text-transform: uppercase; }
+            .rank-val { font-family: 'Space Grotesk', sans-serif; font-size: 24px; fill: ${rankValColor}; font-weight: 900; }
+          </g>
+          </style>
+        </defs>
+        <!-- Background -->
+        <rect width="350" height="96" rx="6" fill="#030611" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.12"/>
+        <!-- Outline offset border -->
+        <rect x="3" y="3" width="344" height="90" rx="4" fill="none" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.04"/>
+        <!-- Left Side rank panel -->
+        <rect x="12" y="12" width="72" height="72" rx="4" fill="url(#glow)" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.1"/>
+        <text x="48" y="30" text-anchor="middle" class="rank-title">RANK</text>
+        <text x="48" y="58" text-anchor="middle" class="rank-val">${rank}</text>
+        <!-- Stats list -->
+        <text x="100" y="30" class="label">Explorer</text>
+        <text x="200" y="30" class="value">${display_name}</text>
+        
+        <text x="100" y="52" class="label">Water Saved</text>
+        <text x="200" y="52" class="value" fill="#0df2a7">${formattedWater}</text>
+        
+        <text x="100" y="74" class="label">Active Streak</text>
+        <text x="200" y="74" class="value" fill="#ffe066">${streakText}</text>
+      </svg>
+    `.trim();
+
+    reply.type("image/svg+xml");
+    // Ensure badges bypass browser caching to render the latest score live
+    reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    reply.header("Pragma", "no-cache");
+    reply.header("Expires", "0");
+    return reply.send(svg);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    fastify.log.error("SVG Badge compilation error: " + errMsg);
+    return reply.code(500).send({ error: "Failed to generate badge" });
+  }
+});
+
 // Start fastify listener
 const start = async () => {
   try {

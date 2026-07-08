@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../supabase";
+import { supabase, apiGatewayUrl } from "../supabase";
 import type { DailyUsageData } from "../types";
 import {
   formatMilliliters,
@@ -564,6 +564,128 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             {stats.longestStreak} {stats.longestStreak === 1 ? "day" : "days"}
           </strong>
           <span className="stats-subtext">All-time record</span>
+        </div>
+      </div>
+
+      {/* GitHub Profile Readme Badge Copier */}
+      <div
+        className="bento-card"
+        style={{
+          marginBottom: "var(--space-md)",
+          border: "1px solid rgba(0, 240, 255, 0.12)",
+          padding: "var(--space-sm)"
+        }}
+      >
+        <h3 style={{ margin: "0 0 8px 0", fontSize: "1.05rem", color: "var(--color-cyan)" }}>
+          ⚡ GitHub Profile Readme Badge
+        </h3>
+        <p
+          style={{
+            margin: "0 0 16px 0",
+            fontSize: "0.8rem",
+            color: "var(--color-text-secondary)",
+            lineHeight: "1.4"
+          }}
+        >
+          Showcase your live stats and water savings streak directly on your GitHub Profile README. The badge updates automatically in real-time.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "24px",
+            flexWrap: "wrap",
+            marginBottom: "12px"
+          }}
+        >
+          {/* Badge Preview */}
+          <div style={{ flexShrink: 0 }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.72rem",
+                fontFamily: "var(--font-mono)",
+                color: "var(--color-text-secondary)",
+                textTransform: "uppercase",
+                marginBottom: "6px"
+              }}
+            >
+              Badge Live Preview:
+            </span>
+            <img
+              src={`${apiGatewayUrl}/api/badge/${encodeURIComponent(optedInName.trim() || displayName)}`}
+              alt="AI Water Meter Badge Preview"
+              style={{ display: "block", maxWidth: "100%", height: "auto", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px" }}
+              onError={(e) => {
+                // Fallback to local rendering block if API gateway is offline during dev
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          </div>
+
+          {/* Copy-paste input container */}
+          <div style={{ flex: 1, minWidth: "240px" }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.72rem",
+                fontFamily: "var(--font-mono)",
+                color: "var(--color-text-secondary)",
+                textTransform: "uppercase",
+                marginBottom: "6px"
+              }}
+            >
+              Readme Markdown Code:
+            </span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <input
+                type="text"
+                readOnly
+                value={`[![AI Water Meter Badge](${apiGatewayUrl}/api/badge/${encodeURIComponent(optedInName.trim() || displayName)})](https://web-app-woad-rho.vercel.app/)`}
+                style={{
+                  flex: 1,
+                  background: "rgba(0,0,0,0.2)",
+                  border: "1px solid var(--color-border-light)",
+                  borderRadius: "4px",
+                  padding: "8px 12px",
+                  color: "#fff",
+                  fontSize: "0.75rem",
+                  fontFamily: "var(--font-mono)",
+                  outline: "none"
+                }}
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <button
+                type="button"
+                style={{
+                  background: "var(--color-cyan)",
+                  border: "none",
+                  borderRadius: "4px",
+                  color: "#030611",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  padding: "0 16px",
+                  cursor: "pointer",
+                  minHeight: "auto"
+                }}
+                onClick={(e) => {
+                  const val = `[![AI Water Meter Badge](${apiGatewayUrl}/api/badge/${encodeURIComponent(optedInName.trim() || displayName)})](https://web-app-woad-rho.vercel.app/)`;
+                  void navigator.clipboard.writeText(val).then(() => {
+                    const btn = e.currentTarget;
+                    btn.textContent = "✓ Copied";
+                    btn.style.background = "var(--color-teal)";
+                    setTimeout(() => {
+                      btn.textContent = "Copy";
+                      btn.style.background = "var(--color-cyan)";
+                    }, 2000);
+                  });
+                }}
+              >
+                Copy
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -17,3 +17,5 @@ export const supabase: SupabaseClient | undefined = hasSupabaseConfig
 export function appOrigin(): string {
   return (import.meta.env.VITE_APP_ORIGIN as string | undefined) ?? window.location.origin;
 }
+
+export const apiGatewayUrl = (import.meta.env.VITE_API_GATEWAY_URL as string | undefined) ?? "http://localhost:8080";
