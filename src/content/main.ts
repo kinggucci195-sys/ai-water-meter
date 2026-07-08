@@ -143,6 +143,7 @@ if (isWebApp) {
   let lastSnapshot: Parameters<typeof sidebar.update>[0] | undefined;
   let lastPersistedTotal: UsageEstimate | undefined;
   let hasBaseline = false;
+  let lastStreamSyncTime = 0;
   let persistenceQueue = Promise.resolve();
 
   // URL polling to reset baseline on SPA navigations (when user switches chats)
@@ -228,6 +229,37 @@ if (isWebApp) {
     if (snapshot.isStreaming) {
       sidebar.update(snapshot, daily, monthly, reaction);
       sidebar.setStatus("Streaming real-time telemetry...");
+
+      // Throttled real-time cloud sync during streaming (at most once every 2 seconds)
+      const now = Date.now();
+      if (now - lastStreamSyncTime > 2000) {
+        const totalMovedBackward =
+          lastPersistedTotal &&
+          snapshot.totalEstimate.weightedTokens < lastPersistedTotal.weightedTokens;
+        const previous = totalMovedBackward ? undefined : lastPersistedTotal;
+        const delta = previous
+          ? subtractEstimate(snapshot.totalEstimate, previous)
+          : snapshot.totalEstimate;
+
+        if (delta.weightedTokens > 0) {
+          lastPersistedTotal = snapshot.totalEstimate;
+          lastStreamSyncTime = now;
+
+          // Run storage update asynchronously in the background
+          void (async () => {
+            try {
+              const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
+              if (!response.syncSkipped) {
+                const freshDaily = response.daily;
+                const freshMonthly = response.monthly ?? monthly;
+                sidebar.update(snapshot, freshDaily, freshMonthly, reaction);
+              }
+            } catch {
+              // Silently ignore sync errors during streaming to avoid flickering status logs
+            }
+          })();
+        }
+      }
       return;
     }
 

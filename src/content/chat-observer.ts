@@ -66,6 +66,26 @@ export function createChatObserver(
     });
   };
 
+  const handleDebounce = () => {
+    // Keep waiting if we submitted a prompt but response hasn't arrived, up to 15s
+    const elapsedSinceStart = startTime > 0 ? Date.now() - startTime : 0;
+    if (startTime > 0 && firstChunkTime === 0 && elapsedSinceStart < 15000) {
+      debounceTimer = window.setTimeout(handleDebounce, 1500);
+      return;
+    }
+
+    window.clearInterval(throttleTimer);
+    throttleTimer = undefined;
+    emit(false);
+
+    // Reset timers for the next chat turn
+    startTime = 0;
+    firstChunkTime = 0;
+    const endChat = collectChat(profile);
+    lastPromptCount = endChat.promptCount;
+    lastResponseCharCount = endChat.responseCharCount;
+  };
+
   const handleMutation = () => {
     // Disconnect observer immediately if the extension context was invalidated
     if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
@@ -91,10 +111,13 @@ export function createChatObserver(
       return;
     }
 
+    let changed = false;
+
     if (chat.promptCount > lastPromptCount) {
       startTime = Date.now();
       firstChunkTime = 0;
       lastPromptCount = chat.promptCount;
+      changed = true;
     }
 
     if (chat.responseCharCount > lastResponseCharCount) {
@@ -102,33 +125,19 @@ export function createChatObserver(
         firstChunkTime = Date.now();
       }
       lastResponseCharCount = chat.responseCharCount;
+      changed = true;
     }
 
-    if (!throttleTimer) {
-      throttleTimer = window.setInterval(() => {
-        emit(true);
-      }, 150);
-    }
-
-    window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(() => {
-      // Keep waiting if we submitted a prompt but response hasn't arrived, up to 15s
-      const elapsedSinceStart = startTime > 0 ? Date.now() - startTime : 0;
-      if (startTime > 0 && firstChunkTime === 0 && elapsedSinceStart < 15000) {
-        return;
+    if (changed) {
+      if (!throttleTimer) {
+        throttleTimer = window.setInterval(() => {
+          emit(true);
+        }, 150);
       }
 
-      window.clearInterval(throttleTimer);
-      throttleTimer = undefined;
-      emit(false);
-
-      // Reset timers for the next chat turn
-      startTime = 0;
-      firstChunkTime = 0;
-      const endChat = collectChat(profile);
-      lastPromptCount = endChat.promptCount;
-      lastResponseCharCount = endChat.responseCharCount;
-    }, 1500);
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(handleDebounce, 1500);
+    }
   };
 
   const observer = new MutationObserver(handleMutation);
