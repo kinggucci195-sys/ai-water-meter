@@ -18,7 +18,20 @@ It injects a lightweight, beautifully styled sidebar on popular AI platforms (Ch
 - **Detailed Token Breakdown**: Tracks input/output tokens, compute complexity (Weighted Tokens), direct cooling water, indirect grid water, energy, and carbon emissions.
 - **Relatable Comparisons**: Translates abstract data into everyday analogies (e.g. _"Equivalent to charging your phone for 42 seconds"_ or _"Equivalent to boiling 15 mL of water"_).
 - **Gamified Leaderboards**: Compete with other green AI users on **Daily**, **Weekly**, **Monthly**, or **All-Time** water savings.
+- **Dynamic Leaderboards**: Compete with other green AI users on **Daily**, **Weekly**, **Monthly**, or **All-Time** water savings:
+  👉 **[https://web-app-woad-rho.vercel.app](https://web-app-woad-rho.vercel.app)**
 - **Local-First Privacy**: Estimates are computed entirely in your browser. No prompt text or raw chat telemetry ever leaves your device.
+
+---
+
+## 🚀 Dynamic GitHub Profile README Badge (Trendy Virality)
+
+You can proudly showcase your live sustainability metrics, leaderboard rank, and active daily streak directly on your GitHub Profile README.
+
+1. Sign in to your account at **[https://web-app-woad-rho.vercel.app](https://web-app-woad-rho.vercel.app)**.
+2. Go to your **Account Dashboard**.
+3. Under the **GitHub Profile Readme Badge** panel, copy your custom Markdown code.
+4. Paste it into your profile `README.md` file. It will update automatically in real-time as you sync.
 
 ---
 
@@ -33,10 +46,11 @@ To track tokens from the **Claude Code CLI** terminal tool:
 - Set up a local proxy pointing to a water-meter port.
 - Claude Code local logs are stored in `~/.claude/logs/`. You can query token metrics directly from the log file to sync them with your dashboard.
 
-### 2. VS Code (Continue.dev / GitHub Copilot)
+### 2. VS Code Extension (Automatic Token Tracking)
 
 - Open the companion [VS Code extension](./vscode-extension/README.md).
-- Highlight any code block or copied text, open the Command Palette, and select `AI Water Meter: Estimate Selected Text` to compute footprints directly inside your editor.
+- **Manual Mode**: Highlight any code block or copied text, open the Command Palette, and select `AI Water Meter: Estimate Selected Text` to compute footprints.
+- **Automatic Mode**: The extension runs a background change listener that automatically detects code insertions (like GitHub Copilot suggestions or copy-pasted blocks) exceeding **15 characters** and syncs their footprint to your dashboard in real-time.
 
 ---
 
