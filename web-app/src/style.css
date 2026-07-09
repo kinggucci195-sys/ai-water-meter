@@ -248,6 +248,7 @@ button:disabled {
 }
 
 /* Mascot HUD Stage & Dials */
+.mascot-stage,
 .mascot-stage-2d {
   position: relative;
   width: 100%;
@@ -263,6 +264,13 @@ button:disabled {
   justify-content: center;
   align-items: center;
   border: 1px solid var(--color-border);
+}
+
+.mascot-stage canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: inherit;
 }
 
 /* Rotating telemetric HUD frames */
@@ -546,6 +554,7 @@ button:disabled {
     grid-template-columns: 1fr;
     gap: var(--space-md);
   }
+  .mascot-stage,
   .mascot-stage-2d {
     max-width: 320px;
     margin: 0 auto;
