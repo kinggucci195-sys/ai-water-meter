@@ -7,14 +7,14 @@
 
 AI Water Meter is a premium Chrome and Edge browser extension that dynamically estimates the operational **water**, **energy**, and **carbon footprint** of your AI chat sessions in real-time as you browse.
 
-It injects a lightweight, beautifully styled sidebar on popular AI platforms (ChatGPT, Claude, Gemini, Perplexity, and Poe) featuring a cute 2D mascot that wiggles, waves, and changes expressions based on your usage intensity!
+It injects a lightweight, beautifully styled sidebar on popular AI platforms (ChatGPT, Claude, Gemini, Perplexity, and Poe), while the landing page features an interactive 3D WebGL droplet mascot (powered by Three.js) that winks, floats, and reacts to viewport scaling!
 
 ---
 
 ## ✨ Features
 
 - **Real-Time Sidebar**: Slide-out panel matching the look and feel of ChatGPT and Claude.
-- **Cute 2D Mascot**: A wiggling water droplet avatar that reacts to prompt updates, heavy responses, and errors.
+- **Interactive 3D WebGL Mascot**: A floating, winking 3D water droplet avatar on the landing page rendered dynamically in real-time.
 - **Detailed Token Breakdown**: Tracks input/output tokens, compute complexity (Weighted Tokens), direct cooling water, indirect grid water, energy, and carbon emissions.
 - **Relatable Comparisons**: Translates abstract data into everyday analogies (e.g. _"Equivalent to charging your phone for 42 seconds"_ or _"Equivalent to boiling 15 mL of water"_).
 - **Gamified Leaderboards**: Compete with other green AI users on **Daily**, **Weekly**, **Monthly**, or **All-Time** water savings.
