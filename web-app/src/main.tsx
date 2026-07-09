@@ -7,7 +7,7 @@ import {
   type SupabaseAuthSettings
 } from "./auth-config";
 import { hasSupabaseConfig, supabase, supabaseAnonKey, supabaseUrl } from "./supabase";
-import { WaterMascot3D } from "./WaterMascot3D";
+import { WaterMascot2D } from "./WaterMascot2D";
 import { SetupNotice } from "./components/SetupNotice";
 import { AuthStart } from "./components/AuthStart";
 import { AuthCallback } from "./components/AuthCallback";
@@ -216,7 +216,7 @@ function App() {
               behind every conversation — in real time. Watch it stream.
             </p>
           </div>
-          <WaterMascot3D />
+          <WaterMascot2D />
         </section>
       )}
       {!hasSupabaseConfig && <SetupNotice />}
