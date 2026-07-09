@@ -21,10 +21,10 @@ describe("estimateUsage", () => {
 
     expect(estimate.outputTokens).toBe(500);
     expect(estimate.energyWh).toBeCloseTo(0.3);
-    expect(estimate.directWaterMl).toBeCloseTo(0.3);
-    expect(estimate.indirectGridWaterMl).toBeCloseTo(1.356);
-    expect(estimate.totalWaterMl).toBeCloseTo(1.656);
-    expect(estimate.carbonGrams).toBeCloseTo(0.105);
+    expect(estimate.directWaterMl).toBeCloseTo(0.255);
+    expect(estimate.indirectGridWaterMl).toBeCloseTo(1.545);
+    expect(estimate.totalWaterMl).toBeCloseTo(1.8);
+    expect(estimate.carbonGrams).toBeCloseTo(0.099);
   });
 
   it("weights input tokens lower than output tokens", () => {

@@ -48,53 +48,56 @@ if (isWebApp) {
       email = mockEmail;
     }
 
-    chrome.storage.local.get(["userEmail", "supabaseToken", "supabaseUserId", "supabaseRefreshToken"], (data) => {
-      if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
-        return;
-      }
-
-      const storedEmail = (data as { userEmail?: string }).userEmail;
-      const storedToken = (data as { supabaseToken?: string }).supabaseToken;
-      const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
-      const storedRefresh = (data as { supabaseRefreshToken?: string }).supabaseRefreshToken;
-
-      // Case A: User is logged out on the web app page, but extension still has credentials
-      if (!email) {
-        if (storedEmail || storedToken || storedUserId || storedRefresh) {
-          void chrome.storage.local.remove([
-            "userEmail",
-            "supabaseToken",
-            "supabaseUserId",
-            "supabaseRefreshToken"
-          ]);
+    chrome.storage.local.get(
+      ["userEmail", "supabaseToken", "supabaseUserId", "supabaseRefreshToken"],
+      (data) => {
+        if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
+          return;
         }
-        return;
-      }
 
-      // Case B: User credentials changed or first-time sync
-      if (
-        storedEmail !== email ||
-        storedToken !== supabaseToken ||
-        storedUserId !== supabaseUserId ||
-        storedRefresh !== supabaseRefreshToken
-      ) {
-        void chrome.storage.local.set({
-          userEmail: email,
-          supabaseToken,
-          supabaseUserId,
-          supabaseRefreshToken
-        });
-      }
+        const storedEmail = (data as { userEmail?: string }).userEmail;
+        const storedToken = (data as { supabaseToken?: string }).supabaseToken;
+        const storedUserId = (data as { supabaseUserId?: string }).supabaseUserId;
+        const storedRefresh = (data as { supabaseRefreshToken?: string }).supabaseRefreshToken;
 
-      // Case C: If logged in and on the /auth/callback redirection tab, auto-close the tab
-      if (window.location.pathname.startsWith("/auth/callback")) {
-        setTimeout(() => {
-          if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
-            chrome.runtime.sendMessage({ type: "tab:close" });
+        // Case A: User is logged out on the web app page, but extension still has credentials
+        if (!email) {
+          if (storedEmail || storedToken || storedUserId || storedRefresh) {
+            void chrome.storage.local.remove([
+              "userEmail",
+              "supabaseToken",
+              "supabaseUserId",
+              "supabaseRefreshToken"
+            ]);
           }
-        }, 500);
+          return;
+        }
+
+        // Case B: User credentials changed or first-time sync
+        if (
+          storedEmail !== email ||
+          storedToken !== supabaseToken ||
+          storedUserId !== supabaseUserId ||
+          storedRefresh !== supabaseRefreshToken
+        ) {
+          void chrome.storage.local.set({
+            userEmail: email,
+            supabaseToken,
+            supabaseUserId,
+            supabaseRefreshToken
+          });
+        }
+
+        // Case C: If logged in and on the /auth/callback redirection tab, auto-close the tab
+        if (window.location.pathname.startsWith("/auth/callback")) {
+          setTimeout(() => {
+            if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
+              chrome.runtime.sendMessage({ type: "tab:close" });
+            }
+          }, 500);
+        }
       }
-    });
+    );
   };
 
   // 2. Extension -> Web App Sign-Out Sync
@@ -123,7 +126,12 @@ if (isWebApp) {
       await sendStorageRequest({ path: "/leaderboard", type: "app:open" });
     },
     async () => {
-      await chrome.storage.local.remove(["userEmail", "supabaseToken", "supabaseUserId", "supabaseRefreshToken"]);
+      await chrome.storage.local.remove([
+        "userEmail",
+        "supabaseToken",
+        "supabaseUserId",
+        "supabaseRefreshToken"
+      ]);
       sidebar.setStatus("Signed out successfully.");
     }
   );
@@ -249,7 +257,10 @@ if (isWebApp) {
           // Run storage update asynchronously in the background
           void (async () => {
             try {
-              const response = await sendStorageRequest({ estimate: delta, type: "usage:add-delta" });
+              const response = await sendStorageRequest({
+                estimate: delta,
+                type: "usage:add-delta"
+              });
               if (!response.syncSkipped) {
                 const freshDaily = response.daily;
                 const freshMonthly = response.monthly ?? monthly;
@@ -351,7 +362,7 @@ if (isWebApp) {
         err instanceof Error &&
         (err.message.includes("Extension context invalidated") ||
           err.message.includes("Could not establish connection"));
-      
+
       if (isConnectionError) {
         sidebar.setStatus("Extension updated. Please refresh the page to sync.");
         throw new Error("Extension updated. Please refresh the page to sync.", { cause: err });

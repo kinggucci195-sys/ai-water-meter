@@ -28,4 +28,3 @@ await build({
 });
 
 await copyFile("src/content/content.css", "dist/assets/content.css");
-

@@ -233,7 +233,6 @@ fastify.get("/api/badge/:displayName", async (request, reply) => {
 
     // 2. Fetch Leaderboard Rank, Score, and Water Saved
     let rank = "Unranked";
-    let score = 0;
     let waterSavedMl = 0;
 
     const rankQuery = `
@@ -246,7 +245,6 @@ fastify.get("/api/badge/:displayName", async (request, reply) => {
 
     if (rankRes.rows.length > 0) {
       rank = `#${String(rankRes.rows[0].rank).padStart(2, "0")}`;
-      score = Number(rankRes.rows[0].score);
       waterSavedMl = Number(rankRes.rows[0].water_saved_ml_estimate);
     } else {
       // Fallback: sum water from usage_daily
@@ -257,7 +255,6 @@ fastify.get("/api/badge/:displayName", async (request, reply) => {
       `;
       const sumRes = await pgPool.query(sumQuery, [user_id]);
       waterSavedMl = Number(sumRes.rows[0].total_water);
-      score = Math.floor(waterSavedMl);
     }
 
     // 3. Calculate Active Streak

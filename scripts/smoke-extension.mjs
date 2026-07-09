@@ -23,7 +23,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 try {
   const page = await context.newPage();
-  
+
   page.on("console", (msg) => {
     console.log(`[PAGE LOG] [${msg.type()}] ${msg.text()}`);
   });
@@ -70,22 +70,20 @@ async function verifyExtensionAtViewport(page, width, height) {
   });
   await page.waitForTimeout(500);
 
-  const result = await page.locator("#ai-water-meter-root").evaluate(
-    (element) => {
-      const shadow = element.shadowRoot;
-      const img = shadow?.querySelector(".droplet-scene img");
-      if (!(img instanceof HTMLImageElement)) {
-        return { ok: false, reason: "Droplet image did not mount." };
-      }
-
-      const hasSrc = Boolean(img.src);
-      if (!hasSrc) {
-        return { ok: false, reason: "Droplet image does not have a src attribute." };
-      }
-
-      return { ok: true };
+  const result = await page.locator("#ai-water-meter-root").evaluate((element) => {
+    const shadow = element.shadowRoot;
+    const img = shadow?.querySelector(".droplet-scene img");
+    if (!(img instanceof HTMLImageElement)) {
+      return { ok: false, reason: "Droplet image did not mount." };
     }
-  );
+
+    const hasSrc = Boolean(img.src);
+    if (!hasSrc) {
+      return { ok: false, reason: "Droplet image does not have a src attribute." };
+    }
+
+    return { ok: true };
+  });
 
   if (!result.ok) {
     throw new Error(`${result.reason} Viewport: ${width}x${height}`);

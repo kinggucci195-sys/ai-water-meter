@@ -15,9 +15,9 @@ export const DEFAULT_PROFILE: FactorProfile = {
   label: "Modern text AI, median estimate",
   energyWhPer500OutputTokens: 0.3,
   inputTokenWeight: 0.25,
-  directWaterLitersPerKwh: 1,
-  indirectGridWaterLitersPerKwh: 4.52,
-  carbonGramsPerKwh: 350,
+  directWaterLitersPerKwh: 0.85,
+  indirectGridWaterLitersPerKwh: 5.15,
+  carbonGramsPerKwh: 330,
   uncertaintyLowMultiplier: 0.33,
   uncertaintyHighMultiplier: 3
 };

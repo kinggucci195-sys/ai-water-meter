@@ -180,7 +180,12 @@ async function getValidToken(
 async function syncUsageToSupabase(
   daily: DailyUsageRecord
 ): Promise<{ syncSkipped: boolean; reason?: string }> {
-  const keys = await chrome.storage.local.get(["supabaseToken", "supabaseRefreshToken", "supabaseUserId", "deviceId"]);
+  const keys = await chrome.storage.local.get([
+    "supabaseToken",
+    "supabaseRefreshToken",
+    "supabaseUserId",
+    "deviceId"
+  ]);
 
   if (!keys.supabaseUserId) {
     return { syncSkipped: true, reason: "not_signed_in" };

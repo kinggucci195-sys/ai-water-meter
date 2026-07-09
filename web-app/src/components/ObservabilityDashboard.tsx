@@ -553,6 +553,20 @@ export const Mascot: React.FC<MascotProps> = ({ state, customMessage, onTipsCycl
     onTipsCycle?.(nextIndex);
   };
 
+  const getMascotImage = () => {
+    switch (state) {
+      case "thinking":
+        return "/mascots/mascot_2.png";
+      case "warning":
+        return "/mascots/mascot_4.png";
+      case "happy":
+        return "/mascots/mascot_3.png";
+      case "idle":
+      default:
+        return "/mascots/mascot_1.png";
+    }
+  };
+
   return (
     <div
       className={`mascot-container mascot-${state} p-4 flex items-center cursor-pointer`}
@@ -571,16 +585,25 @@ export const Mascot: React.FC<MascotProps> = ({ state, customMessage, onTipsCycl
           width: "48px",
           height: "48px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--color-blue), var(--color-cyan))",
+          background: "linear-gradient(135deg, rgba(0, 120, 255, 0.1), rgba(0, 242, 254, 0.15))",
+          border: "1px solid rgba(0, 242, 254, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "1.4rem",
-          fontWeight: "bold",
-          boxShadow: "0 0 15px rgba(0,242,254,0.3)"
+          boxShadow: "0 0 15px rgba(0,242,254,0.15)",
+          overflow: "hidden"
         }}
       >
-        {state === "thinking" ? "🤔" : state === "warning" ? "⚠️" : state === "happy" ? "😊" : "💧"}
+        <img
+          src={getMascotImage()}
+          alt="Pip mascot"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            transform: "scale(1.2)"
+          }}
+        />
       </div>
       <div
         className="speech-bubble"

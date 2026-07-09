@@ -587,7 +587,8 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             lineHeight: "1.4"
           }}
         >
-          Showcase your live stats and water savings streak directly on your GitHub Profile README. The badge updates automatically in real-time.
+          Showcase your live stats and water savings streak directly on your GitHub Profile README.
+          The badge updates automatically in real-time.
         </p>
 
         <div
@@ -616,7 +617,13 @@ export function AccountDashboard({ email }: AccountDashboardProps) {
             <img
               src={`${apiGatewayUrl}/api/badge/${encodeURIComponent(optedInName.trim() || displayName)}`}
               alt="AI Water Meter Badge Preview"
-              style={{ display: "block", maxWidth: "100%", height: "auto", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px" }}
+              style={{
+                display: "block",
+                maxWidth: "100%",
+                height: "auto",
+                border: "1px solid rgba(255,255,255,0.05)",
+                borderRadius: "6px"
+              }}
               onError={(e) => {
                 // Fallback to local rendering block if API gateway is offline during dev
                 e.currentTarget.style.display = "none";

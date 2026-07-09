@@ -344,6 +344,16 @@ button:disabled {
   animation: mascot-wiggle 0.5s ease-in-out;
 }
 
+/* Mascot dashboard avatar image animation */
+.mascot-avatar img {
+  animation: mascot-float 4.5s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+
+.mascot-avatar img:hover {
+  animation: mascot-hover-dance 1s ease-in-out infinite;
+}
+
 /* Mascot Selector Overlay HUD */
 .mascot-selector {
   width: 100%;

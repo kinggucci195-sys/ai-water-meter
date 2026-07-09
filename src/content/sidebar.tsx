@@ -89,7 +89,7 @@ function SidebarApp({
               </div>
             </div>
             <p className={`reaction reaction-${reaction.state}`}>{reactionCopy}</p>
-             <dl className="quick-stats">
+            <dl className="quick-stats">
               <div>
                 <dt>Water</dt>
                 <dd>{total ? formatMilliliters(total.totalWaterMl) : "-"}</dd>
@@ -101,7 +101,9 @@ function SidebarApp({
               {snapshot?.latencyMs !== undefined && (
                 <div style={{ gridColumn: "span 2" }}>
                   <dt>Latency</dt>
-                  <dd style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <dd
+                    style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
                     {snapshot.latencyMs} ms
                   </dd>
                 </div>
